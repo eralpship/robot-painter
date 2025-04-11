@@ -3,7 +3,6 @@ import '../App.css'
 import { Canvas } from '@react-three/fiber'
 import { Model } from '../components/E-model'
 import { CameraControls, ContactShadows, Environment } from '@react-three/drei'
-import * as THREE from 'three'
 
 export const Route = createFileRoute('/')({
   component: App,
