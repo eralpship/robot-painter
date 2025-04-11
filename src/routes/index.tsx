@@ -26,7 +26,7 @@ function App() {
         />
 
         {/* Ambient light to control overall brightness */}
-        <ambientLight intensity={1} />
+        <ambientLight intensity={0.8} />
 
         {/* Simple contact shadow */}
         <ContactShadows 
