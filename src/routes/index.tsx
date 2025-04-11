@@ -17,9 +17,9 @@ function App() {
       >
 
         <Environment 
-          preset="city"
+          preset="dawn"
           background
-          blur={0.4}
+          blur={0.7}
           backgroundIntensity={0.4}
           environmentIntensity={0.7}
           resolution={256}
