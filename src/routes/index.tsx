@@ -21,7 +21,7 @@ function App() {
           background
           blur={0.4}
           backgroundIntensity={0.4}
-          environmentIntensity={0.4}
+          environmentIntensity={0.7}
           resolution={256}
         />
 
