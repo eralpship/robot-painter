@@ -2,13 +2,30 @@ import { createFileRoute } from '@tanstack/react-router'
 import '../App.css'
 import { Canvas } from '@react-three/fiber'
 import { Model } from '../components/E-model'
-import { CameraControls, ContactShadows, Environment } from '@react-three/drei'
+import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
+import { useRef, useState, useEffect } from 'react'
 
 export const Route = createFileRoute('/')({
   component: App,
 })
 
 function App() {
+  const [hasInteracted, setHasInteracted] = useState(false)
+  const [lastInteractionTime, setLastInteractionTime] = useState(0)
+  const controlsRef = useRef<any>(null)
+
+  useEffect(() => {
+    const inactivityTimeout = 5000 // 5 seconds
+    const interval = setInterval(() => {
+      const now = Date.now()
+      if (hasInteracted && now - lastInteractionTime > inactivityTimeout) {
+        setHasInteracted(false)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [hasInteracted, lastInteractionTime])
+
   return (
     <div className="App">
       <Canvas 
@@ -42,7 +59,8 @@ function App() {
 
         <Model position={[0, -3, 0]} scale={1} />
 
-        <CameraControls 
+        <OrbitControls 
+          ref={controlsRef}
           makeDefault
           minPolarAngle={0} 
           maxPolarAngle={1.55}
@@ -50,6 +68,12 @@ function App() {
           maxDistance={200}
           minAzimuthAngle={-Infinity}
           maxAzimuthAngle={Infinity}
+          autoRotate={!hasInteracted}
+          autoRotateSpeed={2}
+          onStart={() => {
+            setHasInteracted(true)
+            setLastInteractionTime(Date.now())
+          }}
         />
       </Canvas>
     </div>
