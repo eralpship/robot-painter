@@ -34,17 +34,17 @@ export function Model(props: React.ComponentProps<'group'>) {
   materials.body.side = THREE.DoubleSide
 
   // Wheel material - rubber-like
-  materials.wheel.metalness = 0.05
-  materials.wheel.roughness = 0.95
+  materials.wheel.metalness = 0
+  materials.wheel.roughness = 0.9
   materials.wheel.envMapIntensity = 0.2
-  materials.wheel.clearcoat = 0.15
-  materials.wheel.clearcoatRoughness = 0.9
-  materials.wheel.reflectivity = 0.2
+  materials.wheel.clearcoat = 0.1
+  materials.wheel.clearcoatRoughness = 0.8
+  materials.wheel.reflectivity = 0.1
   materials.wheel.specularIntensity = 0.1
   materials.wheel.ior = 1.4
-  materials.wheel.sheen = 0.35
+  materials.wheel.sheen = 0.6
   materials.wheel.sheenRoughness = 0.9
-  materials.wheel.sheenColor = new THREE.Color(0x0a0a0a)
+  materials.wheel.sheenColor = new THREE.Color(0x303030)
   materials.wheel.shadowSide = THREE.FrontSide
   materials.wheel.side = THREE.DoubleSide
   
