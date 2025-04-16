@@ -35,16 +35,17 @@ export function Model(props: React.ComponentProps<'group'>) {
 
   // Wheel material - rubber-like
   materials.wheel.metalness = 0
-  materials.wheel.roughness = 0.9
-  materials.wheel.envMapIntensity = 0.2
-  materials.wheel.clearcoat = 0.1
-  materials.wheel.clearcoatRoughness = 0.8
-  materials.wheel.reflectivity = 0.1
-  materials.wheel.specularIntensity = 0.1
-  materials.wheel.ior = 1.4
-  materials.wheel.sheen = 0.6
-  materials.wheel.sheenRoughness = 0.9
-  materials.wheel.sheenColor = new THREE.Color(0x303030)
+  materials.wheel.roughness = 0.85
+  materials.wheel.envMapIntensity = 0.3
+  materials.wheel.clearcoat = 0.15
+  materials.wheel.clearcoatRoughness = 0.7
+  materials.wheel.reflectivity = 0.15
+  materials.wheel.specularIntensity = 0.5
+  materials.wheel.ior = 1.45
+  materials.wheel.sheen = 1
+  materials.wheel.sheenRoughness = 0.6
+  materials.wheel.sheenColor = new THREE.Color(0x404040)
+  materials.wheel.normalScale = new THREE.Vector2(4, 4)
   materials.wheel.shadowSide = THREE.FrontSide
   materials.wheel.side = THREE.DoubleSide
   
