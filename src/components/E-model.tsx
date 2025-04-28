@@ -10,10 +10,10 @@ import { type GLTF } from 'three-stdlib'
 type GLTFResult = GLTF & {
   nodes: {
     robot: THREE.Mesh
+    body_paint: THREE.Mesh
     flag: THREE.Mesh
     lid: THREE.Mesh
     lid_inside: THREE.Mesh
-    robot_body_paint: THREE.Mesh
     robot_inside: THREE.Mesh
     wheel_back_left: THREE.Mesh
     wheel_back_right: THREE.Mesh
@@ -24,9 +24,9 @@ type GLTFResult = GLTF & {
   }
   materials: {
     body: THREE.MeshStandardMaterial
+    ['body paint 2']: THREE.MeshStandardMaterial
     ['lid paint']: THREE.MeshStandardMaterial
     inside: THREE.MeshStandardMaterial
-    ['body paint']: THREE.MeshStandardMaterial
     wheel: THREE.MeshPhysicalMaterial
   }
 }
@@ -43,6 +43,20 @@ export function Model(props: React.ComponentProps<'group'>) {
     materials.body.envMapIntensity = 1.5
     materials.body.shadowSide = THREE.FrontSide
     materials.body.side = THREE.DoubleSide
+
+    // Body paint material - metallic and reflective
+    materials['body paint 2'].metalness = 0.3
+    materials['body paint 2'].roughness = 0.35
+    materials['body paint 2'].envMapIntensity = 1.5
+    materials['body paint 2'].shadowSide = THREE.FrontSide
+    materials['body paint 2'].side = THREE.DoubleSide
+
+    // Lid paint material - metallic and reflective
+    materials['lid paint'].metalness = 0.3
+    materials['lid paint'].roughness = 0.35
+    materials['lid paint'].envMapIntensity = 1.5
+    materials['lid paint'].shadowSide = THREE.FrontSide
+    materials['lid paint'].side = THREE.DoubleSide
 
     // Wheel material - rubber-like
     materials.wheel.metalness = 0
@@ -70,11 +84,11 @@ export function Model(props: React.ComponentProps<'group'>) {
         <pointLight intensity={tailLightIntensity} decay={2} color="#ff0000" position={[-0.018, -384.368, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
         <pointLight intensity={tailLightIntensity} decay={2} color="#ff0000" position={[-47.829, -384.368, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
         <pointLight intensity={tailLightIntensity} decay={2} color="#ff0011" position={[-248.999, -326.223, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
-        <mesh geometry={nodes.flag.geometry} material={materials.body} position={[-301.46, 198.68, -535.916]} />
-        <mesh geometry={nodes.lid.geometry} material={materials['lid paint']} position={[0, 431.604, -641.88]}>
+        <mesh geometry={nodes.body_paint.geometry} material={materials['body paint 2']} position={[-3.62, 0, 0]} />
+        <mesh geometry={nodes.flag.geometry} material={materials.body} position={[-301.46, 198.68, -535.916]} /* rotation={[-Math.PI / 4, 0, 0]} */ />
+        <mesh geometry={nodes.lid.geometry} material={materials['lid paint']} position={[0, 431.604, -641.88]} /* rotation={[Math.PI / 8, 0, 0]} */ >
           <mesh geometry={nodes.lid_inside.geometry} material={materials.inside} position={[0.023, 0, 0]} />
         </mesh>
-        <mesh geometry={nodes.robot_body_paint.geometry} material={materials['body paint']} position={[0, 0, -410.009]} rotation={[-Math.PI / 2, 0, 0]} scale={[619.124, 191.985, 619.124]} />
         <mesh geometry={nodes.robot_inside.geometry} material={materials.inside} />
         <mesh geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
         <mesh geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
