@@ -4,11 +4,11 @@ Command: npx gltfjsx@6.5.3 -t e-model.glb
 */
 
 import * as THREE from 'three'
-import { useGLTF, useAnimations, Html } from '@react-three/drei'
+import { useGLTF, useAnimations, Html, useCursor } from '@react-three/drei'
 import { type GLTF } from 'three-stdlib'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
-import { useThree } from '@react-three/fiber'
+import { useThree, useFrame } from '@react-three/fiber'
 
 type ActionName = 'open lid'
 
@@ -46,10 +46,9 @@ export function Model(props: React.ComponentProps<'group'>) {
   const group = React.useRef<THREE.Group>(null)
   const { nodes, materials, animations } = useGLTF('/e-model.glb') as unknown as GLTFResult
   const { actions } = useAnimations(animations, group)
-  const [isHovered, setIsHovered] = useState(false)
   const [isLidOpen, setIsLidOpen] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const { mouse } = useThree()
+  const [tooltip, setTooltip] = useState<{ position: THREE.Vector3; text: string } | null>(null)
+  const { camera, mouse, raycaster } = useThree()
 
   const headlightIntensity = 6;
   const tailLightIntensity = 6;
@@ -59,13 +58,29 @@ export function Model(props: React.ComponentProps<'group'>) {
     if (action) {
       action.loop = THREE.LoopOnce
       action.clampWhenFinished = true
-
-      // Add animation event listeners
-      action.getMixer().addEventListener('finished', () => {
-        setIsAnimating(false)
-      })
     }
   }, [actions])
+
+  // Raycast on mouse move
+  useFrame(() => {
+    raycaster.setFromCamera(mouse, camera)
+    const intersects = raycaster.intersectObjects(group.current?.children || [], true)
+    
+    const lidIntersection = intersects.find(intersect => 
+      intersect.object.name === 'lid_new'
+    )
+    
+    if (lidIntersection) {
+      const tooltipPosition = lidIntersection.point.clone()
+      tooltipPosition.y += 0.1
+      setTooltip({ // TODO: optimize this
+        position: tooltipPosition,
+        text: isLidOpen ? 'Close Lid' : 'Open Lid'
+      })
+    } else {
+      setTooltip(null)
+    }
+  })
 
   // Body material - metallic and reflective
   materials['body new'].metalness = 0.3
@@ -108,7 +123,6 @@ export function Model(props: React.ComponentProps<'group'>) {
     e.stopPropagation()
     const action = actions['open lid']
     if (action) {
-      setIsAnimating(true)
       if (isLidOpen) {
         action.timeScale = -1
         action.paused = false
@@ -122,11 +136,10 @@ export function Model(props: React.ComponentProps<'group'>) {
     }
   }
 
-  const getTooltipText = () => {
-    return isLidOpen ? 'Close lid' : 'Open lid'
-  }
+  useCursor(!!tooltip)
 
   return (
+    <>
     <group ref={group} {...props} dispose={null}>
       <mesh name="robot_new" geometry={nodes.robot_new.geometry} material={materials['body new']} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
         <group 
@@ -134,43 +147,10 @@ export function Model(props: React.ComponentProps<'group'>) {
           position={[0, 447.329, -637.429]} 
           rotation={[-Math.PI / 2, 0, 0]} 
           scale={100}
-          onPointerOver={(e: ThreeEvent<PointerEvent>) => {
-            e.stopPropagation()
-            document.body.style.cursor = 'pointer'
-            setIsHovered(true)
-          }}
-          onPointerOut={(e: ThreeEvent<PointerEvent>) => {
-            e.stopPropagation()
-            document.body.style.cursor = 'auto'
-            setIsHovered(false)
-          }}
           onClick={handleLidClick}
         >
           <mesh name="lid_new" geometry={nodes.lid_new.geometry} material={materials['lid paint new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
           <mesh name="lid_new_inside" geometry={nodes.lid_new_inside.geometry} material={materials['lid inside new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
-          {isHovered && (
-            <Html
-              position={[0, 0, -4]}
-              center
-              style={{
-                pointerEvents: 'none',
-                transform: 'translate(-50%, -100%)',
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  color: 'white',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {getTooltipText()}
-              </div>
-            </Html>
-          )}
         </group>
         <pointLight name="headlight_left" intensity={headlightIntensity} decay={2} color="#ffe8a0" position={[-249.205, 383.607, -291.883]} rotation={[-Math.PI, 0, 0]} scale={100} />
         <pointLight name="headlight_right" intensity={headlightIntensity} decay={2} color="#ffe8a0" position={[244.908, 383.607, -291.883]} rotation={[-Math.PI, 0, 0]} scale={100} />
@@ -190,6 +170,29 @@ export function Model(props: React.ComponentProps<'group'>) {
         <mesh name="wheel_middle_right" geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} position={[322.257, 50.272, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
       </mesh>
     </group>
+    {tooltip && (
+      <Html
+        position={tooltip.position}
+        style={{
+          pointerEvents: 'none',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '14px',
+            whiteSpace: 'nowrap',
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          {tooltip.text}
+        </div>
+      </Html>
+    )}
+    </>
   )
 }
 
