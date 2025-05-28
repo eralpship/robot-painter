@@ -4,17 +4,24 @@ Command: npx gltfjsx@6.5.3 -t e-model.glb
 */
 
 import * as THREE from 'three'
-import { useGLTF } from '@react-three/drei'
+import { useGLTF, useAnimations } from '@react-three/drei'
 import { type GLTF } from 'three-stdlib'
+import React from 'react'
+
+type ActionName = 'open lid'
+
+interface GLTFAction extends THREE.AnimationClip {
+  name: ActionName
+}
 
 type GLTFResult = GLTF & {
   nodes: {
-    robot: THREE.Mesh
-    body_paint: THREE.Mesh
-    flag: THREE.Mesh
-    lid: THREE.Mesh
-    lid_inside: THREE.Mesh
-    robot_inside: THREE.Mesh
+    robot_new: THREE.Mesh
+    lid_new: THREE.Mesh
+    lid_new_inside: THREE.Mesh
+    body_inside_new: THREE.Mesh
+    robot_flag_new: THREE.Mesh
+    robot_paintable_body_new: THREE.Mesh
     wheel_back_left: THREE.Mesh
     wheel_back_right: THREE.Mesh
     wheel_front_left: THREE.Mesh
@@ -23,79 +30,84 @@ type GLTFResult = GLTF & {
     wheel_middle_right: THREE.Mesh
   }
   materials: {
-    body: THREE.MeshStandardMaterial
-    ['body paint 2']: THREE.MeshStandardMaterial
-    ['lid paint']: THREE.MeshStandardMaterial
-    inside: THREE.MeshStandardMaterial
+    ['body new']: THREE.MeshStandardMaterial
+    ['lid paint new']: THREE.MeshStandardMaterial
+    ['lid inside new']: THREE.MeshStandardMaterial
+    ['body inside new']: THREE.MeshStandardMaterial
+    ['body paintable new']: THREE.MeshStandardMaterial
     wheel: THREE.MeshPhysicalMaterial
   }
+  animations: GLTFAction[]
 }
 
 export function Model(props: React.ComponentProps<'group'>) {
-  const { nodes, materials } = useGLTF('/e-model.glb') as unknown as GLTFResult;
+  const group = React.useRef<THREE.Group>(null)
+  const { nodes, materials, animations } = useGLTF('/e-model.glb') as unknown as GLTFResult
+  const { actions } = useAnimations(animations, group)
 
   const headlightIntensity = 6;
   const tailLightIntensity = 6;
 
-    // Body material - metallic and reflective
-    materials.body.metalness = 0.3
-    materials.body.roughness = 0.35
-    materials.body.envMapIntensity = 1.5
-    materials.body.shadowSide = THREE.FrontSide
-    materials.body.side = THREE.DoubleSide
+  // Body material - metallic and reflective
+  materials['body new'].metalness = 0.3
+  materials['body new'].roughness = 0.35
+  materials['body new'].envMapIntensity = 1.5
+  materials['body new'].shadowSide = THREE.FrontSide
+  materials['body new'].side = THREE.DoubleSide
 
-    // Body paint material - metallic and reflective
-    materials['body paint 2'].metalness = 0.3
-    materials['body paint 2'].roughness = 0.35
-    materials['body paint 2'].envMapIntensity = 1.5
-    materials['body paint 2'].shadowSide = THREE.FrontSide
-    materials['body paint 2'].side = THREE.DoubleSide
+  // Body paintable material - metallic and reflective
+  materials['body paintable new'].metalness = 0.3
+  materials['body paintable new'].roughness = 0.35
+  materials['body paintable new'].envMapIntensity = 1.5
+  materials['body paintable new'].shadowSide = THREE.FrontSide
+  materials['body paintable new'].side = THREE.DoubleSide
 
-    // Lid paint material - metallic and reflective
-    materials['lid paint'].metalness = 0.3
-    materials['lid paint'].roughness = 0.35
-    materials['lid paint'].envMapIntensity = 1.5
-    materials['lid paint'].shadowSide = THREE.FrontSide
-    materials['lid paint'].side = THREE.DoubleSide
+  // Lid paint material - metallic and reflective
+  materials['lid paint new'].metalness = 0.3
+  materials['lid paint new'].roughness = 0.35
+  materials['lid paint new'].envMapIntensity = 1.5
+  materials['lid paint new'].shadowSide = THREE.FrontSide
+  materials['lid paint new'].side = THREE.DoubleSide
 
-    // Wheel material - rubber-like
-    materials.wheel.metalness = 0
-    materials.wheel.roughness = 0.85
-    materials.wheel.envMapIntensity = 0.3
-    materials.wheel.clearcoat = 0.15
-    materials.wheel.clearcoatRoughness = 0.7
-    materials.wheel.reflectivity = 0.15
-    materials.wheel.specularIntensity = 0.5
-    materials.wheel.ior = 1.45
-    materials.wheel.sheen = 1
-    materials.wheel.sheenRoughness = 0.6
-    materials.wheel.sheenColor = new THREE.Color(0x404040)
-    materials.wheel.normalScale = new THREE.Vector2(4, 4)
-    materials.wheel.shadowSide = THREE.FrontSide
-    materials.wheel.side = THREE.DoubleSide
+  // Wheel material - rubber-like
+  materials.wheel.metalness = 0
+  materials.wheel.roughness = 0.85
+  materials.wheel.envMapIntensity = 0.3
+  materials.wheel.clearcoat = 0.15
+  materials.wheel.clearcoatRoughness = 0.7
+  materials.wheel.reflectivity = 0.15
+  materials.wheel.specularIntensity = 0.5
+  materials.wheel.ior = 1.45
+  materials.wheel.sheen = 1
+  materials.wheel.sheenRoughness = 0.6
+  materials.wheel.sheenColor = new THREE.Color(0x404040)
+  materials.wheel.normalScale = new THREE.Vector2(4, 4)
+  materials.wheel.shadowSide = THREE.FrontSide
+  materials.wheel.side = THREE.DoubleSide
 
   return (
-    <group {...props} dispose={null}>
-      <mesh geometry={nodes.robot.geometry} material={materials.body} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
-        <pointLight intensity={headlightIntensity} decay={2} color="#ffe8a0" position={[-249.205, 383.607, -291.883]} rotation={[-Math.PI, 0, 0]} scale={100} />
-        <pointLight intensity={headlightIntensity} decay={2} color="#ffe8a0" position={[244.908, 383.607, -291.883]} rotation={[-Math.PI, 0, 0]} scale={100} />
-        <pointLight intensity={tailLightIntensity} decay={2} color="#ff0011" position={[250.51, -326.223, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
-        <pointLight intensity={tailLightIntensity} decay={2} color="#ff0000" position={[38.204, -384.368, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
-        <pointLight intensity={tailLightIntensity} decay={2} color="#ff0000" position={[-0.018, -384.368, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
-        <pointLight intensity={tailLightIntensity} decay={2} color="#ff0000" position={[-47.829, -384.368, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
-        <pointLight intensity={tailLightIntensity} decay={2} color="#ff0011" position={[-248.999, -326.223, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
-        <mesh geometry={nodes.body_paint.geometry} material={materials['body paint 2']} position={[-3.62, 0, 0]} />
-        <mesh geometry={nodes.flag.geometry} material={materials.body} position={[-301.46, 198.68, -535.916]} /* rotation={[-Math.PI / 4, 0, 0]} */ />
-        <mesh geometry={nodes.lid.geometry} material={materials['lid paint']} position={[0, 431.604, -641.88]} /* rotation={[Math.PI / 8, 0, 0]} */ >
-          <mesh geometry={nodes.lid_inside.geometry} material={materials.inside} position={[0.023, 0, 0]} />
-        </mesh>
-        <mesh geometry={nodes.robot_inside.geometry} material={materials.inside} />
-        <mesh geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
-        <mesh geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
-        <mesh geometry={nodes.wheel_front_left.geometry} material={materials.wheel} position={[-322.374, 348.386, -139.723]} />
-        <mesh geometry={nodes.wheel_front_right.geometry} material={materials.wheel} position={[322.257, 348.386, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
-        <mesh geometry={nodes.wheel_middle_left.geometry} material={materials.wheel} position={[-322.374, 50.272, -139.723]} />
-        <mesh geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} position={[322.257, 50.272, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
+    <group ref={group} {...props} dispose={null}>
+      <mesh name="robot_new" geometry={nodes.robot_new.geometry} material={materials['body new']} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
+        <group name="lid_group" position={[0, 447.329, -637.429]} rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+          <mesh name="lid_new" geometry={nodes.lid_new.geometry} material={materials['lid paint new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
+          <mesh name="lid_new_inside" geometry={nodes.lid_new_inside.geometry} material={materials['lid inside new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
+        </group>
+        <pointLight name="headlight_left" intensity={headlightIntensity} decay={2} color="#ffe8a0" position={[-249.205, 383.607, -291.883]} rotation={[-Math.PI, 0, 0]} scale={100} />
+        <pointLight name="headlight_right" intensity={headlightIntensity} decay={2} color="#ffe8a0" position={[244.908, 383.607, -291.883]} rotation={[-Math.PI, 0, 0]} scale={100} />
+        <pointLight name="tail_light_left" intensity={tailLightIntensity} decay={2} color="#ff0011" position={[250.51, -326.223, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
+        <pointLight name="tail_light_middle_left" intensity={tailLightIntensity} decay={2} color="#ff0000" position={[38.204, -384.368, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
+        <pointLight name="tail_light_middle_middle" intensity={tailLightIntensity} decay={2} color="#ff0000" position={[-0.018, -384.368, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
+        <pointLight name="tail_light_middle_right" intensity={tailLightIntensity} decay={2} color="#ff0000" position={[-47.829, -384.368, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
+        <pointLight name="tail_light_right" intensity={tailLightIntensity} decay={2} color="#ff0011" position={[-248.999, -326.223, -602.573]} rotation={[-Math.PI, 0, 0]} scale={100} />
+        <mesh name="body_inside_new" geometry={nodes.body_inside_new.geometry} material={materials['body inside new']} position={[0, 0, -1.723]} />
+        <mesh name="robot_flag_new" geometry={nodes.robot_flag_new.geometry} material={materials['body new']} />
+        <mesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} material={materials['body paintable new']} />
+        <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
+        <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
+        <mesh name="wheel_front_left" geometry={nodes.wheel_front_left.geometry} material={materials.wheel} position={[-322.374, 348.386, -139.723]} />
+        <mesh name="wheel_front_right" geometry={nodes.wheel_front_right.geometry} material={materials.wheel} position={[322.257, 348.386, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
+        <mesh name="wheel_middle_left" geometry={nodes.wheel_middle_left.geometry} material={materials.wheel} position={[-322.374, 50.272, -139.723]} />
+        <mesh name="wheel_middle_right" geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} position={[322.257, 50.272, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
       </mesh>
     </group>
   )
