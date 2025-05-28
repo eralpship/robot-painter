@@ -6,7 +6,7 @@ Command: npx gltfjsx@6.5.3 -t e-model.glb
 import * as THREE from 'three'
 import { useGLTF, useAnimations, Html, useCursor } from '@react-three/drei'
 import { type GLTF } from 'three-stdlib'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect  } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame } from '@react-three/fiber'
 
