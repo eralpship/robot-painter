@@ -4,10 +4,11 @@ Command: npx gltfjsx@6.5.3 -t e-model.glb
 */
 
 import * as THREE from 'three'
-import { useGLTF, useAnimations } from '@react-three/drei'
+import { useGLTF, useAnimations, Html } from '@react-three/drei'
 import { type GLTF } from 'three-stdlib'
 import React, { useState, useEffect } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
+import { useThree } from '@react-three/fiber'
 
 type ActionName = 'open lid'
 
@@ -47,6 +48,7 @@ export function Model(props: React.ComponentProps<'group'>) {
   const { actions } = useAnimations(animations, group)
   const [isHovered, setIsHovered] = useState(false)
   const [isLidOpen, setIsLidOpen] = useState(false)
+  const { mouse } = useThree()
 
   const headlightIntensity = 6;
   const tailLightIntensity = 6;
@@ -135,6 +137,29 @@ export function Model(props: React.ComponentProps<'group'>) {
         >
           <mesh name="lid_new" geometry={nodes.lid_new.geometry} material={materials['lid paint new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
           <mesh name="lid_new_inside" geometry={nodes.lid_new_inside.geometry} material={materials['lid inside new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
+          {isHovered && (
+            <Html
+              position={[0, 0, -4]}
+              center
+              style={{
+                pointerEvents: 'none',
+                transform: 'translate(-50%, -100%)',
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  color: 'white',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Toggle lid
+              </div>
+            </Html>
+          )}
         </group>
         <pointLight name="headlight_left" intensity={headlightIntensity} decay={2} color="#ffe8a0" position={[-249.205, 383.607, -291.883]} rotation={[-Math.PI, 0, 0]} scale={100} />
         <pointLight name="headlight_right" intensity={headlightIntensity} decay={2} color="#ffe8a0" position={[244.908, 383.607, -291.883]} rotation={[-Math.PI, 0, 0]} scale={100} />
