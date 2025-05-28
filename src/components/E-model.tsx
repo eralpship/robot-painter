@@ -48,6 +48,7 @@ export function Model(props: React.ComponentProps<'group'>) {
   const { actions } = useAnimations(animations, group)
   const [isHovered, setIsHovered] = useState(false)
   const [isLidOpen, setIsLidOpen] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
   const { mouse } = useThree()
 
   const headlightIntensity = 6;
@@ -58,6 +59,11 @@ export function Model(props: React.ComponentProps<'group'>) {
     if (action) {
       action.loop = THREE.LoopOnce
       action.clampWhenFinished = true
+
+      // Add animation event listeners
+      action.getMixer().addEventListener('finished', () => {
+        setIsAnimating(false)
+      })
     }
   }, [actions])
 
@@ -102,6 +108,7 @@ export function Model(props: React.ComponentProps<'group'>) {
     e.stopPropagation()
     const action = actions['open lid']
     if (action) {
+      setIsAnimating(true)
       if (isLidOpen) {
         action.timeScale = -1
         action.paused = false
@@ -113,6 +120,10 @@ export function Model(props: React.ComponentProps<'group'>) {
       }
       setIsLidOpen(!isLidOpen)
     }
+  }
+
+  const getTooltipText = () => {
+    return isLidOpen ? 'Close lid' : 'Open lid'
   }
 
   return (
@@ -156,7 +167,7 @@ export function Model(props: React.ComponentProps<'group'>) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                Toggle lid
+                {getTooltipText()}
               </div>
             </Html>
           )}
