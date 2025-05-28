@@ -6,7 +6,8 @@ Command: npx gltfjsx@6.5.3 -t e-model.glb
 import * as THREE from 'three'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { type GLTF } from 'three-stdlib'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import type { ThreeEvent } from '@react-three/fiber'
 
 type ActionName = 'open lid'
 
@@ -44,9 +45,19 @@ export function Model(props: React.ComponentProps<'group'>) {
   const group = React.useRef<THREE.Group>(null)
   const { nodes, materials, animations } = useGLTF('/e-model.glb') as unknown as GLTFResult
   const { actions } = useAnimations(animations, group)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isLidOpen, setIsLidOpen] = useState(false)
 
   const headlightIntensity = 6;
   const tailLightIntensity = 6;
+
+  useEffect(() => {
+    const action = actions['open lid']
+    if (action) {
+      action.loop = THREE.LoopOnce
+      action.clampWhenFinished = true
+    }
+  }, [actions])
 
   // Body material - metallic and reflective
   materials['body new'].metalness = 0.3
@@ -85,10 +96,43 @@ export function Model(props: React.ComponentProps<'group'>) {
   materials.wheel.shadowSide = THREE.FrontSide
   materials.wheel.side = THREE.DoubleSide
 
+  const handleLidClick = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation()
+    const action = actions['open lid']
+    if (action) {
+      if (isLidOpen) {
+        action.timeScale = -1
+        action.paused = false
+        action.play()
+      } else {
+        action.timeScale = 1
+        action.paused = false
+        action.play()
+      }
+      setIsLidOpen(!isLidOpen)
+    }
+  }
+
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh name="robot_new" geometry={nodes.robot_new.geometry} material={materials['body new']} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
-        <group name="lid_group" position={[0, 447.329, -637.429]} rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+        <group 
+          name="lid_group" 
+          position={[0, 447.329, -637.429]} 
+          rotation={[-Math.PI / 2, 0, 0]} 
+          scale={100}
+          onPointerOver={(e: ThreeEvent<PointerEvent>) => {
+            e.stopPropagation()
+            document.body.style.cursor = 'pointer'
+            setIsHovered(true)
+          }}
+          onPointerOut={(e: ThreeEvent<PointerEvent>) => {
+            e.stopPropagation()
+            document.body.style.cursor = 'auto'
+            setIsHovered(false)
+          }}
+          onClick={handleLidClick}
+        >
           <mesh name="lid_new" geometry={nodes.lid_new.geometry} material={materials['lid paint new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
           <mesh name="lid_new_inside" geometry={nodes.lid_new_inside.geometry} material={materials['lid inside new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
         </group>
