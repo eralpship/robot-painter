@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { type GLTF } from 'three-stdlib'
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
@@ -48,6 +48,7 @@ export function Model(props: React.ComponentProps<'group'>) {
   const tailLightMiddleMiddleRef = useRef<THREE.PointLight>(null)
   const tailLightMiddleRightRef = useRef<THREE.PointLight>(null)
   const tailLightRightRef = useRef<THREE.PointLight>(null)
+  const flagRef = useRef<THREE.Mesh>(null)
 
   const { nodes, materials, animations } = useGLTF('/e-model.glb') as unknown as GLTFResult
   const { actions } = useAnimations(animations, group)
@@ -56,10 +57,11 @@ export function Model(props: React.ComponentProps<'group'>) {
   const [taillightsOn, setTaillightsOn] = useState(true)
   const { camera, mouse, raycaster } = useThree()
   const { setTooltip } = useTooltip()
+  const currentTooltip = useRef<string | null>(null)
 
   // Animate headlight intensity
   const { headlightIntensity } = useSpring({
-    headlightIntensity: headlightsOn ? 6 : 0,
+    headlightIntensity: headlightsOn ? 12 : 0,
     config: { 
       duration: 300,
       easing: easings.linear
@@ -69,13 +71,24 @@ export function Model(props: React.ComponentProps<'group'>) {
 
   // Animate taillight intensity
   const { tailLightIntensity } = useSpring({
-    tailLightIntensity: taillightsOn ? 6 : 0,
+    tailLightIntensity: taillightsOn ? 12 : 0,
     config: { 
       duration: 300,
       easing: easings.linear
     },
     clamp: true
   })
+
+  // Animate flag wiggle
+  const [springs, api] = useSpring(() => ({
+    rotationX: 0,
+    config: { 
+      mass: 1.2,  // Higher mass for more inertia
+      tension: 800,  // Lower tension for less rigidity
+      friction: 20,  // Higher friction for quicker dampening
+      velocity: 0  // Start from rest
+    }
+  }))
 
   useEffect(() => {
     const action = actions['open lid']
@@ -85,22 +98,50 @@ export function Model(props: React.ComponentProps<'group'>) {
     }
   }, [actions])
 
+  const handleFlagClick = useCallback((e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation()
+    api.start({
+      from: { rotationX: 0 },
+      to: { rotationX: 1 },
+      config: {
+        mass: 1.2,
+        tension: 800,
+        friction: 20
+      },
+      onRest: () => {
+        api.set({ rotationX: 0 })
+      }
+    })
+  }, [api])
+
+  // Initial interpolation setup
+  const interpolatedRotation = springs.rotationX.to({
+    range: [0, 0.5, 1],
+    output: [0, Math.PI / 6, 0]
+  })
+
   useFrame(() => {
     raycaster.setFromCamera(mouse, camera)
     const intersects = raycaster.intersectObjects(group.current?.children || [], true)
     const firstIntersect = intersects[0]
     
+    let newTooltip: string | null = null
     if (firstIntersect?.object.name.includes('lid')) {
-      setTooltip(`${isLidOpen ? 'Close' : 'Open'} lid`)
+      newTooltip = `${isLidOpen ? 'Close' : 'Open'} lid`
     } 
     else if (firstIntersect?.object.name.includes('headlight')) {
-      setTooltip(`${headlightsOn ? 'Turn off' : 'Turn on'} headlights`)
+      newTooltip = `${headlightsOn ? 'Turn off' : 'Turn on'} headlights`
     } 
     else if (firstIntersect?.object.name.includes('tail_light')) {
-      setTooltip(`${taillightsOn ? 'Turn off' : 'Turn on'} tail lights`)
+      newTooltip = `${taillightsOn ? 'Turn off' : 'Turn on'} tail lights`
     }
-    else {
-      setTooltip(null)
+    else if (firstIntersect?.object.name.includes('flag')) {
+      newTooltip = 'Flag'
+    }
+
+    if (newTooltip !== currentTooltip.current) {
+      currentTooltip.current = newTooltip
+      setTooltip(newTooltip)
     }
   })
 
@@ -281,7 +322,15 @@ export function Model(props: React.ComponentProps<'group'>) {
           scale={100} 
         />
         <mesh name="body_inside_new" geometry={nodes.body_inside_new.geometry} material={materials['body inside new']} position={[0, 0, -1.723]} />
-        <mesh name="robot_flag_new" geometry={nodes.robot_flag_new.geometry} material={materials['body new']} />
+        <animated.mesh 
+          ref={flagRef}
+          name="robot_flag_new" 
+          geometry={nodes.robot_flag_new.geometry} 
+          material={materials['body new']} 
+          position={[-301.249, 198.68, -535.916]} 
+          rotation-x={interpolatedRotation}
+          onClick={handleFlagClick} 
+        />
         <mesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} material={materials['body paintable new']} />
         <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
         <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />

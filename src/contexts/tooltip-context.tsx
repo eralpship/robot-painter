@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useState, useEffect } from 'react'
+import { createContext, useContext, useRef, useEffect } from 'react'
 import type { ReactNode } from 'react'
 
 const TOOLTIP_OFFSET = {
@@ -29,13 +29,18 @@ function useMousePosition() {
 }
 
 export function TooltipProvider({ children }: { children: ReactNode }) {
-  const [tooltipText, setTooltipText] = useState<string | null>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const mousePosition = useMousePosition()
+  const currentText = useRef<string | null>(null)
 
   const setTooltip = (text: string | null) => {
-    setTooltipText(text)
-    document.body.style.cursor = text ? 'pointer' : 'unset'
+    if (tooltipRef.current) {
+      currentText.current = text
+      tooltipRef.current.textContent = text
+      tooltipRef.current.style.visibility = text ? 'visible' : 'hidden'
+      tooltipRef.current.style.opacity = text ? '1' : '0'
+      document.body.style.cursor = text ? 'pointer' : 'unset'
+    }
   }
 
   // Update tooltip position using requestAnimationFrame
@@ -82,29 +87,28 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
   return (
     <TooltipContext.Provider value={{ setTooltip }}>
       {children}
-      {tooltipText && (
-        <div
-          ref={tooltipRef}
-          style={{
-            pointerEvents: 'none',
-            position: 'fixed',
-            transform: 'none',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
-            padding: '4px 6px',
-            borderRadius: '4px',
-            fontSize: '14px',
-            whiteSpace: 'pre-line',
-            zIndex: 1000,
-            left: 0,
-            top: 0,
-            maxWidth: '200px',
-            lineHeight: '1.4',
-          }}
-        >
-          {tooltipText}
-        </div>
-      )}
+      <div
+        ref={tooltipRef}
+        style={{
+          pointerEvents: 'none',
+          position: 'fixed',
+          transform: 'none',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '4px 6px',
+          borderRadius: '4px',
+          fontSize: '14px',
+          whiteSpace: 'pre-line',
+          zIndex: 1000,
+          left: 0,
+          top: 0,
+          maxWidth: '200px',
+          lineHeight: '1.4',
+          visibility: 'hidden',
+          opacity: 0,
+          transition: 'opacity 0.1s ease-in-out'
+        }}
+      />
     </TooltipContext.Provider>
   )
 }
