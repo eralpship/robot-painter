@@ -6,22 +6,6 @@ import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { useRef, useState, useEffect } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 
-// Custom hook for mouse position that doesn't trigger re-renders
-function useMousePosition() {
-  const mousePosition = useRef({ x: 0, y: 0 })
-
-  useEffect(() => {
-    const updateMousePosition = (ev: MouseEvent) => {
-      mousePosition.current = { x: ev.clientX, y: ev.clientY }
-    }
-
-    window.addEventListener('mousemove', updateMousePosition, { passive: true })
-    return () => window.removeEventListener('mousemove', updateMousePosition)
-  }, [])
-
-  return mousePosition
-}
-
 export const Route = createFileRoute('/')({
   component: App,
 })
