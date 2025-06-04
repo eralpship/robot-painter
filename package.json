@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@react-spring/three": "^10.0.1",
     "@react-three/drei": "^10.0.6",
     "@react-three/fiber": "^9.1.2",
     "@tanstack/react-router": "^1.114.3",
