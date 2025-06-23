@@ -6,6 +6,8 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
+import { PaintableBodyMesh } from './PaintableBodyMesh'
+import { RobotColorProvider } from '../contexts/robot-color-context'
 
 type ActionName = 'open lid'
 
@@ -19,6 +21,7 @@ type GLTFResult = GLTF & {
     lid_new: THREE.Mesh
     lid_new_inside: THREE.Mesh
     body_inside_new: THREE.Mesh
+    flag_rim: THREE.Mesh
     robot_flag_new: THREE.Mesh
     robot_paintable_body_new: THREE.Mesh
     wheel_back_left: THREE.Mesh
@@ -30,10 +33,8 @@ type GLTFResult = GLTF & {
   }
   materials: {
     ['body new']: THREE.MeshStandardMaterial
-    ['lid paint new']: THREE.MeshStandardMaterial
-    ['lid inside new']: THREE.MeshStandardMaterial
-    ['body inside new']: THREE.MeshStandardMaterial
     ['body paintable new']: THREE.MeshStandardMaterial
+    ['body inside new']: THREE.MeshStandardMaterial
     wheel: THREE.MeshPhysicalMaterial
   }
   animations: GLTFAction[]
@@ -145,27 +146,6 @@ export function Model(props: React.ComponentProps<'group'>) {
     }
   })
 
-  // Body material - metallic and reflective
-  materials['body new'].metalness = 0.3
-  materials['body new'].roughness = 0.35
-  materials['body new'].envMapIntensity = 1.5
-  materials['body new'].shadowSide = THREE.FrontSide
-  materials['body new'].side = THREE.DoubleSide
-
-  // Body paintable material - metallic and reflective
-  materials['body paintable new'].metalness = 0.3
-  materials['body paintable new'].roughness = 0.35
-  materials['body paintable new'].envMapIntensity = 1.5
-  materials['body paintable new'].shadowSide = THREE.FrontSide
-  materials['body paintable new'].side = THREE.DoubleSide
-
-  // Lid paint material - metallic and reflective
-  materials['lid paint new'].metalness = 0.3
-  materials['lid paint new'].roughness = 0.35
-  materials['lid paint new'].envMapIntensity = 1.5
-  materials['lid paint new'].shadowSide = THREE.FrontSide
-  materials['lid paint new'].side = THREE.DoubleSide
-
   // Wheel material - rubber-like
   materials.wheel.metalness = 0
   materials.wheel.roughness = 0.85
@@ -237,110 +217,127 @@ export function Model(props: React.ComponentProps<'group'>) {
     return hitboxes
   }, [leftHeadlightRef.current, rightHeadlightRef.current, tailLightLeftRef.current, tailLightMiddleLeftRef.current, tailLightMiddleMiddleRef.current, tailLightMiddleRightRef.current, tailLightRightRef.current])
 
+  // Debug logs for material color and map
+  React.useEffect(() => {
+    const mat = materials['body paintable new']
+    if (mat) {
+      console.log('[DEBUG] body paintable new color:', mat.color)
+      console.log('[DEBUG] body paintable new map:', mat.map)
+      // Set base color to pink and ensure transparency (for overlay)
+      mat.transparent = true
+      mat.alphaTest = 0.01 // Optional: helps with hard edges
+      mat.needsUpdate = true
+    } else {
+      console.warn('[DEBUG] body paintable new material not found')
+    }
+  }, [materials])
+
   return (
-    <group ref={group} {...props} dispose={null}>
-      <mesh name="robot_new" geometry={nodes.robot_new.geometry} material={materials['body new']} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
-        <group 
-          name="lid_group" 
-          position={[0, 447.329, -637.429]} 
-          rotation={[-Math.PI / 2, 0, 0]} 
-          scale={100}
-          onClick={handleLidClick}
-        >
-          <mesh name="lid_new" geometry={nodes.lid_new.geometry} material={materials['lid paint new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
-          <mesh name="lid_new_inside" geometry={nodes.lid_new_inside.geometry} material={materials['lid inside new']} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
-        </group>
-        {hitboxes}
-        <animated.pointLight 
-          ref={leftHeadlightRef}
-          name="headlight_left" 
-          intensity={headlightIntensity} 
-          decay={2} 
-          color="#ffe8a0" 
-          position={[-249.205, 383.607, -291.883]} 
-          rotation={[-Math.PI, 0, 0]} 
-          scale={100} 
-        />
-        <animated.pointLight 
-          ref={rightHeadlightRef}
-          name="headlight_right" 
-          intensity={headlightIntensity} 
-          decay={2} 
-          color="#ffe8a0" 
-          position={[244.908, 383.607, -291.883]} 
-          rotation={[-Math.PI, 0, 0]} 
-          scale={100} 
-        />
-        <animated.pointLight 
-          ref={tailLightLeftRef}
-          name="tail_light_left" 
-          intensity={tailLightIntensity} 
-          decay={2} 
-          color="#ff0011" 
-          position={[250.51, -326.223, -602.573]} 
-          rotation={[-Math.PI, 0, 0]} 
-          scale={100} 
-        />
-        <animated.pointLight 
-          ref={tailLightMiddleLeftRef}
-          name="tail_light_middle_left" 
-          intensity={tailLightIntensity} 
-          decay={2} 
-          color="#ff0000" 
-          position={[38.204, -384.368, -602.573]} 
-          rotation={[-Math.PI, 0, 0]} 
-          scale={100} 
-        />
-        <animated.pointLight 
-          ref={tailLightMiddleMiddleRef}
-          name="tail_light_middle_middle" 
-          intensity={tailLightIntensity} 
-          decay={2} 
-          color="#ff0000" 
-          position={[-0.018, -384.368, -602.573]} 
-          rotation={[-Math.PI, 0, 0]} 
-          scale={100} 
-        />
-        <animated.pointLight 
-          ref={tailLightMiddleRightRef}
-          name="tail_light_middle_right" 
-          intensity={tailLightIntensity} 
-          decay={2} 
-          color="#ff0000" 
-          position={[-47.829, -384.368, -602.573]} 
-          rotation={[-Math.PI, 0, 0]} 
-          scale={100} 
-        />
-        <animated.pointLight 
-          ref={tailLightRightRef}
-          name="tail_light_right" 
-          intensity={tailLightIntensity} 
-          decay={2} 
-          color="#ff0011" 
-          position={[-248.999, -326.223, -602.573]} 
-          rotation={[-Math.PI, 0, 0]} 
-          scale={100} 
-        />
-        <mesh name="body_inside_new" geometry={nodes.body_inside_new.geometry} material={materials['body inside new']} position={[0, 0, -1.723]} />
-        <animated.mesh 
-          ref={flagRef}
-          name="robot_flag_new" 
-          geometry={nodes.robot_flag_new.geometry} 
-          material={materials['body new']} 
-          position={[-301.249, 198.68, -535.916]} 
-          rotation-x={interpolatedRotation}
-          onClick={handleFlagClick} 
-        />
-        <mesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} material={materials['body paintable new']} />
-        <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
-        <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
-        <mesh name="wheel_front_left" geometry={nodes.wheel_front_left.geometry} material={materials.wheel} position={[-322.374, 348.386, -139.723]} />
-        <mesh name="wheel_front_right" geometry={nodes.wheel_front_right.geometry} material={materials.wheel} position={[322.257, 348.386, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
-        <mesh name="wheel_middle_left" geometry={nodes.wheel_middle_left.geometry} material={materials.wheel} position={[-322.374, 50.272, -139.723]} />
-        <mesh name="wheel_middle_right" geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} position={[322.257, 50.272, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
-      </mesh>
-    </group>
-    
+    <RobotColorProvider>
+      <group ref={group} {...props} dispose={null}>
+        <mesh name="robot_new" geometry={nodes.robot_new.geometry} material={materials['body new']} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
+          <group 
+            name="lid_group" 
+            position={[0, 447.187, -637.429]} 
+            rotation={[-Math.PI / 2, 0, 0]} 
+            scale={100}
+            onClick={handleLidClick}
+          >
+            <PaintableBodyMesh name="lid_new" geometry={nodes.lid_new.geometry} position={[0, -6.374, -4.472]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
+            <PaintableBodyMesh name="lid_new_inside" geometry={nodes.lid_new_inside.geometry} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
+          </group>
+          {hitboxes}
+          <animated.pointLight 
+            ref={leftHeadlightRef}
+            name="headlight_left" 
+            intensity={headlightIntensity} 
+            decay={2} 
+            color="#ffe8a0" 
+            position={[-235.912, 385.374, -301.501]} 
+            rotation={[-Math.PI, 0, 0]} 
+            scale={100} 
+          />
+          <animated.pointLight 
+            ref={rightHeadlightRef}
+            name="headlight_right" 
+            intensity={headlightIntensity} 
+            decay={2} 
+            color="#ffe8a0" 
+            position={[241.584, 386.931, -299.362]} 
+            rotation={[-Math.PI, 0, 0]} 
+            scale={100} 
+          />
+          <animated.pointLight 
+            ref={tailLightLeftRef}
+            name="tail_light_left" 
+            intensity={tailLightIntensity} 
+            decay={2} 
+            color="#ff0011" 
+            position={[250.51, -326.223, -602.573]} 
+            rotation={[-Math.PI, 0, 0]} 
+            scale={100} 
+          />
+          <animated.pointLight 
+            ref={tailLightMiddleLeftRef}
+            name="tail_light_middle_left" 
+            intensity={tailLightIntensity} 
+            decay={2} 
+            color="#ff0000" 
+            position={[38.204, -384.368, -602.573]} 
+            rotation={[-Math.PI, 0, 0]} 
+            scale={100} 
+          />
+          <animated.pointLight 
+            ref={tailLightMiddleMiddleRef}
+            name="tail_light_middle_middle" 
+            intensity={tailLightIntensity} 
+            decay={2} 
+            color="#ff0000" 
+            position={[-0.018, -384.368, -602.573]} 
+            rotation={[-Math.PI, 0, 0]} 
+            scale={100} 
+          />
+          <animated.pointLight 
+            ref={tailLightMiddleRightRef}
+            name="tail_light_middle_right" 
+            intensity={tailLightIntensity} 
+            decay={2} 
+            color="#ff0000" 
+            position={[-47.829, -384.368, -602.573]} 
+            rotation={[-Math.PI, 0, 0]} 
+            scale={100} 
+          />
+          <animated.pointLight 
+            ref={tailLightRightRef}
+            name="tail_light_right" 
+            intensity={tailLightIntensity} 
+            decay={2} 
+            color="#ff0011" 
+            position={[-248.999, -326.223, -602.573]} 
+            rotation={[-Math.PI, 0, 0]} 
+            scale={100} 
+          />
+          <mesh name="body_inside_new" geometry={nodes.body_inside_new.geometry} material={materials['body inside new']} position={[0, 0, -1.723]} />
+          <PaintableBodyMesh name="flag_rim" geometry={nodes.flag_rim.geometry} />
+          <animated.mesh 
+            ref={flagRef}
+            name="robot_flag_new" 
+            geometry={nodes.robot_flag_new.geometry} 
+            material={materials['body new']} 
+            position={[-301.249, 198.68, -535.916]} 
+            rotation-x={interpolatedRotation}
+            onClick={handleFlagClick} 
+          />
+          <PaintableBodyMesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} />
+          <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
+          <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
+          <mesh name="wheel_front_left" geometry={nodes.wheel_front_left.geometry} material={materials.wheel} position={[-322.374, 348.386, -139.723]} />
+          <mesh name="wheel_front_right" geometry={nodes.wheel_front_right.geometry} material={materials.wheel} position={[322.257, 348.386, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
+          <mesh name="wheel_middle_left" geometry={nodes.wheel_middle_left.geometry} material={materials.wheel} position={[-322.374, 50.272, -139.723]} />
+          <mesh name="wheel_middle_right" geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} position={[322.257, 50.272, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
+        </mesh>
+      </group>
+    </RobotColorProvider>
   )
 }
 

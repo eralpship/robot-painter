@@ -1,3 +1,7 @@
+# Robot Painter
+
+`(cd models/e-model && npx gltfjsx -t e-model.glb)`
+
 Welcome to your new TanStack app! 
 
 # Getting Started
