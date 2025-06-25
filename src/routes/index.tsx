@@ -5,16 +5,50 @@ import { Model } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { useRef, useState, useEffect } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
+import { Leva, useControls } from 'leva'
 
 export const Route = createFileRoute('/')({
   component: App,
 })
 
-function App() {
+function AppContent() {
   const [hasInteracted, setHasInteracted] = useState(false)
   const lastInteractionTime = useRef(Date.now())
   const controlsRef = useRef<any>(null)
   const inactivityTimeout = 5000 // 5 seconds
+
+  // Add Leva controls with controlled inputs
+  const { baseColor, tailLightColor } = useControls({
+    baseColor: {
+      value: '#ff69b4',
+      label: 'Base Color'
+    },
+    tailLightColor: {
+      value: '#ff0000',
+      label: 'Tail Light Color'
+    }
+  })
+
+  // Controlled light states using the array destructuring pattern
+  const [{ headlightsOn, taillightsOn }, setLightStates] = useControls(() => ({
+    headlightsOn: { value: true, label: 'Headlights On' },
+    taillightsOn: { value: true, label: 'Taillights On' }
+  }))
+
+  // Functions to manipulate light states directly in Leva
+  const toggleHeadlights = () => {
+    console.log('toggleHeadlights called, current state:', headlightsOn)
+    const newValue = !headlightsOn
+    setLightStates({ headlightsOn: newValue })
+    console.log('New headlights state:', newValue)
+  }
+
+  const toggleTaillights = () => {
+    console.log('toggleTaillights called, current state:', taillightsOn)
+    const newValue = !taillightsOn
+    setLightStates({ taillightsOn: newValue })
+    console.log('New taillights state:', newValue)
+  }
 
   // Handle user interaction
   const handleInteraction = () => {
@@ -41,52 +75,68 @@ function App() {
   }, [hasInteracted])
 
   return (
+    <div className="App">
+      <Leva collapsed={false} />
+      <Canvas 
+        style={{ height: '100vh', width: '100vw' }}
+        camera={{ position: [20, 10, 20], fov: 50 }}
+      >
+        <Environment 
+          preset="dawn"
+          background
+          blur={0.7}
+          backgroundIntensity={0.4}
+          environmentIntensity={0.7}
+          resolution={256}
+        />
+
+        {/* Ambient light to control overall brightness */}
+        <ambientLight intensity={0.8} />
+
+        {/* Simple contact shadow */}
+        <ContactShadows 
+          position={[0, -2.9, 0]}
+          opacity={2.5}
+          scale={180}
+          blur={2}
+          far={100}
+          resolution={256}
+          color="#000000"
+        />
+
+        <Model 
+          position={[0, -3, 0]} 
+          scale={1} 
+          baseColor={baseColor}
+          tailLightColor={tailLightColor}
+          headlightsOn={headlightsOn}
+          taillightsOn={taillightsOn}
+          onToggleHeadlights={toggleHeadlights}
+          onToggleTaillights={toggleTaillights}
+        />
+
+        <OrbitControls 
+          ref={controlsRef}
+          makeDefault
+          minPolarAngle={0} 
+          maxPolarAngle={1.55}
+          minDistance={10}
+          maxDistance={200}
+          minAzimuthAngle={-Infinity}
+          maxAzimuthAngle={Infinity}
+          autoRotate={!hasInteracted}
+          autoRotateSpeed={2}
+          onStart={handleInteraction}
+        />
+      </Canvas>
+    </div>
+  )
+}
+
+function App() {
+  return (
     <TooltipProvider>
-      <div className="App">
-        <Canvas 
-          style={{ height: '100vh', width: '100vw' }}
-          camera={{ position: [20, 10, 20], fov: 50 }}
-        >
-          <Environment 
-            preset="dawn"
-            background
-            blur={0.7}
-            backgroundIntensity={0.4}
-            environmentIntensity={0.7}
-            resolution={256}
-          />
-
-          {/* Ambient light to control overall brightness */}
-          <ambientLight intensity={0.8} />
-
-          {/* Simple contact shadow */}
-          <ContactShadows 
-            position={[0, -2.9, 0]}
-            opacity={2.5}
-            scale={180}
-            blur={2}
-            far={100}
-            resolution={256}
-            color="#000000"
-          />
-
-          <Model position={[0, -3, 0]} scale={1} />
-
-          <OrbitControls 
-            ref={controlsRef}
-            makeDefault
-            minPolarAngle={0} 
-            maxPolarAngle={1.55}
-            minDistance={10}
-            maxDistance={200}
-            minAzimuthAngle={-Infinity}
-            maxAzimuthAngle={Infinity}
-            autoRotate={!hasInteracted}
-            autoRotateSpeed={2}
-            onStart={handleInteraction}
-          />
-        </Canvas>
-      </div>
+      <AppContent />
     </TooltipProvider>
   )
 }

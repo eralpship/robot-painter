@@ -35,7 +35,24 @@ type GLTFResult = GLTF & {
   animations: GLTFAction[]
 }
 
-export function Model(props: React.ComponentProps<'group'>) {
+interface ModelProps extends React.ComponentProps<'group'> {
+  baseColor: string
+  tailLightColor: string
+  headlightsOn: boolean
+  taillightsOn: boolean
+  onToggleHeadlights: () => void
+  onToggleTaillights: () => void
+}
+
+export function Model({ 
+  baseColor, 
+  tailLightColor, 
+  headlightsOn, 
+  taillightsOn, 
+  onToggleHeadlights, 
+  onToggleTaillights, 
+  ...props 
+}: ModelProps) {
   const group = React.useRef<THREE.Group>(null)
   const leftHeadlightRef = useRef<THREE.PointLight>(null)
   const rightHeadlightRef = useRef<THREE.PointLight>(null)
@@ -49,8 +66,6 @@ export function Model(props: React.ComponentProps<'group'>) {
   const { nodes, materials, animations } = useGLTF('/e-model.glb') as unknown as GLTFResult
   const { actions } = useAnimations(animations, group)
   const [isLidOpen, setIsLidOpen] = useState(false)
-  const [headlightsOn, setHeadlightsOn] = useState(true)
-  const [taillightsOn, setTaillightsOn] = useState(true)
   const { camera, mouse, raycaster } = useThree()
   const { setTooltip } = useTooltip()
   const currentTooltip = useRef<string | null>(null)
@@ -161,18 +176,16 @@ export function Model(props: React.ComponentProps<'group'>) {
   materials['body new'].roughness = 0.35
   materials['body new'].envMapIntensity = 1.5
 
-  const [color, _setColor] = useState('#ff69b4')
-
   const baseColorMaterial = useMemo(() => {
     const mat = materials['body paintable new'].clone()
     mat.map = null
-    mat.color.set(color)
+    mat.color.set(baseColor)
     mat.transparent = false
     mat.opacity = 1
     mat.needsUpdate = true
     mat.side = THREE.FrontSide
     return mat
-  }, [color])
+  }, [baseColor, materials])
 
   const PaintableMesh = useCallback<React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>>(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
     return (
@@ -202,10 +215,13 @@ export function Model(props: React.ComponentProps<'group'>) {
 
   const handleHitboxClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
+    console.log('Hitbox clicked:', e.object.name)
     if (e.object.name.includes('headlight')) {
-      setHeadlightsOn(prev => !prev)
+      console.log('Toggling headlights')
+      onToggleHeadlights()
     } else if (e.object.name.includes('tail_light')) {
-      setTaillightsOn(prev => !prev)
+      console.log('Toggling taillights')
+      onToggleTaillights()
     }
   }
 
@@ -236,7 +252,7 @@ export function Model(props: React.ComponentProps<'group'>) {
       }
     }
     return hitboxes
-  }, [leftHeadlightRef.current, rightHeadlightRef.current, tailLightLeftRef.current, tailLightMiddleLeftRef.current, tailLightMiddleMiddleRef.current, tailLightMiddleRightRef.current, tailLightRightRef.current])
+  }, [handleHitboxClick])
 
   return (
       <group ref={group} {...props} dispose={null}>
@@ -283,7 +299,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             name="tail_light_middle_left" 
             intensity={tailLightIntensity} 
             decay={2} 
-            color="#ff0000" 
+            color={tailLightColor} 
             position={[38.204, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={25} 
@@ -293,7 +309,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             name="tail_light_middle_middle" 
             intensity={tailLightIntensity} 
             decay={2} 
-            color="#ff0000" 
+            color={tailLightColor} 
             position={[-0.018, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={25} 
@@ -303,7 +319,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             name="tail_light_middle_right" 
             intensity={tailLightIntensity} 
             decay={2} 
-            color="#ff0000" 
+            color={tailLightColor} 
             position={[-47.829, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={25} 
