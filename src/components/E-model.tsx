@@ -6,20 +6,15 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
-import { PaintableBodyMesh } from './PaintableBodyMesh'
-import { RobotColorProvider } from '../contexts/robot-color-context'
-
-type ActionName = 'open lid'
 
 interface GLTFAction extends THREE.AnimationClip {
-  name: ActionName
+  name: 'open lid'
 }
 
 type GLTFResult = GLTF & {
   nodes: {
     robot_new: THREE.Mesh
     lid_new: THREE.Mesh
-    lid_new_inside: THREE.Mesh
     body_inside_new: THREE.Mesh
     flag_rim: THREE.Mesh
     robot_flag_new: THREE.Mesh
@@ -60,7 +55,6 @@ export function Model(props: React.ComponentProps<'group'>) {
   const { setTooltip } = useTooltip()
   const currentTooltip = useRef<string | null>(null)
 
-  // Animate headlight intensity
   const { headlightIntensity } = useSpring({
     headlightIntensity: headlightsOn ? 12 : 0,
     config: { 
@@ -70,7 +64,6 @@ export function Model(props: React.ComponentProps<'group'>) {
     clamp: true
   })
 
-  // Animate taillight intensity
   const { tailLightIntensity } = useSpring({
     tailLightIntensity: taillightsOn ? 12 : 0,
     config: { 
@@ -80,14 +73,13 @@ export function Model(props: React.ComponentProps<'group'>) {
     clamp: true
   })
 
-  // Animate flag wiggle
   const [springs, api] = useSpring(() => ({
     rotationX: 0,
     config: { 
-      mass: 1.2,  // Higher mass for more inertia
-      tension: 800,  // Lower tension for less rigidity
-      friction: 20,  // Higher friction for quicker dampening
-      velocity: 0  // Start from rest
+      mass: 1.2,
+      tension: 800,
+      friction: 20,
+      velocity: 0
     }
   }))
 
@@ -115,7 +107,6 @@ export function Model(props: React.ComponentProps<'group'>) {
     })
   }, [api])
 
-  // Initial interpolation setup
   const interpolatedRotation = springs.rotationX.to({
     range: [0, 0.5, 1],
     output: [0, Math.PI / 6, 0]
@@ -146,7 +137,6 @@ export function Model(props: React.ComponentProps<'group'>) {
     }
   })
 
-  // Wheel material - rubber-like
   materials.wheel.metalness = 0
   materials.wheel.roughness = 0.85
   materials.wheel.envMapIntensity = 0.3
@@ -159,8 +149,40 @@ export function Model(props: React.ComponentProps<'group'>) {
   materials.wheel.sheenRoughness = 0.6
   materials.wheel.sheenColor = new THREE.Color(0x404040)
   materials.wheel.normalScale = new THREE.Vector2(4, 4)
-  materials.wheel.shadowSide = THREE.FrontSide
-  materials.wheel.side = THREE.DoubleSide
+
+  materials['body paintable new'].transparent = true
+  materials['body paintable new'].opacity = 1
+  materials['body paintable new'].metalness = 0.3
+  materials['body paintable new'].roughness = 0.35
+  materials['body paintable new'].envMapIntensity = 1.5
+  materials['body paintable new'].alphaTest = 0.01
+
+  materials['body new'].metalness = 0.3
+  materials['body new'].roughness = 0.35
+  materials['body new'].envMapIntensity = 1.5
+
+  // hot pink
+  const [color, _setColor] = useState('#ff69b4')
+
+  const baseColorMaterial = useMemo(() => {
+    const mat = materials['body paintable new'].clone()
+    mat.map = null
+    mat.color.set(color)
+    mat.transparent = false
+    mat.opacity = 1
+    mat.needsUpdate = true
+    mat.side = THREE.FrontSide
+    return mat
+  }, [color])
+
+  const PaintableMesh = useCallback<React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>>(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
+    return (
+      <group name={name} onClick={onClick} position={position} rotation={rotation} scale={scale}>
+        <mesh {...props} geometry={geometry} material={baseColorMaterial} name={name + '_base'}  />
+        <mesh {...props} geometry={geometry} material={materials['body paintable new']} name={name + '_overlay'}  />
+      </group>
+    )
+  }, [baseColorMaterial])
 
   const handleLidClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
@@ -196,7 +218,7 @@ export function Model(props: React.ComponentProps<'group'>) {
       if (ref.current) {
         const position = ref.current.position.clone()
         const rotation = ref.current.rotation.clone()
-        const scale = ref.current.scale.clone()
+        const scale = ref.current.scale.clone() 
         const name = ref.current.name
         
         hitboxes.push(
@@ -217,35 +239,16 @@ export function Model(props: React.ComponentProps<'group'>) {
     return hitboxes
   }, [leftHeadlightRef.current, rightHeadlightRef.current, tailLightLeftRef.current, tailLightMiddleLeftRef.current, tailLightMiddleMiddleRef.current, tailLightMiddleRightRef.current, tailLightRightRef.current])
 
-  // Debug logs for material color and map
-  React.useEffect(() => {
-    const mat = materials['body paintable new']
-    if (mat) {
-      console.log('[DEBUG] body paintable new color:', mat.color)
-      console.log('[DEBUG] body paintable new map:', mat.map)
-      // Set base color to pink and ensure transparency (for overlay)
-      mat.transparent = true
-      mat.alphaTest = 0.01 // Optional: helps with hard edges
-      mat.needsUpdate = true
-    } else {
-      console.warn('[DEBUG] body paintable new material not found')
-    }
-  }, [materials])
 
   return (
-    <RobotColorProvider>
       <group ref={group} {...props} dispose={null}>
         <mesh name="robot_new" geometry={nodes.robot_new.geometry} material={materials['body new']} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
-          <group 
-            name="lid_group" 
-            position={[0, 447.187, -637.429]} 
-            rotation={[-Math.PI / 2, 0, 0]} 
-            scale={100}
+          <PaintableMesh 
+            name="lid_new" 
+            geometry={nodes.lid_new.geometry} 
+            position={[0, 447.187, -637.429]}
             onClick={handleLidClick}
-          >
-            <PaintableBodyMesh name="lid_new" geometry={nodes.lid_new.geometry} position={[0, -6.374, -4.472]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
-            <PaintableBodyMesh name="lid_new_inside" geometry={nodes.lid_new_inside.geometry} position={[0, -6.373, -4.474]} rotation={[Math.PI / 2, 0, 0]} scale={0.01} />
-          </group>
+          />
           {hitboxes}
           <animated.pointLight 
             ref={leftHeadlightRef}
@@ -255,7 +258,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             color="#ffe8a0" 
             position={[-235.912, 385.374, -301.501]} 
             rotation={[-Math.PI, 0, 0]} 
-            scale={100} 
+            scale={30} 
           />
           <animated.pointLight 
             ref={rightHeadlightRef}
@@ -265,7 +268,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             color="#ffe8a0" 
             position={[241.584, 386.931, -299.362]} 
             rotation={[-Math.PI, 0, 0]} 
-            scale={100} 
+            scale={30} 
           />
           <animated.pointLight 
             ref={tailLightLeftRef}
@@ -275,7 +278,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             color="#ff0011" 
             position={[250.51, -326.223, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
-            scale={100} 
+            scale={25} 
           />
           <animated.pointLight 
             ref={tailLightMiddleLeftRef}
@@ -285,7 +288,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             color="#ff0000" 
             position={[38.204, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
-            scale={100} 
+            scale={25} 
           />
           <animated.pointLight 
             ref={tailLightMiddleMiddleRef}
@@ -295,7 +298,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             color="#ff0000" 
             position={[-0.018, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
-            scale={100} 
+            scale={25} 
           />
           <animated.pointLight 
             ref={tailLightMiddleRightRef}
@@ -305,7 +308,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             color="#ff0000" 
             position={[-47.829, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
-            scale={100} 
+            scale={25} 
           />
           <animated.pointLight 
             ref={tailLightRightRef}
@@ -315,10 +318,10 @@ export function Model(props: React.ComponentProps<'group'>) {
             color="#ff0011" 
             position={[-248.999, -326.223, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
-            scale={100} 
+            scale={25} 
           />
           <mesh name="body_inside_new" geometry={nodes.body_inside_new.geometry} material={materials['body inside new']} position={[0, 0, -1.723]} />
-          <PaintableBodyMesh name="flag_rim" geometry={nodes.flag_rim.geometry} />
+          <PaintableMesh name="flag_rim" geometry={nodes.flag_rim.geometry} />
           <animated.mesh 
             ref={flagRef}
             name="robot_flag_new" 
@@ -328,7 +331,7 @@ export function Model(props: React.ComponentProps<'group'>) {
             rotation-x={interpolatedRotation}
             onClick={handleFlagClick} 
           />
-          <PaintableBodyMesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} />
+          <PaintableMesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} />
           <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
           <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
           <mesh name="wheel_front_left" geometry={nodes.wheel_front_left.geometry} material={materials.wheel} position={[-322.374, 348.386, -139.723]} />
@@ -337,7 +340,6 @@ export function Model(props: React.ComponentProps<'group'>) {
           <mesh name="wheel_middle_right" geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} position={[322.257, 50.272, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
         </mesh>
       </group>
-    </RobotColorProvider>
   )
 }
 
