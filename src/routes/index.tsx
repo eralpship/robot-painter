@@ -7,6 +7,12 @@ import { useRef, useState, useEffect } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { Leva, useControls } from 'leva'
 
+const customLevaTheme = {
+  sizes: {
+    rootWidth: '340px',
+  },
+}
+
 export const Route = createFileRoute('/')({
   component: App,
 })
@@ -76,7 +82,7 @@ function AppContent() {
 
   return (
     <div className="App">
-      <Leva collapsed={false} />
+      <Leva collapsed={false} theme={customLevaTheme} />
       <Canvas 
         style={{ height: '100vh', width: '100vw' }}
         camera={{ position: [20, 10, 20], fov: 50 }}
