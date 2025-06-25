@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { type GLTF } from 'three-stdlib'
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useEffect, useMemo, useRef, useCallback } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
@@ -42,6 +42,8 @@ interface ModelProps extends React.ComponentProps<'group'> {
   taillightsOn: boolean
   onToggleHeadlights: () => void
   onToggleTaillights: () => void
+  lidOpen: boolean
+  setLidOpen: (open: boolean) => void
 }
 
 export function Model({ 
@@ -51,6 +53,8 @@ export function Model({
   taillightsOn, 
   onToggleHeadlights, 
   onToggleTaillights, 
+  lidOpen,
+  setLidOpen,
   ...props 
 }: ModelProps) {
   const group = React.useRef<THREE.Group>(null)
@@ -65,7 +69,6 @@ export function Model({
 
   const { nodes, materials, animations } = useGLTF('/e-model.glb') as unknown as GLTFResult
   const { actions } = useAnimations(animations, group)
-  const [isLidOpen, setIsLidOpen] = useState(false)
   const { camera, mouse, raycaster } = useThree()
   const { setTooltip } = useTooltip()
   const currentTooltip = useRef<string | null>(null)
@@ -134,7 +137,7 @@ export function Model({
     
     let newTooltip: string | null = null
     if (firstIntersect?.object.name.includes('lid')) {
-      newTooltip = `${isLidOpen ? 'Close' : 'Open'} lid`
+      newTooltip = `${lidOpen ? 'Close' : 'Open'} lid`
     } 
     else if (firstIntersect?.object.name.includes('headlight')) {
       newTooltip = `${headlightsOn ? 'Turn off' : 'Turn on'} headlights`
@@ -198,20 +201,20 @@ export function Model({
 
   const handleLidClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
-    const action = actions['open lid']
-    if (action) {
-      if (isLidOpen) {
-        action.timeScale = -1
-        action.paused = false
-        action.play()
-      } else {
-        action.timeScale = 1
-        action.paused = false
-        action.play()
-      }
-      setIsLidOpen(!isLidOpen)
-    }
+    setLidOpen(!lidOpen)
   }
+
+  useEffect(() => {
+    const action = actions['open lid']
+    if (!action) {
+      return;
+    }
+    action.timeScale = lidOpen ? 1 : -1
+    action.paused = false
+    action.play()
+  }, [lidOpen])
+
+  console.log('lidOpen', lidOpen)
 
   const handleHitboxClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()

@@ -21,10 +21,9 @@ function AppContent() {
   const [hasInteracted, setHasInteracted] = useState(false)
   const lastInteractionTime = useRef(Date.now())
   const controlsRef = useRef<any>(null)
-  const inactivityTimeout = 5000 // 5 seconds
+  const inactivityTimeout = 5_000
 
-  // Add Leva controls with controlled inputs
-  const { baseColor, tailLightColor } = useControls({
+  const [{ baseColor, tailLightColor, headlightsOn, taillightsOn, lidOpen }, setControlStates] = useControls(() => ({
     baseColor: {
       value: '#ff69b4',
       label: 'Base Color'
@@ -32,27 +31,24 @@ function AppContent() {
     tailLightColor: {
       value: '#ff0000',
       label: 'Tail Light Color'
-    }
-  })
-
-  // Controlled light states using the array destructuring pattern
-  const [{ headlightsOn, taillightsOn }, setLightStates] = useControls(() => ({
+    },
     headlightsOn: { value: true, label: 'Headlights On' },
-    taillightsOn: { value: true, label: 'Taillights On' }
+    taillightsOn: { value: true, label: 'Taillights On' },
+    lidOpen: { value: false, label: 'Lid Open' }
   }))
 
   // Functions to manipulate light states directly in Leva
   const toggleHeadlights = () => {
     console.log('toggleHeadlights called, current state:', headlightsOn)
     const newValue = !headlightsOn
-    setLightStates({ headlightsOn: newValue })
+    setControlStates({ headlightsOn: newValue })
     console.log('New headlights state:', newValue)
   }
 
   const toggleTaillights = () => {
     console.log('toggleTaillights called, current state:', taillightsOn)
     const newValue = !taillightsOn
-    setLightStates({ taillightsOn: newValue })
+    setControlStates({ taillightsOn: newValue })
     console.log('New taillights state:', newValue)
   }
 
@@ -64,7 +60,6 @@ function AppContent() {
     }
   }
 
-  // Check for inactivity using requestAnimationFrame
   useEffect(() => {
     let frameId: number
 
@@ -119,6 +114,8 @@ function AppContent() {
           taillightsOn={taillightsOn}
           onToggleHeadlights={toggleHeadlights}
           onToggleTaillights={toggleTaillights}
+          lidOpen={lidOpen}
+          setLidOpen={lidOpen => setControlStates({ lidOpen })}
         />
 
         <OrbitControls 
