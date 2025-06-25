@@ -161,7 +161,6 @@ export function Model(props: React.ComponentProps<'group'>) {
   materials['body new'].roughness = 0.35
   materials['body new'].envMapIntensity = 1.5
 
-  // hot pink
   const [color, _setColor] = useState('#ff69b4')
 
   const baseColorMaterial = useMemo(() => {
@@ -238,7 +237,6 @@ export function Model(props: React.ComponentProps<'group'>) {
     }
     return hitboxes
   }, [leftHeadlightRef.current, rightHeadlightRef.current, tailLightLeftRef.current, tailLightMiddleLeftRef.current, tailLightMiddleMiddleRef.current, tailLightMiddleRightRef.current, tailLightRightRef.current])
-
 
   return (
       <group ref={group} {...props} dispose={null}>
