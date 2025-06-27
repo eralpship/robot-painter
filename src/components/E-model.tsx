@@ -51,6 +51,7 @@ interface ModelProps extends React.ComponentProps<'group'> {
 
 export interface ModelRef {
   updateBaseColor: (color: string) => void
+  touchFlag: () => void
 }
 
 export const Model = forwardRef<ModelRef, ModelProps>(({ 
@@ -89,6 +90,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
         materials.baseColor.needsUpdate = true
       }
     },
+    touchFlag: () => {
+      handleFlagClick()
+    }
   }), [materials, actions])
 
   const { headlightIntensity } = useSpring({
@@ -127,8 +131,8 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
     }
   }, [actions])
 
-  const handleFlagClick = useCallback((e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation()
+  const handleFlagClick = useCallback((e?: ThreeEvent<MouseEvent>) => {
+    e?.stopPropagation()
     api.start({
       from: { rotationX: 0 },
       to: { rotationX: 1 },

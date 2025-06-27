@@ -5,7 +5,7 @@ import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { useRef, useState, useEffect } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
-import { Leva, useControls } from 'leva'
+import { Leva, useControls, button } from 'leva'
 
 const customLevaTheme = {
   sizes: {
@@ -46,7 +46,9 @@ function AppContent() {
     ambientLight: { value: 0.8, label: 'Ambient Light', max: 2, min: 0, step: 0.1  },
     backgroundIntensity: { value: 0.4, label: 'Background Intensity', max: 1, min: 0, step: 0.01  },
     backgroundBlur: { value: 0.7, label: 'Background Blur', max: 1, min: 0, step: 0.01  },
-    environmentIntensity: { value: 0.7, label: 'Environment Intensity', max: 1, min: 0, step: 0.01  }
+    environmentIntensity: { value: 0.7, label: 'Environment Intensity', max: 1, min: 0, step: 0.01  },
+    resetCamera: button(() => controlsRef.current?.reset()),
+    touchFlag: button(() => modelRef.current?.touchFlag())
   }))
 
   // Functions to manipulate light states directly in Leva
