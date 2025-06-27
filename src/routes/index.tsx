@@ -5,7 +5,7 @@ import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { useRef, useState, useEffect  } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
-import { Leva, useControls, button } from 'leva'
+import { Leva, useControls, button, folder } from 'leva'
 
 const customLevaTheme = {
   sizes: {
@@ -26,30 +26,47 @@ function AppContent() {
   const modelRef = useRef<ModelRef>(null)
 
   const [{ tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity }, setControlStates] = useControls(() => ({
-    baseColor: {
-      value: initialBaseColor,
-      label: 'Base Color',
-      onChange: (value) => {
-        modelRef.current?.updateBaseColor(value)
+    'General': folder({
+      baseColor: {
+        value: initialBaseColor,
+        label: 'Base Color',
+        onChange: (value) => {
+          modelRef.current?.updateBaseColor(value)
+        },
       },
-    },
-    tailLightColor: {
-      value: '#ff0000',
-      label: 'Tail Light Color'
-    },
-    headlightsOn: { value: true, label: 'Headlights On' },
-    headlightsIntensity: { value: 12, label: 'Headlights Intensity', max: 60, min: 0, step: 0.1  },
-    taillightsOn: { value: true, label: 'Taillights On' },
-    taillightsIntensity: { value: 12, label: 'Taillights Intensity', max: 60, min: 0, step: 0.1  },
-    lidOpen: { value: false, label: 'Lid Open' },
-    autoRotate: { value: true, label: 'Auto Rotate' },
-    ambientLight: { value: 0.8, label: 'Ambient Light', max: 2, min: 0, step: 0.1  },
-    backgroundIntensity: { value: 0.4, label: 'Background Intensity', max: 1, min: 0, step: 0.01  },
-    backgroundBlur: { value: 0.7, label: 'Background Blur', max: 1, min: 0, step: 0.01  },
-    environmentIntensity: { value: 0.7, label: 'Environment Intensity', max: 1, min: 0, step: 0.01  },
-    resetCamera: button(() => controlsRef.current?.reset()),
-    touchFlag: button(() => modelRef.current?.touchFlag()),
+      tailLightColor: {
+        value: '#ff0000',
+        label: 'Tail Light Color'
+      },
+      headlightsOn: { value: true, label: 'Headlights On' },
+      headlightsIntensity: { value: 12, label: 'Headlights Intensity', max: 60, min: 0, step: 0.1  },
+      taillightsOn: { value: true, label: 'Taillights On' },
+      taillightsIntensity: { value: 12, label: 'Taillights Intensity', max: 60, min: 0, step: 0.1  },
+      lidOpen: { value: false, label: 'Lid Open' },
+      autoRotate: { value: true, label: 'Auto Rotate' },
+      ambientLight: { value: 0.8, label: 'Ambient Light', max: 2, min: 0, step: 0.1  },
+      backgroundIntensity: { value: 0.4, label: 'Background Intensity', max: 1, min: 0, step: 0.01  },
+      backgroundBlur: { value: 0.7, label: 'Background Blur', max: 1, min: 0, step: 0.01  },
+      environmentIntensity: { value: 0.7, label: 'Environment Intensity', max: 1, min: 0, step: 0.01  },
+      resetCamera: button(() => controlsRef.current?.reset()),
+      touchFlag: button(() => modelRef.current?.touchFlag()),
+    }, {collapsed: true}),
+    'Texture Options': folder({
+      overlayTexture: { image: true, value: '', onChange: (_value) => {
+        // Not used
+      }}
+    }),
   }))
+
+  // useEffect(() => {
+  //   const loadTexture = async () => {
+  //     const url = '/painting_transparent.png'
+  //     const blob = await fetch(url).then(res => res.blob())
+  //     const blobString = URL.createObjectURL(blob)
+  //     setControlStates({ overlayTexture: blobString } as any)
+  //   }
+  //   loadTexture()
+  // }, [])
 
   // Functions to manipulate light states directly in Leva
   const toggleHeadlights = () => {
@@ -91,7 +108,7 @@ function AppContent() {
 
   return (
     <div className="App">
-      <Leva  theme={customLevaTheme} collapsed titleBar={{ title: 'Options', filter: false }} />
+      <Leva  theme={customLevaTheme} collapsed={false} titleBar={{ title: 'Options', filter: false }} />
       <Canvas 
         style={{ height: '100vh', width: '100vw' }}
         camera={{ position: [20, 10, 20], fov: 50 }}

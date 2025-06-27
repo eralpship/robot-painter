@@ -54,20 +54,8 @@ export interface ModelRef {
   touchFlag: () => void
 }
 
-const createTextureUrl = (canvas: HTMLCanvasElement, size: { width: number, height: number }) => {
-  canvas.width = size.width
-  canvas.height = size.height
-  return canvas.toDataURL('image/png')
-}
 
 const loadingManager = new THREE.LoadingManager()
-loadingManager.setURLModifier((url) => {
-  if (url.includes('painting_transparent.png')) {
-    const canvas = document.createElement('canvas')
-    return createTextureUrl(canvas, { width: 1, height: 1 })
-  }
-  return url
-})
 
 export const Model = forwardRef<ModelRef, ModelProps>(({ 
   tailLightColor: tailMiddleLightColor,
@@ -226,6 +214,40 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
     baseColorMaterial.side = THREE.FrontSide
     materials.baseColor = baseColorMaterial
     materials.baseColor.color.set(initialBaseColor)
+
+
+  
+
+
+    const originalTexture = materials['body paintable new'].map
+    if (!originalTexture) { 
+       return
+    }
+    if(!originalTexture.image) {
+      return
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = originalTexture.image.width
+    canvas.height = originalTexture.image.height
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return
+    }
+    ctx.drawImage(originalTexture.image, 0, 0)
+    
+    // Clone preserves UV properties, just replace the image source
+    const canvasTexture = originalTexture.clone()
+    canvasTexture.image = canvas
+    canvasTexture.needsUpdate = true
+    
+    materials['body paintable new'].map = canvasTexture
+    materials['body paintable new'].needsUpdate = true
+    
+    // Now you can draw on the canvas anytime:
+    // ctx.fillStyle = 'red'
+    // ctx.fillRect(0, 0, 1096, 4096)
+    // canvasTexture.needsUpdate = true
+
   }, [])
 
   const PaintableMesh = useCallback<React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>>(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
