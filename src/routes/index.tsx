@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import '../App.css'
 import { Canvas } from '@react-three/fiber'
-import { Model } from '../components/E-model'
+import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { useRef, useState, useEffect } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
@@ -22,19 +22,31 @@ function AppContent() {
   const lastInteractionTime = useRef(Date.now())
   const controlsRef = useRef<any>(null)
   const inactivityTimeout = 5_000
+  const initialBaseColor = '#ff69b4'
+  const modelRef = useRef<ModelRef>(null)
 
-  const [{ baseColor, tailLightColor, headlightsOn, taillightsOn, lidOpen }, setControlStates] = useControls(() => ({
+  const [{ tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity }, setControlStates] = useControls(() => ({
     baseColor: {
-      value: '#ff69b4',
-      label: 'Base Color'
+      value: initialBaseColor,
+      label: 'Base Color',
+      onChange: (value) => {
+        modelRef.current?.updateBaseColor(value)
+      },
     },
     tailLightColor: {
       value: '#ff0000',
       label: 'Tail Light Color'
     },
     headlightsOn: { value: true, label: 'Headlights On' },
+    headlightsIntensity: { value: 12, label: 'Headlights Intensity', max: 60, min: 0, step: 0.1  },
     taillightsOn: { value: true, label: 'Taillights On' },
-    lidOpen: { value: false, label: 'Lid Open' }
+    taillightsIntensity: { value: 12, label: 'Taillights Intensity', max: 60, min: 0, step: 0.1  },
+    lidOpen: { value: false, label: 'Lid Open' },
+    autoRotate: { value: true, label: 'Auto Rotate' },
+    ambientLight: { value: 0.8, label: 'Ambient Light', max: 2, min: 0, step: 0.1  },
+    backgroundIntensity: { value: 0.4, label: 'Background Intensity', max: 1, min: 0, step: 0.01  },
+    backgroundBlur: { value: 0.7, label: 'Background Blur', max: 1, min: 0, step: 0.01  },
+    environmentIntensity: { value: 0.7, label: 'Environment Intensity', max: 1, min: 0, step: 0.01  }
   }))
 
   // Functions to manipulate light states directly in Leva
@@ -85,14 +97,14 @@ function AppContent() {
         <Environment 
           preset="dawn"
           background
-          blur={0.7}
-          backgroundIntensity={0.4}
-          environmentIntensity={0.7}
+          blur={backgroundBlur}
+          backgroundIntensity={backgroundIntensity}
+          environmentIntensity={environmentIntensity}
           resolution={256}
         />
 
         {/* Ambient light to control overall brightness */}
-        <ambientLight intensity={0.8} />
+        <ambientLight intensity={ambientLight} />
 
         {/* Simple contact shadow */}
         <ContactShadows 
@@ -106,9 +118,9 @@ function AppContent() {
         />
 
         <Model 
+          ref={modelRef}
           position={[0, -3, 0]} 
           scale={1} 
-          baseColor={baseColor}
           tailLightColor={tailLightColor}
           headlightsOn={headlightsOn}
           taillightsOn={taillightsOn}
@@ -116,6 +128,9 @@ function AppContent() {
           onToggleTaillights={toggleTaillights}
           lidOpen={lidOpen}
           setLidOpen={lidOpen => setControlStates({ lidOpen })}
+          initialBaseColor={initialBaseColor}
+          headlightsIntensity={headlightsIntensity}
+          taillightsIntensity={taillightsIntensity}
         />
 
         <OrbitControls 
@@ -127,7 +142,7 @@ function AppContent() {
           maxDistance={200}
           minAzimuthAngle={-Infinity}
           maxAzimuthAngle={Infinity}
-          autoRotate={!hasInteracted}
+          autoRotate={!hasInteracted && autoRotate}
           autoRotateSpeed={2}
           onStart={handleInteraction}
         />

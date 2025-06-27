@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { type GLTF } from 'three-stdlib'
-import React, { useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useEffect, useMemo, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
@@ -31,12 +31,12 @@ type GLTFResult = GLTF & {
     ['body paintable new']: THREE.MeshStandardMaterial
     ['body inside new']: THREE.MeshStandardMaterial
     wheel: THREE.MeshPhysicalMaterial
+    baseColor?: THREE.MeshStandardMaterial
   }
   animations: GLTFAction[]
 }
 
 interface ModelProps extends React.ComponentProps<'group'> {
-  baseColor: string
   tailLightColor: string
   headlightsOn: boolean
   taillightsOn: boolean
@@ -44,19 +44,28 @@ interface ModelProps extends React.ComponentProps<'group'> {
   onToggleTaillights: () => void
   lidOpen: boolean
   setLidOpen: (open: boolean) => void
+  initialBaseColor: string
+  headlightsIntensity: number
+  taillightsIntensity: number
 }
 
-export function Model({ 
-  baseColor, 
-  tailLightColor, 
-  headlightsOn, 
-  taillightsOn, 
+export interface ModelRef {
+  updateBaseColor: (color: string) => void
+}
+
+export const Model = forwardRef<ModelRef, ModelProps>(({ 
+  tailLightColor: tailMiddleLightColor,
+  headlightsOn,
+  taillightsOn,
   onToggleHeadlights, 
   onToggleTaillights, 
   lidOpen,
   setLidOpen,
+  initialBaseColor,
+  headlightsIntensity: _headlightsIntensity,
+  taillightsIntensity: _taillightsIntensity,
   ...props 
-}: ModelProps) {
+}, ref) => {
   const group = React.useRef<THREE.Group>(null)
   const leftHeadlightRef = useRef<THREE.PointLight>(null)
   const rightHeadlightRef = useRef<THREE.PointLight>(null)
@@ -73,8 +82,17 @@ export function Model({
   const { setTooltip } = useTooltip()
   const currentTooltip = useRef<string | null>(null)
 
+  useImperativeHandle(ref, () => ({
+    updateBaseColor: (color: string) => {
+      if (materials.baseColor) {
+        materials.baseColor.color.set(color)
+        materials.baseColor.needsUpdate = true
+      }
+    },
+  }), [materials, actions])
+
   const { headlightIntensity } = useSpring({
-    headlightIntensity: headlightsOn ? 12 : 0,
+    headlightIntensity: headlightsOn ? _headlightsIntensity : 0,
     config: { 
       duration: 300,
       easing: easings.linear
@@ -83,7 +101,7 @@ export function Model({
   })
 
   const { tailLightIntensity } = useSpring({
-    tailLightIntensity: taillightsOn ? 12 : 0,
+    tailLightIntensity: taillightsOn ? _taillightsIntensity : 0,
     config: { 
       duration: 300,
       easing: easings.linear
@@ -155,49 +173,49 @@ export function Model({
     }
   })
 
-  materials.wheel.metalness = 0
-  materials.wheel.roughness = 0.85
-  materials.wheel.envMapIntensity = 0.3
-  materials.wheel.clearcoat = 0.15
-  materials.wheel.clearcoatRoughness = 0.7
-  materials.wheel.reflectivity = 0.15
-  materials.wheel.specularIntensity = 0.5
-  materials.wheel.ior = 1.45
-  materials.wheel.sheen = 1
-  materials.wheel.sheenRoughness = 0.6
-  materials.wheel.sheenColor = new THREE.Color(0x404040)
-  materials.wheel.normalScale = new THREE.Vector2(4, 4)
+  useEffect(() => {
+    materials.wheel.metalness = 0
+    materials.wheel.roughness = 0.85
+    materials.wheel.envMapIntensity = 0.3
+    materials.wheel.clearcoat = 0.15
+    materials.wheel.clearcoatRoughness = 0.7
+    materials.wheel.reflectivity = 0.15
+    materials.wheel.specularIntensity = 0.5
+    materials.wheel.ior = 1.45
+    materials.wheel.sheen = 1
+    materials.wheel.sheenRoughness = 0.6
+    materials.wheel.sheenColor = new THREE.Color(0x404040)
+    materials.wheel.normalScale = new THREE.Vector2(4, 4)
 
-  materials['body paintable new'].transparent = true
-  materials['body paintable new'].opacity = 1
-  materials['body paintable new'].metalness = 0.3
-  materials['body paintable new'].roughness = 0.35
-  materials['body paintable new'].envMapIntensity = 1.5
-  materials['body paintable new'].alphaTest = 0.01
+    materials['body paintable new'].transparent = true
+    materials['body paintable new'].opacity = 1
+    materials['body paintable new'].metalness = 0.3
+    materials['body paintable new'].roughness = 0.35
+    materials['body paintable new'].alphaTest = 0.01
 
-  materials['body new'].metalness = 0.3
-  materials['body new'].roughness = 0.35
-  materials['body new'].envMapIntensity = 1.5
-
-  const baseColorMaterial = useMemo(() => {
-    const mat = materials['body paintable new'].clone()
-    mat.map = null
-    mat.color.set(baseColor)
-    mat.transparent = false
-    mat.opacity = 1
-    mat.needsUpdate = true
-    mat.side = THREE.FrontSide
-    return mat
-  }, [baseColor, materials])
+    materials['body new'].metalness = 0.3
+    materials['body new'].roughness = 0.35
+    
+    const baseColorMaterial = materials['body paintable new'].clone()
+    baseColorMaterial.map = null
+    baseColorMaterial.transparent = false
+    baseColorMaterial.opacity = 1
+    baseColorMaterial.needsUpdate = true
+    baseColorMaterial.side = THREE.FrontSide
+    materials.baseColor = baseColorMaterial
+    materials.baseColor.color.set(initialBaseColor)
+  }, [])
 
   const PaintableMesh = useCallback<React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>>(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
     return (
       <group name={name} onClick={onClick} position={position} rotation={rotation} scale={scale}>
-        <mesh {...props} geometry={geometry} material={baseColorMaterial} name={name + '_base'}  />
+        {materials.baseColor ? (
+          <mesh {...props} geometry={geometry} material={materials.baseColor} name={name + '_base'}  />
+        ) : null}
         <mesh {...props} geometry={geometry} material={materials['body paintable new']} name={name + '_overlay'}  />
       </group>
     )
-  }, [baseColorMaterial])
+  }, [])
 
   const handleLidClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
@@ -213,8 +231,6 @@ export function Model({
     action.paused = false
     action.play()
   }, [lidOpen])
-
-  console.log('lidOpen', lidOpen)
 
   const handleHitboxClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
@@ -257,22 +273,31 @@ export function Model({
     return hitboxes
   }, [handleHitboxClick])
 
+  const headlightColor = '#ffe8a0'
+  const tailLightColor = '#ff0011'
+
   return (
       <group ref={group} {...props} dispose={null}>
         <mesh name="robot_new" geometry={nodes.robot_new.geometry} material={materials['body new']} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
+
+          {/* Hitboxes */}
+          {hitboxes}
+
+          {/* Lid */}
           <PaintableMesh 
             name="lid_new" 
             geometry={nodes.lid_new.geometry} 
             position={[0, 447.187, -637.429]}
             onClick={handleLidClick}
           />
-          {hitboxes}
+
+          {/* Headlights */}
           <animated.pointLight 
             ref={leftHeadlightRef}
             name="headlight_left" 
             intensity={headlightIntensity} 
             decay={2} 
-            color="#ffe8a0" 
+            color={headlightColor} 
             position={[-235.912, 385.374, -301.501]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={30} 
@@ -282,27 +307,20 @@ export function Model({
             name="headlight_right" 
             intensity={headlightIntensity} 
             decay={2} 
-            color="#ffe8a0" 
+            color={headlightColor} 
             position={[241.584, 386.931, -299.362]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={30} 
           />
-          <animated.pointLight 
-            ref={tailLightLeftRef}
-            name="tail_light_left" 
-            intensity={tailLightIntensity} 
-            decay={2} 
-            color="#ff0011" 
-            position={[250.51, -326.223, -602.573]} 
-            rotation={[-Math.PI, 0, 0]} 
-            scale={25} 
-          />
+
+
+          {/* Tail Middle Lights */}
           <animated.pointLight 
             ref={tailLightMiddleLeftRef}
             name="tail_light_middle_left" 
             intensity={tailLightIntensity} 
             decay={2} 
-            color={tailLightColor} 
+            color={tailMiddleLightColor} 
             position={[38.204, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={25} 
@@ -312,7 +330,7 @@ export function Model({
             name="tail_light_middle_middle" 
             intensity={tailLightIntensity} 
             decay={2} 
-            color={tailLightColor} 
+            color={tailMiddleLightColor} 
             position={[-0.018, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={25} 
@@ -322,21 +340,35 @@ export function Model({
             name="tail_light_middle_right" 
             intensity={tailLightIntensity} 
             decay={2} 
-            color={tailLightColor} 
+            color={tailMiddleLightColor} 
             position={[-47.829, -384.368, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={25} 
           />
+
+          {/* Tail Side Lights */}
           <animated.pointLight 
             ref={tailLightRightRef}
             name="tail_light_right" 
             intensity={tailLightIntensity} 
             decay={2} 
-            color="#ff0011" 
+            color={tailLightColor} 
             position={[-248.999, -326.223, -602.573]} 
             rotation={[-Math.PI, 0, 0]} 
             scale={25} 
           />
+          <animated.pointLight 
+            ref={tailLightLeftRef}
+            name="tail_light_left" 
+            intensity={tailLightIntensity} 
+            decay={2} 
+            color={tailLightColor} 
+            position={[250.51, -326.223, -602.573]} 
+            rotation={[-Math.PI, 0, 0]} 
+            scale={25} 
+          />
+
+
           <mesh name="body_inside_new" geometry={nodes.body_inside_new.geometry} material={materials['body inside new']} position={[0, 0, -1.723]} />
           <PaintableMesh name="flag_rim" geometry={nodes.flag_rim.geometry} />
           <animated.mesh 
@@ -349,6 +381,8 @@ export function Model({
             onClick={handleFlagClick} 
           />
           <PaintableMesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} />
+          
+          {/* Wheels */}
           <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
           <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
           <mesh name="wheel_front_left" geometry={nodes.wheel_front_left.geometry} material={materials.wheel} position={[-322.374, 348.386, -139.723]} />
@@ -358,6 +392,8 @@ export function Model({
         </mesh>
       </group>
   )
-}
+})
+
+Model.displayName = 'Model'
 
 useGLTF.preload('/e-model.glb')
