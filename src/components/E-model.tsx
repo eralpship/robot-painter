@@ -1,9 +1,9 @@
 import * as THREE from 'three'
-import { useGLTF, useAnimations } from '@react-three/drei'
-import { type GLTF } from 'three-stdlib'
+import { useAnimations } from '@react-three/drei'
+import { GLTFLoader, type GLTF } from 'three-stdlib'
 import React, { useEffect, useMemo, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
-import { useThree, useFrame } from '@react-three/fiber'
+import { useThree, useFrame, useLoader } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
 
@@ -54,6 +54,21 @@ export interface ModelRef {
   touchFlag: () => void
 }
 
+const createTextureUrl = (canvas: HTMLCanvasElement, size: { width: number, height: number }) => {
+  canvas.width = size.width
+  canvas.height = size.height
+  return canvas.toDataURL('image/png')
+}
+
+const loadingManager = new THREE.LoadingManager()
+loadingManager.setURLModifier((url) => {
+  if (url.includes('painting_transparent.png')) {
+    const canvas = document.createElement('canvas')
+    return createTextureUrl(canvas, { width: 1, height: 1 })
+  }
+  return url
+})
+
 export const Model = forwardRef<ModelRef, ModelProps>(({ 
   tailLightColor: tailMiddleLightColor,
   headlightsOn,
@@ -77,7 +92,10 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
   const tailLightRightRef = useRef<THREE.PointLight>(null)
   const flagRef = useRef<THREE.Mesh>(null)
 
-  const { nodes, materials, animations } = useGLTF('/e-model.glb') as unknown as GLTFResult
+  const { nodes, materials, animations } = useLoader(GLTFLoader, '/e-model.gltf', (loader) => {
+    loader.manager = loadingManager
+  }) as unknown as GLTFResult
+
   const { actions } = useAnimations(animations, group)
   const { camera, mouse, raycaster } = useThree()
   const { setTooltip } = useTooltip()
@@ -398,6 +416,4 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
   )
 })
 
-Model.displayName = 'Model'
-
-useGLTF.preload('/e-model.glb')
+Model.displayName = 'E-Model'

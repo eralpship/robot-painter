@@ -3,7 +3,7 @@ import '../App.css'
 import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect  } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { Leva, useControls, button } from 'leva'
 
@@ -91,7 +91,7 @@ function AppContent() {
 
   return (
     <div className="App">
-      <Leva collapsed={false} theme={customLevaTheme} />
+      <Leva  theme={customLevaTheme} />
       <Canvas 
         style={{ height: '100vh', width: '100vw' }}
         camera={{ position: [20, 10, 20], fov: 50 }}
@@ -118,7 +118,6 @@ function AppContent() {
           resolution={256}
           color="#000000"
         />
-
         <Model 
           ref={modelRef}
           position={[0, -3, 0]} 
@@ -134,7 +133,6 @@ function AppContent() {
           headlightsIntensity={headlightsIntensity}
           taillightsIntensity={taillightsIntensity}
         />
-
         <OrbitControls 
           ref={controlsRef}
           makeDefault
