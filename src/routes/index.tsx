@@ -48,7 +48,7 @@ function AppContent() {
     backgroundBlur: { value: 0.7, label: 'Background Blur', max: 1, min: 0, step: 0.01  },
     environmentIntensity: { value: 0.7, label: 'Environment Intensity', max: 1, min: 0, step: 0.01  },
     resetCamera: button(() => controlsRef.current?.reset()),
-    touchFlag: button(() => modelRef.current?.touchFlag())
+    touchFlag: button(() => modelRef.current?.touchFlag()),
   }))
 
   // Functions to manipulate light states directly in Leva
@@ -91,7 +91,7 @@ function AppContent() {
 
   return (
     <div className="App">
-      <Leva  theme={customLevaTheme} />
+      <Leva  theme={customLevaTheme} collapsed titleBar={{ title: 'Options', filter: false }} />
       <Canvas 
         style={{ height: '100vh', width: '100vw' }}
         camera={{ position: [20, 10, 20], fov: 50 }}
