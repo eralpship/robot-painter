@@ -3,9 +3,9 @@ import '../App.css'
 import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
-import { useRef, useState, useEffect  } from 'react'
+import { useRef, useState, useEffect, useContext } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
-import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
+import { OverlayTextureCanvasProvider, OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
 import { OverlayTextureWindow } from '../components/OverlayTextureWindow'
 import { Leva, useControls, button, folder } from 'leva'
 
@@ -18,6 +18,56 @@ const customLevaTheme = {
 export const Route = createFileRoute('/')({
   component: App,
 })
+
+function CanvasDisplay() {
+  const { canvas: sourceCanvas } = useContext(OverlayTextureContext)!
+  const displayCanvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const displayCanvas = displayCanvasRef.current
+    if (!displayCanvas || !sourceCanvas) return
+
+    const displayCtx = displayCanvas.getContext('2d')!
+    
+    const updateDisplay = () => {
+      // Scale down the 4096x4096 canvas to fit the display
+      displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height)
+      displayCtx.drawImage(sourceCanvas, 0, 0, displayCanvas.width, displayCanvas.height)
+    }
+
+    // Initial draw
+    updateDisplay()
+
+    // Set up periodic updates to reflect changes
+    const interval = setInterval(updateDisplay, 100)
+    return () => clearInterval(interval)
+  }, [sourceCanvas])
+
+  return (
+    <div style={{ 
+      width: '100%', 
+      height: '100%', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center' 
+    }}>
+      <canvas 
+        ref={displayCanvasRef}
+        width={260}
+        height={260}
+        style={{
+          maxWidth: '100%',
+          maxHeight: '100%',
+          width: 'auto',
+          height: 'auto',
+          aspectRatio: '1 / 1',
+          border: '1px solid #313538',
+          borderRadius: '4px',
+        }}
+      />
+    </div>
+  )
+}
 
 function AppContent() {
   const [hasInteracted, setHasInteracted] = useState(false)
@@ -60,15 +110,31 @@ function AppContent() {
     }),
   }))
 
-  // useEffect(() => {
-  //   const loadTexture = async () => {
-  //     const url = '/painting_transparent.png'
-  //     const blob = await fetch(url).then(res => res.blob())
-  //     const blobString = URL.createObjectURL(blob)
-  //     setControlStates({ overlayTexture: blobString } as any)
-  //   }
-  //   loadTexture()
-  // }, [])
+  const { context } = useContext(OverlayTextureContext)!
+
+  useEffect(() => {
+    const loadTexture = async () => {
+      try {
+        console.log('Fetching painting texture...')
+        const response = await fetch('/painting_transparent.png')
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const blob = await response.blob()
+        const imageBitmap = await createImageBitmap(blob)
+        
+        // Draw the image on the shared canvas
+        context.drawImage(imageBitmap, 0, 0, 4096, 4096)
+        console.log('Successfully loaded and drew painting texture')
+        
+        imageBitmap.close() // Clean up
+      } catch (error) {
+        console.error('Failed to load painting texture:', error)
+      }
+    }
+    loadTexture()
+  }, [context])
 
   // Functions to manipulate light states directly in Leva
   const toggleHeadlights = () => {
@@ -166,8 +232,8 @@ function AppContent() {
           onStart={handleInteraction}
         />
       </Canvas>
-      <OverlayTextureWindow >
-        Sample text
+      <OverlayTextureWindow title='Texture'>
+        <CanvasDisplay />
       </OverlayTextureWindow>
     </div>
   )

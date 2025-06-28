@@ -2,11 +2,11 @@ import React from 'react'
 import { Rnd } from 'react-rnd'
 import './OverlayTextureWindow.css'
 
-interface OverlayTextureWindowProps {
-  // Add props as needed later
-}
+export function OverlayTextureWindow({ title, children }: {
 
-export const OverlayTextureWindow: React.FC<OverlayTextureWindowProps> = () => {
+  title: string
+  children?: React.ReactNode
+}) {
   return (
     <Rnd
       default={{
@@ -23,10 +23,10 @@ export const OverlayTextureWindow: React.FC<OverlayTextureWindowProps> = () => {
     >
       <div className="overlay-texture-window-container">
         <div className="overlay-texture-window-title drag-handle">
-          Texture
+          {title}
         </div>
         <div className="overlay-texture-window-content">
-          sample text
+          {children}
         </div>
       </div>
     </Rnd>
