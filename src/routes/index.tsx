@@ -5,6 +5,8 @@ import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { useRef, useState, useEffect  } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
+import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
+import { OverlayTextureWindow } from '../components/OverlayTextureWindow'
 import { Leva, useControls, button, folder } from 'leva'
 
 const customLevaTheme = {
@@ -164,14 +166,19 @@ function AppContent() {
           onStart={handleInteraction}
         />
       </Canvas>
+      <OverlayTextureWindow >
+        Sample text
+      </OverlayTextureWindow>
     </div>
   )
 }
 
 function App() {
   return (
-    <TooltipProvider>
-      <AppContent />
-    </TooltipProvider>
+    <OverlayTextureCanvasProvider>
+      <TooltipProvider>
+        <AppContent />
+      </TooltipProvider>
+    </OverlayTextureCanvasProvider>
   )
 }

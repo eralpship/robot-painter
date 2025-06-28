@@ -1,11 +1,12 @@
 import * as THREE from 'three'
 import { useAnimations } from '@react-three/drei'
 import { GLTFLoader, type GLTF } from 'three-stdlib'
-import React, { useEffect, useMemo, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
+import React, { useEffect, useMemo, useRef, useCallback, useImperativeHandle, forwardRef, useContext } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame, useLoader } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
+import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
 
 interface GLTFAction extends THREE.AnimationClip {
   name: 'open lid'
@@ -54,8 +55,20 @@ export interface ModelRef {
   touchFlag: () => void
 }
 
+function createPixeImageUrl() {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    ctx.fillRect(0, 0, 1, 1)
+    return canvas.toDataURL('image/png')
+}
 
 const loadingManager = new THREE.LoadingManager()
+loadingManager.setURLModifier((url) => {
+  if (url.includes('painting_transparent.png')) {
+    return createPixeImageUrl()
+  }
+  return url
+})
 
 export const Model = forwardRef<ModelRef, ModelProps>(({ 
   tailLightColor: tailMiddleLightColor,
@@ -88,6 +101,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
   const { camera, mouse, raycaster } = useThree()
   const { setTooltip } = useTooltip()
   const currentTooltip = useRef<string | null>(null)
+  const { canvas: overlayCanvas } = useContext(OverlayTextureContext)!
 
   useImperativeHandle(ref, () => ({
     updateBaseColor: (color: string) => {
@@ -215,39 +229,51 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
     materials.baseColor = baseColorMaterial
     materials.baseColor.color.set(initialBaseColor)
 
-
-  
-
-
     const originalTexture = materials['body paintable new'].map
     if (!originalTexture) { 
+      console.error('no texture')
        return
     }
-    if(!originalTexture.image) {
+    if (!originalTexture.image) {
+      console.error('no image')
       return
     }
-    const canvas = document.createElement('canvas')
-    canvas.width = originalTexture.image.width
-    canvas.height = originalTexture.image.height
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
+    if (!overlayCanvas) {
+      console.error('no canvas')
       return
     }
-    ctx.drawImage(originalTexture.image, 0, 0)
-    
-    // Clone preserves UV properties, just replace the image source
     const canvasTexture = originalTexture.clone()
-    canvasTexture.image = canvas
+    canvasTexture.image = overlayCanvas
     canvasTexture.needsUpdate = true
-    
     materials['body paintable new'].map = canvasTexture
     materials['body paintable new'].needsUpdate = true
+   
+    // // Fetch and draw the painting image
+    // const loadPaintingImage = async () => {
+    //   try {
+    //     console.log('Fetching painting image...')
+    //     const response = await fetch('/painting_transparent.png')
+    //     if (!response.ok) {
+    //       throw new Error(`HTTP error! status: ${response.status}`)
+    //     }
+        
+    //     const blob = await response.blob()
+    //     console.log('Got blob:', blob)
+        
+    //     const imageBitmap = await createImageBitmap(blob)
+    //     console.log('Created image bitmap:', imageBitmap)
+        
+    //     ctx.drawImage(imageBitmap, 0, 0, canvas.width, canvas.height)
+    //     canvasTexture.needsUpdate = true
+    //     console.log('Successfully drew painting to canvas')
+        
+    //     imageBitmap.close() // Clean up
+    //   } catch (error) {
+    //     console.error('Failed to load painting image:', error)
+    //   }
+    // }
     
-    // Now you can draw on the canvas anytime:
-    // ctx.fillStyle = 'red'
-    // ctx.fillRect(0, 0, 1096, 4096)
-    // canvasTexture.needsUpdate = true
-
+    // loadPaintingImage()
   }, [])
 
   const PaintableMesh = useCallback<React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>>(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
