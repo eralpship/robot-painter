@@ -7,7 +7,8 @@ import { useRef, useState, useEffect, useContext } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider, OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
 import { OverlayTextureWindow } from '../components/OverlayTextureWindow'
-import { Leva, useControls, button, folder } from 'leva'
+import { TextureCanvasDisplay } from '../components/TextureCanvasDisplay'
+import { Leva, useControls, button } from 'leva'
 
 const customLevaTheme = {
   sizes: {
@@ -19,55 +20,7 @@ export const Route = createFileRoute('/')({
   component: App,
 })
 
-function CanvasDisplay() {
-  const { canvas: sourceCanvas } = useContext(OverlayTextureContext)!
-  const displayCanvasRef = useRef<HTMLCanvasElement>(null)
 
-  useEffect(() => {
-    const displayCanvas = displayCanvasRef.current
-    if (!displayCanvas || !sourceCanvas) return
-
-    const displayCtx = displayCanvas.getContext('2d')!
-    
-    const updateDisplay = () => {
-      // Scale down the 4096x4096 canvas to fit the display
-      displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height)
-      displayCtx.drawImage(sourceCanvas, 0, 0, displayCanvas.width, displayCanvas.height)
-    }
-
-    // Initial draw
-    updateDisplay()
-
-    // Set up periodic updates to reflect changes
-    const interval = setInterval(updateDisplay, 100)
-    return () => clearInterval(interval)
-  }, [sourceCanvas])
-
-  return (
-    <div style={{ 
-      width: '100%', 
-      height: '100%', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center' 
-    }}>
-      <canvas 
-        ref={displayCanvasRef}
-        width={260}
-        height={260}
-        style={{
-          maxWidth: '100%',
-          maxHeight: '100%',
-          width: 'auto',
-          height: 'auto',
-          aspectRatio: '1 / 1',
-          border: '1px solid #313538',
-          borderRadius: '4px',
-        }}
-      />
-    </div>
-  )
-}
 
 function AppContent() {
   const [hasInteracted, setHasInteracted] = useState(false)
@@ -78,7 +31,6 @@ function AppContent() {
   const modelRef = useRef<ModelRef>(null)
 
   const [{ tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity }, setControlStates] = useControls(() => ({
-    'General': folder({
       baseColor: {
         value: initialBaseColor,
         label: 'Base Color',
@@ -102,12 +54,6 @@ function AppContent() {
       environmentIntensity: { value: 0.7, label: 'Environment Intensity', max: 1, min: 0, step: 0.01  },
       resetCamera: button(() => controlsRef.current?.reset()),
       touchFlag: button(() => modelRef.current?.touchFlag()),
-    }, {collapsed: true}),
-    'Texture Options': folder({
-      overlayTexture: { image: true, value: '', onChange: (_value) => {
-        // Not used
-      }}
-    }),
   }))
 
   const { context } = useContext(OverlayTextureContext)!
@@ -233,7 +179,7 @@ function AppContent() {
         />
       </Canvas>
       <OverlayTextureWindow title='Texture'>
-        <CanvasDisplay />
+        <TextureCanvasDisplay />
       </OverlayTextureWindow>
     </div>
   )
