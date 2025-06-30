@@ -1,5 +1,4 @@
 .overlay-texture-window {
-  border: 1px solid #313538;
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   z-index: 1000;
@@ -22,12 +21,13 @@
 
 .overlay-texture-window-title {
   background-color: #292d39;
-  padding: 8px 12px;
   font-size: 11px;
   font-weight: 500;
   color: #8c9196;
-  text-align: center;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
   cursor: grab;
   user-select: none;
@@ -35,12 +35,46 @@
   -moz-user-select: none;
   -ms-user-select: none;
   pointer-events: auto;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+
+  min-height: 40px;
+  padding: 0px 12px;
 }
 
 .overlay-texture-window-title:hover {
   color: white;
+}
+
+.overlay-texture-window-title-text {
+  flex: 1;
+  text-align: center;
+  margin-right: 18px; /* Offset to center text accounting for toggle button */
+}
+
+.overlay-texture-window-toggle {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+
+.toggle-icon {
+  transition: transform 0.2s ease;
+  transform: rotate(0deg); /* Points down when expanded */
+}
+
+.toggle-icon.collapsed {
+  transform: rotate(-90deg); /* Points right when collapsed */
 }
 
 .overlay-texture-window-content {
@@ -53,8 +87,28 @@
   font-weight: 400;
   color: #b4b8bc;
   user-select: none;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
   min-height: 0;
   overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.overlay-texture-window.collapsed {
+  transition: height 0.2s ease;
+  overflow: hidden !important;
+  height: 40px !important;
+}
+
+.overlay-texture-window.collapsed .overlay-texture-window-container {
+  height: 40px !important;
+  overflow: hidden;
+}
+
+/* Hide all resize handles when collapsed */
+.overlay-texture-window.collapsed > div:not(.overlay-texture-window-container) {
+  display: none !important;
+}
+
+.overlay-texture-window.collapsed .overlay-texture-window-title {
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 } 
