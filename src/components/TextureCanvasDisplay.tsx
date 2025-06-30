@@ -2,7 +2,7 @@ import { useRef, useEffect, useContext } from 'react'
 import { OVERLAY_TEXTURE_SIZE, OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
 import './TextureCanvasDisplay.css'
 
-export function TextureCanvasDisplay() {
+export function TextureCanvasDisplay({baseColor}:{baseColor: string}) {
   const { canvas: sourceCanvas } = useContext(OverlayTextureContext)!
   const displayCanvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -25,6 +25,8 @@ export function TextureCanvasDisplay() {
     return () => clearInterval(interval)
   }, [sourceCanvas])
 
+  console.log('baseColor', baseColor)
+
   return (
     <div className="texture-canvas-display-container">
       <canvas 
@@ -32,6 +34,7 @@ export function TextureCanvasDisplay() {
         width={OVERLAY_TEXTURE_SIZE.width}
         height={OVERLAY_TEXTURE_SIZE.height}
         className="texture-canvas-display-canvas"
+        style={{backgroundColor: baseColor}}
       />
     </div>
   )

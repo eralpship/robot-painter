@@ -30,13 +30,10 @@ function AppContent() {
   const initialBaseColor = '#ff69b4'
   const modelRef = useRef<ModelRef>(null)
 
-  const [{ tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity }, setControlStates] = useControls(() => ({
+  const [{ baseColor, tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity }, setControlStates] = useControls(() => ({
       baseColor: {
         value: initialBaseColor,
         label: 'Base Color',
-        onChange: (value) => {
-          modelRef.current?.updateBaseColor(value)
-        },
       },
       tailLightColor: {
         value: '#ff0000',
@@ -57,6 +54,10 @@ function AppContent() {
   }))
 
   const { context } = useContext(OverlayTextureContext)!
+
+  useEffect(() => {
+    modelRef.current?.updateBaseColor(baseColor)
+  }, [baseColor])
 
   useEffect(() => {
     const loadTexture = async () => {
@@ -179,7 +180,7 @@ function AppContent() {
         />
       </Canvas>
       <OverlayTextureWindow title='Texture'>
-        <TextureCanvasDisplay />
+        <TextureCanvasDisplay baseColor={baseColor} />
       </OverlayTextureWindow>
     </div>
   )
