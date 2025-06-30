@@ -25,8 +25,6 @@ export function TextureCanvasDisplay({baseColor}:{baseColor: string}) {
     return () => clearInterval(interval)
   }, [sourceCanvas])
 
-  console.log('baseColor', baseColor)
-
   return (
     <div className="texture-canvas-display-container">
       <canvas 
