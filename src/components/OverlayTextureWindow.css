@@ -2,7 +2,13 @@
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   z-index: 1000;
-  font-family: system-ui, sans-serif;
+  font-family: ui-monospace, SFMono-Regular, Menlo, "Roboto Mono", monospace;
+  font-palette: normal;
+  font-synthesis: weight style small-caps;
+  font-variant: normal;
+  -webkit-font-smoothing: antialiased;
+
+
   font-size: 11px;
   user-select: none;
   -webkit-user-select: none;
@@ -22,12 +28,10 @@
 .overlay-texture-window-title {
   background-color: #292d39;
   font-size: 11px;
-  font-weight: 500;
-  color: #8c9196;
-  letter-spacing: 0.5px;
+  color: rgb(83, 87, 96);
+  letter-spacing: normal;
   display: flex;
   align-items: center;
-  gap: 8px;
 
   cursor: grab;
   user-select: none;
@@ -37,7 +41,7 @@
   pointer-events: auto;
 
   min-height: 40px;
-  padding: 0px 12px;
+  padding: 0px 12px 0px 12px;
 }
 
 .overlay-texture-window-title:hover {
