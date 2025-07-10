@@ -17,7 +17,6 @@ type GLTFResult = GLTF & {
     robot_new: THREE.Mesh
     lid_new: THREE.Mesh
     body_inside_new: THREE.Mesh
-    flag_rim: THREE.Mesh
     robot_flag_new: THREE.Mesh
     robot_paintable_body_new: THREE.Mesh
     wheel_back_left: THREE.Mesh
@@ -46,12 +45,14 @@ interface ModelProps extends React.ComponentProps<'group'> {
   lidOpen: boolean
   setLidOpen: (open: boolean) => void
   initialBaseColor: string
+  initialOverlayTintColor: string
   headlightsIntensity: number
   taillightsIntensity: number
 }
 
 export interface ModelRef {
   updateBaseColor: (color: string) => void
+  updateOverlayTintColor: (color: string) => void
   touchFlag: () => void
 }
 
@@ -64,7 +65,7 @@ function createPixeImageUrl() {
 
 const loadingManager = new THREE.LoadingManager()
 loadingManager.setURLModifier((url) => {
-  if (url.includes('painting_transparent.png')) {
+  if (url.includes('overlay_stencil.png')) {
     return createPixeImageUrl()
   }
   return url
@@ -79,6 +80,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
   lidOpen,
   setLidOpen,
   initialBaseColor,
+  initialOverlayTintColor,
   headlightsIntensity: _headlightsIntensity,
   taillightsIntensity: _taillightsIntensity,
   ...props 
@@ -108,6 +110,13 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
       if (materials.baseColor) {
         materials.baseColor.color.set(color)
         materials.baseColor.needsUpdate = true
+      }
+    },
+    updateOverlayTintColor: (color: string) => {
+      console.log('updating overlay tint color', color)
+      if (materials['body paintable new']) {
+        materials['body paintable new'].color.set(color)
+        materials['body paintable new'].needsUpdate = true
       }
     },
     touchFlag: () => {
@@ -198,18 +207,18 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
   })
 
   useEffect(() => {
-    materials.wheel.metalness = 0
-    materials.wheel.roughness = 0.85
-    materials.wheel.envMapIntensity = 0.3
-    materials.wheel.clearcoat = 0.15
-    materials.wheel.clearcoatRoughness = 0.7
-    materials.wheel.reflectivity = 0.15
-    materials.wheel.specularIntensity = 0.5
-    materials.wheel.ior = 1.45
-    materials.wheel.sheen = 1
-    materials.wheel.sheenRoughness = 0.6
-    materials.wheel.sheenColor = new THREE.Color(0x404040)
-    materials.wheel.normalScale = new THREE.Vector2(4, 4)
+    materials.wheel.metalness = 0.3
+    materials.wheel.roughness = 0.7
+    materials.wheel.envMapIntensity = 0.4
+    materials.wheel.clearcoat = 0.2
+    materials.wheel.clearcoatRoughness = 0.6
+    materials.wheel.reflectivity = 0.25
+    materials.wheel.specularIntensity = 0.6
+    materials.wheel.ior = 1.6
+    materials.wheel.sheen = 0.3
+    materials.wheel.sheenRoughness = 0.7
+    materials.wheel.sheenColor = new THREE.Color(0x2a2a2a)
+    materials.wheel.normalScale = new THREE.Vector2(2.5, 2.5)
 
     materials['body paintable new'].transparent = true
     materials['body paintable new'].opacity = 1
@@ -229,6 +238,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
     materials.baseColor = baseColorMaterial
     materials.baseColor.color.set(initialBaseColor)
 
+    // swap out the texture for the overlay canvas
     const originalTexture = materials['body paintable new'].map
     if (!originalTexture) { 
       console.error('no texture')
@@ -245,35 +255,11 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
     const canvasTexture = originalTexture.clone()
     canvasTexture.image = overlayCanvas
     canvasTexture.needsUpdate = true
+    materials['body paintable new'].map?.dispose()
     materials['body paintable new'].map = canvasTexture
+    materials['body paintable new'].map.needsUpdate = true
+    materials['body paintable new'].color.set(initialOverlayTintColor)
     materials['body paintable new'].needsUpdate = true
-   
-    // // Fetch and draw the painting image
-    // const loadPaintingImage = async () => {
-    //   try {
-    //     console.log('Fetching painting image...')
-    //     const response = await fetch('/painting_transparent.png')
-    //     if (!response.ok) {
-    //       throw new Error(`HTTP error! status: ${response.status}`)
-    //     }
-        
-    //     const blob = await response.blob()
-    //     console.log('Got blob:', blob)
-        
-    //     const imageBitmap = await createImageBitmap(blob)
-    //     console.log('Created image bitmap:', imageBitmap)
-        
-    //     ctx.drawImage(imageBitmap, 0, 0, canvas.width, canvas.height)
-    //     canvasTexture.needsUpdate = true
-    //     console.log('Successfully drew painting to canvas')
-        
-    //     imageBitmap.close() // Clean up
-    //   } catch (error) {
-    //     console.error('Failed to load painting image:', error)
-    //   }
-    // }
-    
-    // loadPaintingImage()
   }, [])
 
   const PaintableMesh = useCallback<React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>>(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
@@ -440,7 +426,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
 
 
           <mesh name="body_inside_new" geometry={nodes.body_inside_new.geometry} material={materials['body inside new']} position={[0, 0, -1.723]} />
-          <PaintableMesh name="flag_rim" geometry={nodes.flag_rim.geometry} />
           <animated.mesh 
             ref={flagRef}
             name="robot_flag_new" 

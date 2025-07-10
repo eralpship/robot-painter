@@ -27,13 +27,18 @@ function AppContent() {
   const lastInteractionTime = useRef(Date.now())
   const controlsRef = useRef<any>(null)
   const inactivityTimeout = 5_000
-  const initialBaseColor = '#ff69b4'
+  const initialBaseColor = '#ffffff'
+  const initialOverlayTintColor = '#ffffff'
   const modelRef = useRef<ModelRef>(null)
 
-  const [{ baseColor, tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity }, setControlStates] = useControls(() => ({
+  const [{ baseColor, overlayTintColor, tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity }, setControlStates] = useControls(() => ({
       baseColor: {
         value: initialBaseColor,
         label: 'Base Color',
+      },
+      overlayTintColor: {
+        value: initialOverlayTintColor,
+        label: 'Overlay Tint Color',
       },
       tailLightColor: {
         value: '#ff0000',
@@ -60,10 +65,14 @@ function AppContent() {
   }, [baseColor])
 
   useEffect(() => {
+    modelRef.current?.updateOverlayTintColor(overlayTintColor)
+  }, [overlayTintColor])
+
+  useEffect(() => {
     const loadTexture = async () => {
       try {
         console.log('Fetching painting texture...')
-        const response = await fetch('/painting_transparent.png')
+        const response = await fetch('/overlay_stencil.png')
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -72,6 +81,7 @@ function AppContent() {
         const imageBitmap = await createImageBitmap(blob)
         
         // Draw the image on the shared canvas
+        console.log('drawing image on canvas...')
         context.drawImage(imageBitmap, 0, 0, 4096, 4096)
         console.log('Successfully loaded and drew painting texture')
         
@@ -162,6 +172,7 @@ function AppContent() {
           lidOpen={lidOpen}
           setLidOpen={lidOpen => setControlStates({ lidOpen })}
           initialBaseColor={initialBaseColor}
+          initialOverlayTintColor={initialOverlayTintColor}
           headlightsIntensity={headlightsIntensity}
           taillightsIntensity={taillightsIntensity}
         />
