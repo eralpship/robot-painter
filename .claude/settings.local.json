@@ -10,7 +10,8 @@
       "mcp__playwright__browser_snapshot",
       "Bash(npx playwright codegen:*)",
       "Bash(node:*)",
-      "mcp__playwright__browser_press_key"
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_handle_dialog"
     ],
     "deny": []
   }

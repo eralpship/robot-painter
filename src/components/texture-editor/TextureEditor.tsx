@@ -27,6 +27,21 @@ export function TextureEditor({ selectedId, onSelectionChange, baseColor }: Text
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayTextureContext = useContext(OverlayTextureContext)
   const [stageSize, setStageSize] = useState({ width: 512, height: 512 })
+
+  const overlayTexture = useContext(OverlayTextureContext)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const konvaCanvas = stageRef.current.toCanvas();
+
+      overlayTexture?.context.clearRect(0, 0, overlayTexture.canvas.width, overlayTexture.canvas.height);
+      overlayTexture?.context.drawImage(konvaCanvas, 0, 0, overlayTexture.canvas.width, overlayTexture.canvas.height);
+      overlayTexture?.triggerTextureUpdate();
+
+    }, 33); // ~30fps
+
+    return () => clearInterval(interval);
+  }, []);
   
   // Initial text element - positioned in canvas coordinates (4096x4096)
   const [textElements, setTextElements] = useState<TextElement[]>([{
@@ -45,86 +60,6 @@ export function TextureEditor({ selectedId, onSelectionChange, baseColor }: Text
     console.error('TextureEditor must be used within OverlayTextureCanvasProvider')
     return <div>Error: No overlay texture context found</div>
   }
-  
-  const { context: overlayContext, triggerTextureUpdate } = overlayTextureContext
-
-  // Draw directly on shared canvas context (NO stencil - only text)
-  const drawToSharedCanvas = useCallback(() => {
-    if (!overlayContext) return
-    
-    // Clear the canvas to transparent
-    overlayContext.clearRect(0, 0, 4096, 4096)
-    
-    // No background - keep transparent
-    
-    // Draw all text elements
-    textElements.forEach(textElement => {
-      overlayContext.save()
-      
-      // Set text properties
-      overlayContext.font = `${textElement.fontSize}px Arial`
-      overlayContext.fillStyle = textElement.fill
-      overlayContext.textAlign = 'left'
-      overlayContext.textBaseline = 'top'
-      
-      // Apply transformations
-      overlayContext.translate(textElement.x, textElement.y)
-      overlayContext.rotate(textElement.rotation)
-      overlayContext.scale(textElement.scaleX, textElement.scaleY)
-      
-      // Draw the text
-      overlayContext.fillText(textElement.text, 0, 0)
-      
-      overlayContext.restore()
-    })
-    
-    // Trigger texture update
-    triggerTextureUpdate()
-  }, [overlayContext, textElements, triggerTextureUpdate])
-
-  // Debounced draw to avoid excessive updates  
-  const debouncedDraw = useCallback(() => {
-    const timeoutId = setTimeout(() => {
-      try {
-        drawToSharedCanvas()
-      } catch (error) {
-        console.error('Error during canvas draw:', error)
-      }
-    }, 500) // Increased to 500ms as requested
-    return () => clearTimeout(timeoutId)
-  }, [drawToSharedCanvas])
-  
-  // Trigger draw on text changes
-  useEffect(() => {
-    const cleanup = debouncedDraw()
-    return cleanup
-  }, [textElements, debouncedDraw])
-  
-  // Initial draw when component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        drawToSharedCanvas()
-      } catch (error) {
-        console.error('Error during initial draw:', error)
-      }
-    }, 100) // Small delay to ensure context is ready
-    
-    return () => clearTimeout(timer)
-  }, [drawToSharedCanvas])
-  
-  // Add keyboard support
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' && selectedId) {
-        setTextElements(prev => prev.filter(el => el.id !== selectedId))
-        onSelectionChange(null)
-      }
-    }
-    
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [selectedId, onSelectionChange])
   
   // Edit selected text - listen for custom event from wrapper
   useEffect(() => {
@@ -208,6 +143,7 @@ export function TextureEditor({ selectedId, onSelectionChange, baseColor }: Text
         width: '100%', 
         height: '100%', 
         display: 'flex', 
+        flexDirection: 'column',
         justifyContent: 'center', 
         alignItems: 'center' 
       }}
@@ -255,35 +191,19 @@ export function TextureEditor({ selectedId, onSelectionChange, baseColor }: Text
           <Layer>
           {textElements.map((textElement) => (
             <EditableText
-              key={textElement.id}
+              onTransform={function (attrs): void {
+                throw new Error('Function not implemented.')
+              } } key={textElement.id}
               {...textElement}
               isSelected={selectedId === textElement.id}
               onSelect={() => onSelectionChange(textElement.id)}
-              onTransform={(attrs) => {
-                setTextElements(prev => 
-                  prev.map(el => 
-                    el.id === textElement.id 
-                      ? { ...el, ...attrs }
-                      : el
-                  )
-                )
-                // Immediate draw on transform for real-time feedback
-                try {
-                  drawToSharedCanvas()
-                } catch (error) {
-                  console.error('Error during transform draw:', error)
-                }
-              }}
               onTextChange={(newText) => {
-                setTextElements(prev => 
-                  prev.map(el => 
-                    el.id === textElement.id 
-                      ? { ...el, text: newText }
-                      : el
-                  )
+                setTextElements(prev => prev.map(el => el.id === textElement.id
+                  ? { ...el, text: newText }
+                  : el
                 )
-              }}
-            />
+                )
+              } }            />
           ))}
           </Layer>
         </Stage>
