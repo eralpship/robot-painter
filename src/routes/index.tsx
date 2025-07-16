@@ -7,7 +7,7 @@ import { useRef, useState, useEffect, useContext } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider, OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
 import { OverlayTextureWindow } from '../components/OverlayTextureWindow'
-import { TextureEditor } from '../components/texture-editor/TextureEditor'
+import { TextureEditorWrapper } from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
 
 const customLevaTheme = {
@@ -68,29 +68,13 @@ function AppContent() {
     modelRef.current?.updateOverlayTintColor(overlayTintColor)
   }, [overlayTintColor])
 
+  // Initialize with transparent canvas - no initial texture loading
   useEffect(() => {
-    const loadTexture = async () => {
-      try {
-        console.log('Fetching painting texture...')
-        const response = await fetch('/overlay_stencil.png')
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        
-        const blob = await response.blob()
-        const imageBitmap = await createImageBitmap(blob)
-        
-        // Draw the image on the shared canvas
-        console.log('drawing image on canvas...')
-        context.drawImage(imageBitmap, 0, 0, 4096, 4096)
-        console.log('Successfully loaded and drew painting texture')
-        
-        imageBitmap.close() // Clean up
-      } catch (error) {
-        console.error('Failed to load painting texture:', error)
-      }
+    if (context) {
+      // Clear canvas to transparent
+      context.clearRect(0, 0, 4096, 4096)
+      console.log('Canvas initialized with transparent background')
     }
-    loadTexture()
   }, [context])
 
   // Functions to manipulate light states directly in Leva
@@ -191,7 +175,7 @@ function AppContent() {
         />
       </Canvas>
       <OverlayTextureWindow title='Texture Editor'>
-        <TextureEditor />
+        <TextureEditorWrapper />
       </OverlayTextureWindow>
     </div>
   )

@@ -44,8 +44,7 @@ export function OverlayTextureWindow({ title, children }: {
       bounds="window"
       dragHandleClassName="drag-handle"
       className={`overlay-texture-window ${isCollapsed ? 'collapsed' : ''}`}
-      disableresizing={isCollapsed}
-      enableresizing={!isCollapsed}
+      disableResizing={isCollapsed}
     >
       <div className="overlay-texture-window-container">
         <div className="overlay-texture-window-title drag-handle">

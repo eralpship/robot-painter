@@ -6,7 +6,11 @@
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_take_screenshot",
       "mcp__playwright__browser_click",
-      "WebFetch(domain:konvajs.org)"
+      "WebFetch(domain:konvajs.org)",
+      "mcp__playwright__browser_snapshot",
+      "Bash(npx playwright codegen:*)",
+      "Bash(node:*)",
+      "mcp__playwright__browser_press_key"
     ],
     "deny": []
   }

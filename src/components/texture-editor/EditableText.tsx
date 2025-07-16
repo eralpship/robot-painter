@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Text, Transformer } from 'react-konva'
 
 interface EditableTextProps {
@@ -14,6 +14,7 @@ interface EditableTextProps {
   isSelected: boolean
   onSelect: () => void
   onTransform: (attrs: Partial<EditableTextProps>) => void
+  onTextChange: (newText: string) => void
 }
 
 export function EditableText({
@@ -27,17 +28,39 @@ export function EditableText({
   scaleY,
   isSelected,
   onSelect,
-  onTransform
+  onTransform,
+  onTextChange
 }: EditableTextProps) {
   const textRef = useRef<any>(null)
   const trRef = useRef<any>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  
+  // Update editing text when props change
+  useEffect(() => {
+    // No longer needed for simple approach
+  }, [text])
+  
+  // Handle double-click to start editing with alert
+  const handleDoubleClick = (e: any) => {
+    console.log('Double-click detected on text:', text, 'isDragging:', isDragging)
+    e.cancelBubble = true
+    if (e.stopPropagation) e.stopPropagation()
+    
+    // Only start editing if we're not dragging
+    if (!isDragging) {
+      const newText = prompt('Edit text:', text)
+      if (newText !== null) {
+        onTextChange(newText)
+      }
+    }
+  }
   
   // Attach transformer when selected
   useEffect(() => {
     if (isSelected && textRef.current && trRef.current) {
       try {
         trRef.current.nodes([textRef.current])
-        trRef.current.getLayer().batchDraw()
+        trRef.current.getLayer()?.batchDraw()
       } catch (error) {
         console.error('Error attaching transformer:', error)
       }
@@ -45,7 +68,7 @@ export function EditableText({
       // Detach when not selected
       try {
         trRef.current.nodes([])
-        trRef.current.getLayer().batchDraw()
+        trRef.current.getLayer()?.batchDraw()
       } catch (error) {
         console.error('Error detaching transformer:', error)
       }
@@ -81,8 +104,18 @@ export function EditableText({
         transformsEnabled="all"
         perfectDrawEnabled={false}
         listening={true}
-        onClick={onSelect}
+        onClick={() => {
+          console.log('Single click on text:', text)
+          onSelect()
+        }}
+        onDblClick={handleDoubleClick}
+        onDragStart={() => {
+          console.log('Drag start')
+          setIsDragging(true)
+        }}
         onDragEnd={(e) => {
+          console.log('Drag end')
+          setIsDragging(false)
           onTransform({
             x: e.target.x(),
             y: e.target.y()
@@ -114,16 +147,22 @@ export function EditableText({
           borderEnabled={true}
           borderStroke="#0099ff"
           borderStrokeWidth={2}
-          anchorSize={12}
+          anchorSize={8}
           anchorStroke="#0099ff"
           anchorFill="#ffffff"
           rotationSnaps={[0, 90, 180, 270]}
           boundBoxFunc={(oldBox, newBox) => {
             // Prevent negative scaling and set minimum size
-            if (newBox.width < 20 || newBox.height < 20) {
+            if (newBox.width < 30 || newBox.height < 15) {
               return oldBox
             }
             return newBox
+          }}
+          onTransformEnd={() => {
+            // Force a re-render after transformation
+            if (trRef.current) {
+              trRef.current.getLayer()?.batchDraw()
+            }
           }}
         />
       )}

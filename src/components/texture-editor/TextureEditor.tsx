@@ -1,5 +1,5 @@
 import { useRef, useContext, useState, useCallback, useEffect } from 'react'
-import { Stage, Layer, Rect } from 'react-konva'
+import { Stage, Layer, Rect, Image } from 'react-konva'
 import { DISPLAY_SIZE, CANVAS_SIZE } from './utils/konvaHelpers'
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
 import { EditableText } from './EditableText'
@@ -16,10 +16,14 @@ interface TextElement {
   scaleY: number
 }
 
-export function TextureEditor() {
+interface TextureEditorProps {
+  selectedId: number | null
+  onSelectionChange: (id: number | null) => void
+}
+
+export function TextureEditor({ selectedId, onSelectionChange }: TextureEditorProps) {
   const stageRef = useRef<any>(null)
   const overlayTextureContext = useContext(OverlayTextureContext)
-  const [selectedId, setSelectedId] = useState<number | null>(null)
   
   // Initial text element - positioned in canvas coordinates (4096x4096)
   const [textElements, setTextElements] = useState<TextElement[]>([{
@@ -41,16 +45,34 @@ export function TextureEditor() {
   
   const { context: overlayContext, triggerTextureUpdate } = overlayTextureContext
   
-  // Draw directly on shared canvas context
+  // Load and cache the stencil image
+  const [stencilImage, setStencilImage] = useState<HTMLImageElement | null>(null)
+  
+  useEffect(() => {
+    const loadStencil = async () => {
+      try {
+        const response = await fetch('/overlay_stencil.png')
+        if (!response.ok) return
+        
+        const blob = await response.blob()
+        const img = document.createElement('img')
+        img.onload = () => setStencilImage(img)
+        img.src = URL.createObjectURL(blob)
+      } catch (error) {
+        console.error('Failed to load stencil image:', error)
+      }
+    }
+    loadStencil()
+  }, [])
+
+  // Draw directly on shared canvas context (NO stencil - only text)
   const drawToSharedCanvas = useCallback(() => {
     if (!overlayContext) return
     
-    // Clear the canvas
+    // Clear the canvas to transparent
     overlayContext.clearRect(0, 0, 4096, 4096)
     
-    // Draw white background
-    overlayContext.fillStyle = '#ffffff'
-    overlayContext.fillRect(0, 0, 4096, 4096)
+    // No background - keep transparent
     
     // Draw all text elements
     textElements.forEach(textElement => {
@@ -113,45 +135,70 @@ export function TextureEditor() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Delete' && selectedId) {
         setTextElements(prev => prev.filter(el => el.id !== selectedId))
-        setSelectedId(null)
+        onSelectionChange(null)
       }
     }
     
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [selectedId])
+  }, [selectedId, onSelectionChange])
   
+  // Edit selected text - listen for custom event from wrapper
+  useEffect(() => {
+    const handleEditSelectedText = () => {
+      const selectedElement = textElements.find(el => el.id === selectedId)
+      if (selectedElement) {
+        const newText = prompt('Edit text:', selectedElement.text)
+        if (newText !== null) {
+          setTextElements(prev => 
+            prev.map(el => 
+              el.id === selectedId 
+                ? { ...el, text: newText }
+                : el
+            )
+          )
+        }
+      }
+    }
+
+    document.addEventListener('editSelectedText', handleEditSelectedText)
+    return () => document.removeEventListener('editSelectedText', handleEditSelectedText)
+  }, [selectedId, textElements])
+
   return (
-    <div style={{ border: '1px solid #ccc', display: 'inline-block', backgroundColor: '#f0f0f0' }}>
-      <Stage
-        ref={stageRef}
-        width={DISPLAY_SIZE}
-        height={DISPLAY_SIZE}
-        scaleX={DISPLAY_SIZE / CANVAS_SIZE}
-        scaleY={DISPLAY_SIZE / CANVAS_SIZE}
-        listening={true}
-        onMouseDown={(e) => {
-          // Check if clicked on empty area
-          if (e.target === e.target.getStage()) {
-            setSelectedId(null)
-          }
-        }}
-      >
+    <Stage
+          ref={stageRef}
+          width={DISPLAY_SIZE}
+          height={DISPLAY_SIZE}
+          scaleX={DISPLAY_SIZE / CANVAS_SIZE}
+          scaleY={DISPLAY_SIZE / CANVAS_SIZE}
+          listening={true}
+          onMouseDown={(e) => {
+            // Check if clicked on empty area
+            if (e.target === e.target.getStage()) {
+              onSelectionChange(null)
+            }
+          }}
+        >
         <Layer>
-          <Rect
-            x={0}
-            y={0}
-            width={CANVAS_SIZE}
-            height={CANVAS_SIZE}
-            fill="#ffffff"
-            listening={false}
-          />
+          {/* Remove white background rectangle for transparency */}
+          {stencilImage && (
+            <Image
+              x={0}
+              y={0}
+              width={CANVAS_SIZE}
+              height={CANVAS_SIZE}
+              image={stencilImage}
+              opacity={0.1}
+              listening={false}
+            />
+          )}
           {textElements.map((textElement) => (
             <EditableText
               key={textElement.id}
               {...textElement}
               isSelected={selectedId === textElement.id}
-              onSelect={() => setSelectedId(textElement.id)}
+              onSelect={() => onSelectionChange(textElement.id)}
               onTransform={(attrs) => {
                 setTextElements(prev => 
                   prev.map(el => 
@@ -167,10 +214,18 @@ export function TextureEditor() {
                   console.error('Error during transform draw:', error)
                 }
               }}
+              onTextChange={(newText) => {
+                setTextElements(prev => 
+                  prev.map(el => 
+                    el.id === textElement.id 
+                      ? { ...el, text: newText }
+                      : el
+                  )
+                )
+              }}
             />
           ))}
         </Layer>
       </Stage>
-    </div>
   )
 }
