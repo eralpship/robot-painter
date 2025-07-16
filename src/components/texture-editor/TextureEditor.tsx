@@ -1,6 +1,6 @@
 import { useRef, useContext, useState, useCallback, useEffect } from 'react'
-import { Stage, Layer, Rect, Image } from 'react-konva'
-import { DISPLAY_SIZE, CANVAS_SIZE } from './utils/konvaHelpers'
+import { Stage, Layer } from 'react-konva'
+import { CANVAS_SIZE } from './utils/konvaHelpers'
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
 import { EditableText } from './EditableText'
 
@@ -23,7 +23,9 @@ interface TextureEditorProps {
 
 export function TextureEditor({ selectedId, onSelectionChange }: TextureEditorProps) {
   const stageRef = useRef<any>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const overlayTextureContext = useContext(OverlayTextureContext)
+  const [stageSize, setStageSize] = useState({ width: 512, height: 512 })
   
   // Initial text element - positioned in canvas coordinates (4096x4096)
   const [textElements, setTextElements] = useState<TextElement[]>([{
@@ -44,26 +46,6 @@ export function TextureEditor({ selectedId, onSelectionChange }: TextureEditorPr
   }
   
   const { context: overlayContext, triggerTextureUpdate } = overlayTextureContext
-  
-  // Load and cache the stencil image
-  const [stencilImage, setStencilImage] = useState<HTMLImageElement | null>(null)
-  
-  useEffect(() => {
-    const loadStencil = async () => {
-      try {
-        const response = await fetch('/overlay_stencil.png')
-        if (!response.ok) return
-        
-        const blob = await response.blob()
-        const img = document.createElement('img')
-        img.onload = () => setStencilImage(img)
-        img.src = URL.createObjectURL(blob)
-      } catch (error) {
-        console.error('Failed to load stencil image:', error)
-      }
-    }
-    loadStencil()
-  }, [])
 
   // Draw directly on shared canvas context (NO stencil - only text)
   const drawToSharedCanvas = useCallback(() => {
@@ -165,14 +147,103 @@ export function TextureEditor({ selectedId, onSelectionChange }: TextureEditorPr
     return () => document.removeEventListener('editSelectedText', handleEditSelectedText)
   }, [selectedId, textElements])
 
+  // Calculate stage size based on container size
+  useEffect(() => {
+    const calculateSize = () => {
+      if (!containerRef.current) return
+      
+      const container = containerRef.current
+      const containerWidth = container.clientWidth
+      const containerHeight = container.clientHeight
+      
+      // Calculate the maximum size that fits while maintaining aspect ratio
+      const aspectRatio = 1 // Square canvas (4096x4096)
+      
+      const availableWidth = containerWidth
+      const availableHeight = containerHeight
+      
+      let displayWidth = availableWidth
+      let displayHeight = availableHeight
+      
+      // Maintain aspect ratio
+      if (availableWidth / availableHeight > aspectRatio) {
+        displayWidth = availableHeight * aspectRatio
+      } else {
+        displayHeight = availableWidth / aspectRatio
+      }
+      
+      // Ensure minimum size
+      const minSize = 200
+      displayWidth = Math.max(minSize, displayWidth)
+      displayHeight = Math.max(minSize, displayHeight)
+      
+      setStageSize({ width: displayWidth, height: displayHeight })
+    }
+    
+    calculateSize()
+    
+    // Recalculate on window resize
+    window.addEventListener('resize', calculateSize)
+    
+    // Use ResizeObserver if available for better container resize detection
+    let resizeObserver: ResizeObserver | null = null
+    if (window.ResizeObserver && containerRef.current) {
+      resizeObserver = new ResizeObserver(calculateSize)
+      resizeObserver.observe(containerRef.current)
+    }
+    
+    return () => {
+      window.removeEventListener('resize', calculateSize)
+      if (resizeObserver) {
+        resizeObserver.disconnect()
+      }
+    }
+  }, [])
+
   return (
-    <Stage
+    <div 
+      ref={containerRef}
+      style={{ 
+        width: '100%', 
+        height: '100%', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center' 
+      }}
+    >
+      <div
+        style={{
+          width: stageSize.width,
+          height: stageSize.height,
+          position: 'relative'
+        }}
+      >
+        {/* Background stencil image */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundImage: 'url(/overlay_stencil.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.1,
+            zIndex: 1,
+            pointerEvents: 'none'
+          }}
+        />
+        {/* Konva canvas on top */}
+        <Stage
           ref={stageRef}
-          width={DISPLAY_SIZE}
-          height={DISPLAY_SIZE}
-          scaleX={DISPLAY_SIZE / CANVAS_SIZE}
-          scaleY={DISPLAY_SIZE / CANVAS_SIZE}
+          width={stageSize.width}
+          height={stageSize.height}
+          scaleX={stageSize.width / CANVAS_SIZE}
+          scaleY={stageSize.height / CANVAS_SIZE}
           listening={true}
+          style={{ position: 'relative', zIndex: 2 }}
           onMouseDown={(e) => {
             // Check if clicked on empty area
             if (e.target === e.target.getStage()) {
@@ -180,19 +251,7 @@ export function TextureEditor({ selectedId, onSelectionChange }: TextureEditorPr
             }
           }}
         >
-        <Layer>
-          {/* Remove white background rectangle for transparency */}
-          {stencilImage && (
-            <Image
-              x={0}
-              y={0}
-              width={CANVAS_SIZE}
-              height={CANVAS_SIZE}
-              image={stencilImage}
-              opacity={0.1}
-              listening={false}
-            />
-          )}
+          <Layer>
           {textElements.map((textElement) => (
             <EditableText
               key={textElement.id}
@@ -225,7 +284,9 @@ export function TextureEditor({ selectedId, onSelectionChange }: TextureEditorPr
               }}
             />
           ))}
-        </Layer>
-      </Stage>
+          </Layer>
+        </Stage>
+      </div>
+    </div>
   )
 }

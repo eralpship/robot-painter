@@ -15,13 +15,15 @@ export function TextureEditorWrapper() {
       <div style={{
         flex: '0 0 auto',
         padding: '8px',
-        backgroundColor: '#e0e0e0',
-        borderBottom: '1px solid #ccc',
+        backgroundColor: '#181c20',
+        borderBottom: '1px solid #444',
         display: 'flex',
         gap: '8px',
         alignItems: 'center',
         width: '100%',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        position: 'relative',
+        zIndex: 1000
       }}>
         <button
           onClick={() => {
@@ -42,7 +44,7 @@ export function TextureEditorWrapper() {
         >
           Edit Text
         </button>
-        <span style={{ fontSize: '12px', color: '#666' }}>
+        <span style={{ fontSize: '12px', color: '#b4b8bc' }}>
           {selectedId ? 'Text selected' : 'Select text to edit'}
         </span>
       </div>
@@ -50,10 +52,9 @@ export function TextureEditorWrapper() {
       {/* Flexible Canvas Area */}
       <div style={{
         flex: '1',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: 0
+        minHeight: 0,
+        position: 'relative',
+        zIndex: 1
       }}>
         <TextureEditor 
           selectedId={selectedId}
