@@ -103,7 +103,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
   const { camera, mouse, raycaster } = useThree()
   const { setTooltip } = useTooltip()
   const currentTooltip = useRef<string | null>(null)
-  const { canvas: overlayCanvas } = useContext(OverlayTextureContext)!
+  const { canvas: overlayCanvas, updateTrigger } = useContext(OverlayTextureContext)!
 
   useImperativeHandle(ref, () => ({
     updateBaseColor: (color: string) => {
@@ -261,6 +261,22 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
     materials['body paintable new'].color.set(initialOverlayTintColor)
     materials['body paintable new'].needsUpdate = true
   }, [])
+
+  // Update texture when canvas changes
+  const updateOverlayTexture = useCallback(() => {
+    if (!overlayCanvas || !materials['body paintable new']?.map) return
+    
+    // Mark the texture as needing update
+    materials['body paintable new'].map.needsUpdate = true
+    materials['body paintable new'].needsUpdate = true
+  }, [overlayCanvas, materials])
+
+  // Listen for canvas updates
+  useEffect(() => {
+    if (updateTrigger > 0) {
+      updateOverlayTexture()
+    }
+  }, [updateTrigger, updateOverlayTexture])
 
   const PaintableMesh = useCallback<React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>>(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
     return (

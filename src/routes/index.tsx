@@ -7,7 +7,7 @@ import { useRef, useState, useEffect, useContext } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider, OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
 import { OverlayTextureWindow } from '../components/OverlayTextureWindow'
-import { TextureCanvasDisplay } from '../components/TextureCanvasDisplay'
+import { TextureEditor } from '../components/texture-editor/TextureEditor'
 import { Leva, useControls, button } from 'leva'
 
 const customLevaTheme = {
@@ -190,8 +190,8 @@ function AppContent() {
           onStart={handleInteraction}
         />
       </Canvas>
-      <OverlayTextureWindow title='Texture'>
-        <TextureCanvasDisplay baseColor={baseColor} />
+      <OverlayTextureWindow title='Texture Editor'>
+        <TextureEditor />
       </OverlayTextureWindow>
     </div>
   )

@@ -1,8 +1,10 @@
-import React, { createContext, useState, useMemo } from 'react'
+import React, { createContext, useState, useMemo, useCallback } from 'react'
 
 interface OverlayTextureContextType {
   canvas: HTMLCanvasElement
   context: CanvasRenderingContext2D
+  triggerTextureUpdate: () => void
+  updateTrigger: number
 }
 
 export const OverlayTextureContext = createContext<OverlayTextureContextType | null>(null)
@@ -25,7 +27,18 @@ export function OverlayTextureCanvasProvider({ children }: OverlayTextureProvide
     return { canvas, context: ctx }
   })
   
-  const value = useMemo(() => ({ canvas, context }), [canvas, context])
+  const [updateTrigger, setUpdateTrigger] = useState(0)
+  
+  const triggerTextureUpdate = useCallback(() => {
+    setUpdateTrigger(prev => prev + 1)
+  }, [])
+  
+  const value = useMemo(() => ({ 
+    canvas, 
+    context, 
+    triggerTextureUpdate,
+    updateTrigger 
+  }), [canvas, context, triggerTextureUpdate, updateTrigger])
   
   return (
     <OverlayTextureContext.Provider value={value}>

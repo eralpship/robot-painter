@@ -15,9 +15,11 @@
     "@tanstack/react-router": "^1.114.3",
     "@tanstack/react-router-devtools": "^1.114.3",
     "@tanstack/router-plugin": "^1.114.3",
+    "konva": "^9.3.22",
     "leva": "^0.10.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-konva": "^19.0.7",
     "react-rnd": "^10.5.2",
     "three": "^0.175.0"
   },

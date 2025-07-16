@@ -7,7 +7,7 @@ export function OverlayTextureWindow({ title, children }: {
   children?: React.ReactNode
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [size, setSize] = useState({ width: 300, height: 300 })
+  const [size, setSize] = useState({ width: 540, height: 540 })
 
   const toggleCollapse = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent drag when clicking toggle button
@@ -17,7 +17,7 @@ export function OverlayTextureWindow({ title, children }: {
       setSize(prev => ({ ...prev, height: 40 }))
     } else {
       // Expanding - restore to a reasonable default height
-      setSize(prev => ({ ...prev, height: 300 }))
+      setSize(prev => ({ ...prev, height: 540 }))
     }
   }
 
@@ -26,8 +26,8 @@ export function OverlayTextureWindow({ title, children }: {
       default={{
         x: 20,
         y: 20,
-        width: 300,
-        height: 300,
+        width: 540,
+        height: 540,
       }}
       size={isCollapsed ? { width: size.width, height: 40 } : size}
       onResize={(_e, _direction, ref, _delta, _position) => {
@@ -44,8 +44,8 @@ export function OverlayTextureWindow({ title, children }: {
       bounds="window"
       dragHandleClassName="drag-handle"
       className={`overlay-texture-window ${isCollapsed ? 'collapsed' : ''}`}
-      disableResizing={isCollapsed}
-      enableResizing={!isCollapsed}
+      disableresizing={isCollapsed}
+      enableresizing={!isCollapsed}
     >
       <div className="overlay-texture-window-container">
         <div className="overlay-texture-window-title drag-handle">
