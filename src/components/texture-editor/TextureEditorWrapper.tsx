@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { TextureEditor } from './TextureEditor'
 
-export function TextureEditorWrapper() {
+interface TextureEditorWrapperProps {
+  baseColor: string
+}
+
+export function TextureEditorWrapper({ baseColor }: TextureEditorWrapperProps) {
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
   return (
@@ -59,6 +63,7 @@ export function TextureEditorWrapper() {
         <TextureEditor 
           selectedId={selectedId}
           onSelectionChange={setSelectedId}
+          baseColor={baseColor}
         />
       </div>
     </div>

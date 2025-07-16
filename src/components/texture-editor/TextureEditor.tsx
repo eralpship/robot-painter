@@ -19,9 +19,10 @@ interface TextElement {
 interface TextureEditorProps {
   selectedId: number | null
   onSelectionChange: (id: number | null) => void
+  baseColor: string
 }
 
-export function TextureEditor({ selectedId, onSelectionChange }: TextureEditorProps) {
+export function TextureEditor({ selectedId, onSelectionChange, baseColor }: TextureEditorProps) {
   const stageRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayTextureContext = useContext(OverlayTextureContext)
@@ -226,11 +227,11 @@ export function TextureEditor({ selectedId, onSelectionChange }: TextureEditorPr
             left: 0,
             width: '100%',
             height: '100%',
+            backgroundColor: baseColor,
             backgroundImage: 'url(/overlay_stencil.png)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            opacity: 0.1,
             zIndex: 1,
             pointerEvents: 'none'
           }}

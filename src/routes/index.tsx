@@ -175,7 +175,7 @@ function AppContent() {
         />
       </Canvas>
       <OverlayTextureWindow title='Texture Editor'>
-        <TextureEditorWrapper />
+        <TextureEditorWrapper baseColor={baseColor} />
       </OverlayTextureWindow>
     </div>
   )
