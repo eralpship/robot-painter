@@ -1,19 +1,45 @@
 # Texture Editor Implementation Plan
 
 ## Project Overview
-Building a minimal texture editor that edits the overlay canvas. The existing system automatically applies canvas changes to the 3D model.
+Building a minimal texture editor for a 3D robot painting tool. The editor allows users to add and manipulate text on the robot's surface in real-time.
+
+### System Architecture
+- **3D Robot Model**: Main application displays a 3D robot model using Three.js
+- **Overlay Texture System**: Uses a 4096x4096 canvas as texture applied to the robot
+- **OverlayTextureContext**: React context providing shared canvas and update methods
+- **TextureEditor**: New Konva-based component for editing text on the overlay canvas
+
+### Key Technical Constraints
+- Canvas resolution: 4096x4096 (CANVAS_SIZE constant)
+- Framework: React with TypeScript
+- 3D rendering: Three.js with @react-three/fiber
+- Canvas library: Konva with react-konva
+- Existing context: OverlayTextureContext provides `canvas`, `context`, and `triggerTextureUpdate()`
+
+## CRITICAL ISSUES TO FIX FIRST
+
+### Current Implementation Problems
+1. **Mouse Drag Sticking**: Text continues following mouse after drag ends
+2. **onTransform Error**: Function throws "not implemented" error
+3. **Initial Rendering**: Sample Text not visible until window resize
+
+### Required Fixes Before Implementation
+- Implement proper `onTransform` handler in TextureEditor
+- Use `stopDrag()` method for drag end events
+- Add stage ready state for initial sync
+- Use event-based sync instead of continuous interval
 
 ## Phase 1: Minimal Text Editor
 
 ### Scope
-- ✅ Edit text directly on the overlay canvas (4096x4096)
+- ✅ Edit text directly on the overlay canvas (CANVAS_SIZE x CANVAS_SIZE)
 - ✅ Move/scale/rotate text with Konva Transformer
 - ✅ Predefined font and size (keep it simple)
 - ✅ No separate UI - just functional text editing on canvas
 - ✅ Leverage existing canvas-to-texture pipeline
 
 ### System Integration
-- **OverlayTextureContext** provides the 4096x4096 canvas
+- **OverlayTextureContext** provides the CANVAS_SIZE x CANVAS_SIZE canvas
 - **TextureEditor** draws directly on this canvas using Konva
 - **Existing system** automatically applies canvas as texture to 3D model
 - **No base color editing** - only overlay layer editing
@@ -52,8 +78,8 @@ npm install react-konva@^18.2.10 konva@^9.2.0 --save
 **Task:** Create a minimal Konva Stage wrapper component
 **Success Criteria:**
 - ✅ Component renders without errors
-- ✅ Konva Stage displays with correct dimensions (512x512)
-- ✅ Stage has proper scaling (512/4096 ratio)
+- ✅ Konva Stage displays with correct dimensions (CANVAS_SIZE x CANVAS_SIZE)
+- ✅ Stage uses CSS scaling to fit container
 - ✅ Basic event handling (onClick) works
 - ✅ Component can be imported and used
 
@@ -63,7 +89,7 @@ npm install react-konva@^18.2.10 konva@^9.2.0 --save
 - ✅ OverlayTextureContext is properly imported
 - ✅ Canvas reference is obtained from context
 - ✅ No errors when context is undefined
-- ✅ Canvas dimensions are correct (4096x4096)
+- ✅ Canvas dimensions are correct (CANVAS_SIZE x CANVAS_SIZE)
 - ✅ Context integration doesn't break existing functionality
 
 #### Step 5: Add Single Hardcoded Text Element
@@ -99,9 +125,9 @@ npm install react-konva@^18.2.10 konva@^9.2.0 --save
 **Success Criteria:**
 - ✅ Canvas sync function works without errors
 - ✅ Konva content appears on overlay canvas
-- ✅ Sync maintains proper resolution (4096x4096)
+- ✅ Sync maintains proper resolution (CANVAS_SIZE x CANVAS_SIZE)
 - ✅ Performance is acceptable (no lag during transforms)
-- ✅ Debounced sync prevents excessive updates
+- ✅ Event-based sync prevents excessive updates
 - ✅ Error handling prevents crashes
 
 #### Step 9: Add Keyboard Support
@@ -157,9 +183,10 @@ TextureEditor
 
 ##### 1. Basic TextureEditor Component
 ```typescript
-import React, { useRef, useState, useContext, useCallback } from 'react'
+import React, { useRef, useState, useContext, useCallback, useEffect } from 'react'
 import { Stage, Layer, Text, Transformer } from 'react-konva'
 import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
+import { CANVAS_SIZE } from './utils/konvaHelpers'
 
 interface TextElement {
   id: number
@@ -174,7 +201,7 @@ interface TextElement {
 }
 
 export function TextureEditor() {
-  const { canvas: overlayCanvas } = useContext(OverlayTextureContext)!
+  const overlayTexture = useContext(OverlayTextureContext)!
   const stageRef = useRef<any>(null)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   
@@ -209,32 +236,47 @@ export function TextureEditor() {
   const syncToOverlayCanvas = useCallback(() => {
     try {
       const stage = stageRef.current
-      if (!stage || !overlayCanvas) return
+      if (!stage || !overlayTexture) return
       
-      const ctx = overlayCanvas.getContext('2d')!
-      ctx.clearRect(0, 0, 4096, 4096)
+      // Access canvas and context from OverlayTextureContext
+      const canvas = overlayTexture.canvas
+      const ctx = overlayTexture.context
       
-      // Scale context to match full resolution
-      ctx.save()
-      ctx.scale(4096 / 512, 4096 / 512)
+      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
       
-      // Draw stage content directly to context
-      stage.getLayer().draw({ ctx })
+      // Option 1: Simple canvas copy (both are CANVAS_SIZE x CANVAS_SIZE)
+      const konvaCanvas = stage.toCanvas()
+      ctx.drawImage(konvaCanvas, 0, 0)
       
-      ctx.restore()
+      // Option 2: Direct layer canvas access (more efficient)
+      // const layer = stage.getLayers()[0]
+      // const nativeCanvas = layer.getNativeCanvasElement()
+      // ctx.drawImage(nativeCanvas, 0, 0)
+      
+      // Trigger texture update on the 3D model
+      overlayTexture.triggerTextureUpdate()
     } catch (error) {
       console.error('Failed to sync to overlay canvas:', error)
     }
-  }, [overlayCanvas])
+  }, [overlayTexture])
   
   return (
-    <div style={{ border: '1px solid #ccc', display: 'inline-block' }}>
+    <div style={{ 
+      border: '1px solid #ccc', 
+      display: 'inline-block',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden'
+    }}>
       <Stage
         ref={stageRef}
-        width={512}
-        height={512}
-        scaleX={512 / 4096}
-        scaleY={512 / 4096}
+        width={CANVAS_SIZE}
+        height={CANVAS_SIZE}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain'
+        }}
         listening={true}
         onMouseDown={(e) => {
           // Check if clicked on empty area
@@ -392,32 +434,39 @@ useEffect(() => {
 }, [textElements, debouncedSync])
 ```
 
-##### 4. Stage Scaling for UI with Retina Support
+##### 4. Simplified Stage Scaling with CSS
 ```typescript
-// Scale down for UI display (512x512) but maintain full resolution (4096x4096)
-const DISPLAY_SIZE = 512
-const CANVAS_SIZE = 4096
-const SCALE_FACTOR = DISPLAY_SIZE / CANVAS_SIZE
+// Use native CANVAS_SIZE (4096x4096), scale with CSS
+import { CANVAS_SIZE } from './utils/konvaHelpers'
 
-// Add retina display support
-const pixelRatio = window.devicePixelRatio || 1
-
-// In Stage props:
-width={DISPLAY_SIZE * pixelRatio}
-height={DISPLAY_SIZE * pixelRatio}
-scaleX={SCALE_FACTOR}
-scaleY={SCALE_FACTOR}
-style={{
-  width: DISPLAY_SIZE + 'px',
-  height: DISPLAY_SIZE + 'px'
-}}
+// Stage component setup:
+<div style={{
+  width: '100%',
+  height: '100%',
+  overflow: 'hidden'
+}}>
+  <Stage
+    width={CANVAS_SIZE}
+    height={CANVAS_SIZE}
+    style={{
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain'
+    }}
+  >
+    <Layer>
+      {/* Your content */}
+    </Layer>
+  </Stage>
+</div>
 ```
 
 #### Key Integration Points
-- **OverlayTextureContext**: Provides the 4096x4096 canvas
-- **Canvas sync**: Konva Stage → overlay canvas → 3D texture
-- **Scaling**: Display at 512x512 but render at full 4096x4096 resolution
-- **Transform handling**: Real-time updates with debounced canvas sync
+- **OverlayTextureContext**: Provides the CANVAS_SIZE x CANVAS_SIZE canvas and context
+- **Canvas sync**: Konva Stage (CANVAS_SIZE) → overlay canvas (CANVAS_SIZE) → 3D texture
+- **Scaling**: Native CANVAS_SIZE canvas scaled to fit window with CSS
+- **Transform handling**: Event-based sync with requestAnimationFrame
+- **Mouse coordinates**: Automatically handled by Konva at native resolution
 
 #### React-Konva Key Concepts
 1. **Stage**: Root container (like a canvas)
@@ -494,6 +543,127 @@ import { Spring } from 'react-spring/konva'
 - Performance benchmarks for large text count
 - Visual regression tests
 
+## Simplified Canvas Architecture
+
+### Constants from konvaHelpers.ts
+```typescript
+// Available constants from ./utils/konvaHelpers
+export const DISPLAY_SIZE = 512    // Legacy - not used in new approach
+export const CANVAS_SIZE = 4096    // Native canvas resolution
+export const SCALE_FACTOR = DISPLAY_SIZE / CANVAS_SIZE // Legacy - not used
+```
+
+### Benefits of Native CANVAS_SIZE with CSS Scaling
+
+**Advantages:**
+- No complex pixelRatio calculations needed
+- Direct 1:1 canvas copying (both are CANVAS_SIZE x CANVAS_SIZE)
+- Automatic mouse coordinate scaling handled by Konva
+- CSS handles display scaling efficiently
+- Simplified synchronization logic
+- Better performance (no scaling during sync)
+
+**Implementation:**
+```typescript
+// Konva Stage: CANVAS_SIZE x CANVAS_SIZE (native resolution)
+// Overlay Canvas: CANVAS_SIZE x CANVAS_SIZE (shared texture)
+// Display: CSS scaled to fit window
+
+import { CANVAS_SIZE } from './utils/konvaHelpers'
+
+<Stage width={CANVAS_SIZE} height={CANVAS_SIZE} style={{ width: '100%', height: '100%' }}>
+```
+
+### Correct OverlayTextureContext Usage
+```typescript
+// Access the context
+const overlayTexture = useContext(OverlayTextureContext)
+
+// Access canvas and context
+overlayTexture?.canvas    // HTMLCanvasElement (CANVAS_SIZE x CANVAS_SIZE)
+overlayTexture?.context   // CanvasRenderingContext2D
+overlayTexture?.triggerTextureUpdate() // Method to update 3D texture
+```
+
+### Optimized Canvas Synchronization Approaches
+
+#### Approach 1: Native 4096x4096 Canvas (Recommended - Simplified)
+```typescript
+const syncCanvas = useCallback(() => {
+  if (!stageRef.current || !overlayTexture) return
+  
+  // Get native CANVAS_SIZE canvas from Konva (no pixelRatio needed)
+  const konvaCanvas = stageRef.current.toCanvas()
+  
+  // Direct copy - both canvases are CANVAS_SIZE x CANVAS_SIZE
+  overlayTexture.context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+  overlayTexture.context.drawImage(konvaCanvas, 0, 0)
+  overlayTexture.triggerTextureUpdate()
+}, [overlayTexture])
+```
+
+#### Approach 2: Direct Layer Canvas Access (Most Efficient)
+```typescript
+const syncCanvas = useCallback(() => {
+  if (!stageRef.current || !overlayTexture) return
+  
+  const layer = stageRef.current.getLayers()[0]
+  const nativeCanvas = layer.getNativeCanvasElement()
+  
+  // Direct canvas-to-canvas copy - both are CANVAS_SIZE x CANVAS_SIZE
+  overlayTexture.context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+  overlayTexture.context.drawImage(nativeCanvas, 0, 0)
+  overlayTexture.triggerTextureUpdate()
+}, [overlayTexture])
+```
+
+#### Approach 3: Event-Based Sync (Performance Optimized)
+```typescript
+const [needsSync, setNeedsSync] = useState(false)
+
+// Mark for sync on changes
+const handleTransform = (id: number, attrs: any) => {
+  setTextElements(prev => prev.map(el => 
+    el.id === id ? { ...el, ...attrs } : el
+  ))
+  setNeedsSync(true)
+}
+
+// Sync using requestAnimationFrame
+useEffect(() => {
+  if (!needsSync || !stageRef.current || !overlayTexture) return
+  
+  const frameId = requestAnimationFrame(() => {
+    // Simple canvas copy - no pixelRatio needed
+    const konvaCanvas = stageRef.current.toCanvas()
+    
+    overlayTexture.context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+    overlayTexture.context.drawImage(konvaCanvas, 0, 0)
+    overlayTexture.triggerTextureUpdate()
+    
+    setNeedsSync(false)
+  })
+  
+  return () => cancelAnimationFrame(frameId)
+}, [needsSync, overlayTexture])
+```
+
+## Implementation Priority Order
+
+### Priority 1: Fix Critical Issues (MUST DO FIRST)
+1. **Fix onTransform Error**: Implement proper transform handler in TextureEditor
+2. **Fix Mouse Drag Sticking**: Use `stopDrag()` method and proper event handling  
+3. **Fix Initial Rendering**: Add stage ready state and force initial sync
+
+### Priority 2: Implement Optimized Sync
+4. **Event-Based Sync**: Replace continuous interval with event-based updates
+5. **Performance Optimization**: Use direct canvas access methods
+
+### Priority 3: Polish and Testing
+6. **Error Handling**: Add proper try-catch blocks
+7. **Cleanup**: Ensure proper useEffect cleanup
+8. **Testing**: Verify all transformations work correctly
+
 ## Notes
 - Keep it minimal - no complex UI or features
 - Use existing overlay canvas system
@@ -501,3 +671,4 @@ import { Spring } from 'react-spring/konva'
 - Single hardcoded text element to start
 - Follow Konva best practices for performance
 - Implement proper error handling and cleanup
+- Use event-based sync instead of continuous interval for better performance
