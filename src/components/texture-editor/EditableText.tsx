@@ -153,7 +153,8 @@ export function EditableText({
           rotationSnaps={[0, 90, 180, 270]}
           boundBoxFunc={(oldBox, newBox) => {
             // Prevent negative scaling and set minimum size
-            if (newBox.width < 30 || newBox.height < 15) {
+            // Allow much smaller text - minimum 5px width/height
+            if (newBox.width < 5 || newBox.height < 5) {
               return oldBox
             }
             return newBox

@@ -1,5 +1,5 @@
 import { useRef, useContext, useState, useCallback, useEffect } from 'react'
-import { Stage, Layer } from 'react-konva'
+import { Stage, Layer, Text } from 'react-konva'
 import { CANVAS_SIZE } from './utils/konvaHelpers'
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
 import { EditableText } from './EditableText'
@@ -23,34 +23,84 @@ interface TextureEditorProps {
 }
 
 export function TextureEditor({ selectedId, onSelectionChange, baseColor }: TextureEditorProps) {
-  const stageRef = useRef<any>(null)
+  const displayStageRef = useRef<any>(null)
+  const exportStageRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayTextureContext = useContext(OverlayTextureContext)
   const [stageSize, setStageSize] = useState({ width: 512, height: 512 })
+  const [stageReady, setStageReady] = useState(false)
 
   const overlayTexture = useContext(OverlayTextureContext)
 
+  // Convert coordinates from display stage to export stage
+  const convertToExportCoords = useCallback((displayCoords: any) => {
+    const scaleFactor = CANVAS_SIZE / stageSize.width
+    return {
+      ...displayCoords,
+      x: displayCoords.x * scaleFactor,
+      y: displayCoords.y * scaleFactor,
+      fontSize: displayCoords.fontSize * scaleFactor
+    }
+  }, [stageSize.width])
+
+  // Sync canvas function using hidden export stage
+  const syncToOverlayCanvas = useCallback(() => {
+    if (!exportStageRef.current || !overlayTexture || !stageReady) {
+      console.log('Sync skipped:', { exportStage: !!exportStageRef.current, texture: !!overlayTexture, ready: stageReady })
+      return
+    }
+    
+    try {
+      const exportStage = exportStageRef.current
+      console.log('Syncing canvas, export stage size:', exportStage.width(), 'x', exportStage.height())
+      
+      // Export from the hidden 4096x4096 stage
+      const konvaCanvas = exportStage.toCanvas()
+      console.log('Konva canvas created:', konvaCanvas.width, 'x', konvaCanvas.height)
+      
+      // Update overlay texture - direct 1:1 copy since both are CANVAS_SIZE x CANVAS_SIZE
+      overlayTexture.context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+      overlayTexture.context.drawImage(konvaCanvas, 0, 0)
+      overlayTexture.triggerTextureUpdate()
+      console.log('Canvas synced successfully')
+    } catch (error) {
+      console.error('Failed to sync canvas:', error)
+    }
+  }, [overlayTexture, stageReady])
+
+  // Initial sync when stage is ready
   useEffect(() => {
-    const interval = setInterval(() => {
-      const konvaCanvas = stageRef.current.toCanvas();
+    if (stageReady) {
+      // Force initial sync after stage is ready
+      setTimeout(() => {
+        console.log('Stage ready, triggering initial sync')
+        setNeedsSync(true)
+      }, 100)
+    }
+  }, [stageReady])
 
-      overlayTexture?.context.clearRect(0, 0, overlayTexture.canvas.width, overlayTexture.canvas.height);
-      overlayTexture?.context.drawImage(konvaCanvas, 0, 0, overlayTexture.canvas.width, overlayTexture.canvas.height);
-      overlayTexture?.triggerTextureUpdate();
-
-    }, 33); // ~30fps
-
-    return () => clearInterval(interval);
-  }, []);
+  // Event-based sync using requestAnimationFrame for smooth updates
+  const [needsSync, setNeedsSync] = useState(false)
   
-  // Initial text element - positioned in canvas coordinates (4096x4096)
+  useEffect(() => {
+    if (!needsSync || !stageReady) return
+    
+    const frameId = requestAnimationFrame(() => {
+      syncToOverlayCanvas()
+      setNeedsSync(false)
+    })
+    
+    return () => cancelAnimationFrame(frameId)
+  }, [needsSync, stageReady, syncToOverlayCanvas])
+  
+  // Initial text element - positioned for display stage coordinates
   const [textElements, setTextElements] = useState<TextElement[]>([{
     id: 1,
     text: "Sample Text",
-    x: 1500, // Position where it will be visible on robot front
-    y: 1800, // Position where it will be visible on robot front
-    fontSize: 200,
-    fill: '#000000',
+    x: 50, // Display coordinates
+    y: 100, // Display coordinates
+    fontSize: 40, // Display font size
+    fill: '#ff0000', // Red for debugging
     rotation: 0,
     scaleX: 1,
     scaleY: 1
@@ -136,6 +186,56 @@ export function TextureEditor({ selectedId, onSelectionChange, baseColor }: Text
     }
   }, [])
 
+  // Mark stage as ready when both stages are available
+  useEffect(() => {
+    if (displayStageRef.current && exportStageRef.current && stageSize.width > 0 && stageSize.height > 0 && !stageReady) {
+      setTimeout(() => {
+        console.log('Setting stages ready, stage size:', stageSize)
+        console.log('Display stage ref:', displayStageRef.current)
+        console.log('Export stage ref:', exportStageRef.current)
+        console.log('Text elements:', textElements)
+        setStageReady(true)
+        
+        // Force stage redraw
+        if (displayStageRef.current) {
+          displayStageRef.current.batchDraw()
+        }
+        if (exportStageRef.current) {
+          exportStageRef.current.batchDraw()
+        }
+      }, 50)
+    }
+  }, [stageSize, stageReady, textElements])
+
+  // Trigger sync when text elements change
+  useEffect(() => {
+    if (stageReady) {
+      setNeedsSync(true)
+    }
+  }, [textElements, stageReady])
+
+  // Handle responsive scaling when stage size changes
+  const [previousStageSize, setPreviousStageSize] = useState(stageSize)
+  
+  useEffect(() => {
+    if (stageReady && previousStageSize.width > 0 && stageSize.width !== previousStageSize.width) {
+      // Calculate scale factor based on width change
+      const scaleFactor = stageSize.width / previousStageSize.width
+      
+      // Update text elements with new scaled positions and sizes
+      setTextElements(prev => prev.map(element => ({
+        ...element,
+        x: element.x * scaleFactor,
+        y: element.y * scaleFactor,
+        fontSize: element.fontSize * scaleFactor
+      })))
+      
+      setPreviousStageSize(stageSize)
+    } else if (stageSize.width > 0) {
+      setPreviousStageSize(stageSize)
+    }
+  }, [stageSize, previousStageSize, stageReady])
+
   return (
     <div 
       ref={containerRef}
@@ -172,15 +272,16 @@ export function TextureEditor({ selectedId, onSelectionChange, baseColor }: Text
             pointerEvents: 'none'
           }}
         />
-        {/* Konva canvas on top */}
+        {/* Display Stage - visible for UI interaction */}
         <Stage
-          ref={stageRef}
+          ref={displayStageRef}
           width={stageSize.width}
           height={stageSize.height}
-          scaleX={stageSize.width / CANVAS_SIZE}
-          scaleY={stageSize.height / CANVAS_SIZE}
           listening={true}
-          style={{ position: 'relative', zIndex: 2 }}
+          style={{ 
+            position: 'relative', 
+            zIndex: 2
+          }}
           onMouseDown={(e) => {
             // Check if clicked on empty area
             if (e.target === e.target.getStage()) {
@@ -189,22 +290,65 @@ export function TextureEditor({ selectedId, onSelectionChange, baseColor }: Text
           }}
         >
           <Layer>
-          {textElements.map((textElement) => (
-            <EditableText
-              onTransform={function (attrs): void {
-                throw new Error('Function not implemented.')
-              } } key={textElement.id}
-              {...textElement}
-              isSelected={selectedId === textElement.id}
-              onSelect={() => onSelectionChange(textElement.id)}
-              onTextChange={(newText) => {
-                setTextElements(prev => prev.map(el => el.id === textElement.id
-                  ? { ...el, text: newText }
-                  : el
-                )
-                )
-              } }            />
-          ))}
+            {textElements.map((textElement) => (
+              <EditableText
+                key={textElement.id}
+                {...textElement}
+                isSelected={selectedId === textElement.id}
+                onSelect={() => onSelectionChange(textElement.id)}
+                onTransform={(attrs) => {
+                  setTextElements(prev => 
+                    prev.map(el => 
+                      el.id === textElement.id 
+                        ? { ...el, ...attrs }
+                        : el
+                    )
+                  )
+                  setNeedsSync(true)
+                }}
+                onTextChange={(newText) => {
+                  setTextElements(prev => prev.map(el => el.id === textElement.id
+                    ? { ...el, text: newText }
+                    : el
+                  )
+                  )
+                  setNeedsSync(true)
+                }}
+              />
+            ))}
+          </Layer>
+        </Stage>
+        
+        {/* Hidden Export Stage - 4096x4096 for texture export */}
+        <Stage
+          ref={exportStageRef}
+          width={CANVAS_SIZE}
+          height={CANVAS_SIZE}
+          listening={false}
+          style={{ 
+            position: 'absolute',
+            left: '-9999px', // Hidden off-screen
+            top: '0'
+          }}
+        >
+          <Layer>
+            {/* Export elements with scaled coordinates */}
+            {textElements.map((textElement) => {
+              const exportCoords = convertToExportCoords(textElement)
+              return (
+                <Text
+                  key={`export-${textElement.id}`}
+                  text={textElement.text}
+                  x={exportCoords.x}
+                  y={exportCoords.y}
+                  fontSize={exportCoords.fontSize}
+                  fill={textElement.fill}
+                  rotation={textElement.rotation}
+                  scaleX={textElement.scaleX}
+                  scaleY={textElement.scaleY}
+                />
+              )
+            })}
           </Layer>
         </Stage>
       </div>
