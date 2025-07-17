@@ -25,10 +25,25 @@ Building a minimal texture editor for a 3D robot painting tool. The editor allow
 
 ## CRITICAL ISSUES TO FIX FIRST
 
+### Current Implementation Status
+**Files that exist:**
+- `/src/components/texture-editor/TextureEditor.tsx` (has bugs)
+- `/src/components/texture-editor/EditableText.tsx` (working)
+- `/src/components/texture-editor/utils/konvaHelpers.ts` (has CANVAS_SIZE constant)
+- Dependencies: react-konva and konva are already installed
+
 ### Current Implementation Problems
 1. **Mouse Drag Sticking**: Text continues following mouse after drag ends
-2. **onTransform Error**: Function throws "not implemented" error
+   - **How to reproduce**: Click and drag "Sample Text", release mouse - text keeps following cursor
+   - **Root cause**: Missing `stopDrag()` call in drag end handler
+   
+2. **onTransform Error**: Function throws "not implemented" error  
+   - **How to reproduce**: Try to resize or rotate text using transformer handles
+   - **Root cause**: Line 195 in TextureEditor.tsx has placeholder that throws error
+   
 3. **Initial Rendering**: Sample Text not visible until window resize
+   - **How to reproduce**: Refresh page, text not visible until window resize
+   - **Root cause**: Canvas sync starts before stage is properly sized
 
 ### Required Fixes Before Implementation
 - Implement proper `onTransform` handler in TextureEditor
@@ -44,6 +59,49 @@ Building a minimal texture editor for a 3D robot painting tool. The editor allow
 5. **Test Interactions**: Click, drag, and transform text elements
 6. **Verify Changes**: Ensure text appears on both texture editor and 3D model
 7. **Research Documentation**: Use context7 MCP for Konva/react-konva best practices
+
+### Current Integration Point
+**TextureEditor is already integrated** in the main application:
+- **Location**: Rendered in a draggable window in the main UI
+- **Context**: Already wrapped in OverlayTextureCanvasProvider
+- **Access**: Available via texture editor window (left side of screen)
+- **3D Model**: Changes should appear immediately on the robot model (right side)
+
+### Success Criteria for "Done"
+✅ **All 3 critical issues fixed**:
+1. Text can be dragged and stops following mouse on release
+2. Text can be resized and rotated using transformer handles without errors
+3. "Sample Text" is visible immediately on page load
+
+✅ **Functionality working**:
+- Click text to select (blue transformer handles appear)
+- Drag text to move position
+- Use transformer handles to resize and rotate
+- Text appears on both texture editor canvas AND 3D robot model
+- No console errors during normal operation
+
+✅ **Performance**:
+- No lag during transformations
+- Smooth real-time updates to 3D model
+- Event-based sync (not continuous interval)
+
+## Quick Start for AI Agents
+
+### Immediate Actions (Do This First)
+1. **Start dev server**: `npm run dev`
+2. **Open app**: Navigate to localhost:3000 with Playwright MCP
+3. **Take screenshot**: Document current state
+4. **Check console**: Look for any errors
+5. **Test current issues**: Try dragging text, using transformer handles
+6. **Read current files**: 
+   - `/src/components/texture-editor/TextureEditor.tsx` (focus on line 195)
+   - `/src/components/texture-editor/EditableText.tsx` (drag handlers)
+
+### Fix Priority Order
+1. **Fix onTransform error** (line 195 in TextureEditor.tsx)
+2. **Fix mouse drag sticking** (EditableText.tsx drag handlers)  
+3. **Fix initial rendering** (add stage ready state)
+4. **Optimize sync** (event-based instead of interval)
 
 ## Phase 1: Minimal Text Editor
 
@@ -498,16 +556,22 @@ import { CANVAS_SIZE } from './utils/konvaHelpers'
 - No additional UI needed - just functional editing
 
 ### File Changes Required
-- Create `/src/components/texture-editor/TextureEditor.tsx`
-- Create `/src/components/texture-editor/EditableText.tsx`
-- Create `/src/components/texture-editor/hooks/useCanvasSync.ts`
-- Create `/src/components/texture-editor/utils/konvaHelpers.ts`
-- Update existing component to include TextureEditor (integration point TBD)
+- **EDIT** `/src/components/texture-editor/TextureEditor.tsx` (fix bugs, don't recreate)
+- **EDIT** `/src/components/texture-editor/EditableText.tsx` (fix drag handlers) 
+- **EXISTS** `/src/components/texture-editor/utils/konvaHelpers.ts` (has CANVAS_SIZE constant)
+- **NOT NEEDED** `/src/components/texture-editor/hooks/useCanvasSync.ts` (sync logic goes in main component)
+- **ALREADY DONE** TextureEditor integration (already in main app)
+
+### What NOT to Do
+- ❌ Don't recreate existing files from scratch
+- ❌ Don't add new integration points (TextureEditor is already integrated)
+- ❌ Don't install new dependencies (react-konva and konva already installed)
+- ❌ Don't create new hooks or utilities (keep it simple)
+- ❌ Don't modify the main application structure
 
 ### Dependencies
-```bash
-npm install react-konva@^18.2.10 konva@^9.2.0 --save
-```
+✅ **Already installed**: react-konva@^18.2.10 and konva@^9.2.0
+❌ **Do not reinstall** - dependencies are already in package.json
 
 ## Performance Considerations
 - Use `transformsEnabled="position"` for better performance when only position changes
