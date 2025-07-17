@@ -16,6 +16,13 @@ Building a minimal texture editor for a 3D robot painting tool. The editor allow
 - Canvas library: Konva with react-konva
 - Existing context: OverlayTextureContext provides `canvas`, `context`, and `triggerTextureUpdate()`
 
+### Development Workflow for AI Agents
+- **Testing Changes**: Use localhost:3000 to view the application
+- **Visual Debugging**: Use Playwright MCP to take screenshots and analyze behavior
+- **Development Server**: If not running, start with `npm run dev`
+- **Documentation**: Use context7 MCP server to lookup Konva and react-konva best practices
+- **Logs**: Check browser console via Playwright MCP for errors and debugging info
+
 ## CRITICAL ISSUES TO FIX FIRST
 
 ### Current Implementation Problems
@@ -28,6 +35,15 @@ Building a minimal texture editor for a 3D robot painting tool. The editor allow
 - Use `stopDrag()` method for drag end events
 - Add stage ready state for initial sync
 - Use event-based sync instead of continuous interval
+
+### Testing and Debugging Workflow
+1. **Start Development Server**: `npm run dev` (if not already running)
+2. **Open Application**: Navigate to localhost:3000 using Playwright MCP
+3. **Take Screenshots**: Use Playwright MCP to capture current state
+4. **Check Console**: Use Playwright MCP to view browser console for errors
+5. **Test Interactions**: Click, drag, and transform text elements
+6. **Verify Changes**: Ensure text appears on both texture editor and 3D model
+7. **Research Documentation**: Use context7 MCP for Konva/react-konva best practices
 
 ## Phase 1: Minimal Text Editor
 
@@ -663,6 +679,47 @@ useEffect(() => {
 6. **Error Handling**: Add proper try-catch blocks
 7. **Cleanup**: Ensure proper useEffect cleanup
 8. **Testing**: Verify all transformations work correctly
+
+## MCP Tools Usage for AI Agents
+
+### Playwright MCP Commands
+```javascript
+// Navigate to application
+mcp__playwright__browser_navigate({ url: "http://localhost:3000" })
+
+// Take screenshot to see current state
+mcp__playwright__browser_take_screenshot({ filename: "current-state.png" })
+
+// Check browser console for errors
+mcp__playwright__browser_console_messages()
+
+// Click on elements to test interactions
+mcp__playwright__browser_click({ element: "Sample Text", ref: "..." })
+
+// Take snapshot to see page structure
+mcp__playwright__browser_snapshot()
+```
+
+### Context7 MCP for Documentation
+```javascript
+// Research Konva best practices
+WebFetch({ 
+  url: "https://konvajs.org/docs/react/index.html",
+  prompt: "Extract best practices for canvas synchronization and performance"
+})
+
+// Look up specific Konva methods
+WebFetch({ 
+  url: "https://konvajs.org/api/Konva.Stage.html",
+  prompt: "Find information about toCanvas method and canvas export"
+})
+```
+
+### Development Workflow Integration
+- Always test changes visually with Playwright MCP
+- Use screenshots to document before/after states
+- Check console logs for errors after each change
+- Research official documentation before implementing solutions
 
 ## Notes
 - Keep it minimal - no complex UI or features

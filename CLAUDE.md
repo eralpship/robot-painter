@@ -37,6 +37,35 @@ npm run lint       # Run linting
 npm run typecheck  # Type checking
 ```
 
+## AI Agent Development Workflow
+When working on this project as an AI agent, follow this workflow:
+
+### 1. Start Development Server
+```bash
+npm run dev  # Start the development server (not npm start)
+```
+
+### 2. Visual Testing with Playwright MCP
+- **Application URL**: http://localhost:3000
+- **Screenshots**: Use `mcp__playwright__browser_take_screenshot()` to capture current state
+- **Console Logs**: Use `mcp__playwright__browser_console_messages()` to check for errors
+- **Interactions**: Use `mcp__playwright__browser_click()` to test UI elements
+- **Page Structure**: Use `mcp__playwright__browser_snapshot()` to understand layout
+
+### 3. Research Documentation with Context7 MCP
+- **Konva Documentation**: Use `WebFetch()` with konvajs.org URLs to research best practices
+- **React-Konva Patterns**: Look up official documentation for implementation patterns
+- **Performance Optimization**: Research canvas synchronization and performance tips
+
+### 4. Testing Protocol
+1. Make code changes
+2. Save files (development server auto-reloads)
+3. Navigate to localhost:3000 with Playwright MCP
+4. Take screenshots to verify changes
+5. Check browser console for errors
+6. Test interactions (click, drag, transform text)
+7. Verify text appears on both texture editor and 3D robot model
+
 ## Git Push Instructions
 **IMPORTANT**: When pushing to remote, always use:
 ```bash
@@ -112,8 +141,8 @@ The project uses a sophisticated material swapping system that enables real-time
 ## Documentation and API Reference
 **IMPORTANT**: Before making implementation plans or decisions, always consult official documentation using available documentation tools:
 
-1. **For all project dependencies** (React, Three.js, @react-three/fiber, @react-three/drei, @react-spring/three, TanStack Router, Leva, react-rnd, Vite):
-   - Use available documentation lookup tools to find current documentation
+1. **For all project dependencies** (React, Three.js, @react-three/fiber, @react-three/drei, @react-spring/three, TanStack Router, Leva, react-rnd, Vite, Konva, react-konva):
+   - Use context7 MCP server with `WebFetch()` to lookup official documentation
    - Never assume API details or make implementation plans without checking docs first
    - Always verify API signatures, available methods, and configuration options
 
@@ -124,7 +153,18 @@ The project uses a sophisticated material swapping system that enables real-time
    - Learning new library capabilities
    - Troubleshooting build or runtime errors
 
+3. **Specific for Konva/react-konva work**:
+   - Use `WebFetch()` with konvajs.org URLs for official documentation
+   - Research canvas synchronization patterns
+   - Look up performance optimization techniques
+   - Verify event handling best practices
+
 **Never make assumptions about library capabilities without consulting the official documentation first.**
+
+### MCP Tools Available
+- **Playwright MCP**: For visual testing, screenshots, console logs, and UI interactions
+- **Context7 MCP**: For documentation research and API lookup via `WebFetch()`
+- **Development Server**: Always use `npm run dev` (not `npm start`) for the development server
 
 
 ## Key Component Interfaces
