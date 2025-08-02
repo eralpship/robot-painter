@@ -30,8 +30,9 @@ export function TextureEditor({ baseColor }: TextureEditorProps) {
 
   useEffect(() => {
     updateTexture()
-    const interval = setInterval(updateTexture, 100)
-    return () => clearInterval(interval)  
+    // TODO: draw only when something changes
+    // const interval = setInterval(updateTexture, 100)
+    // return () => clearInterval(interval)  
   }, [])
 
 
