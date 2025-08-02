@@ -15,11 +15,10 @@
     "@tanstack/react-router": "^1.114.3",
     "@tanstack/react-router-devtools": "^1.114.3",
     "@tanstack/router-plugin": "^1.114.3",
-    "konva": "^9.3.22",
     "leva": "^0.10.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-konva": "^19.0.7",
+    "react-moveable": "^0.56.0",
     "react-rnd": "^10.5.2",
     "three": "^0.175.0"
   },
@@ -32,6 +31,7 @@
     "jsdom": "^26.0.0",
     "typescript": "^5.7.2",
     "vite": "^6.1.0",
+    "vite-plugin-svgr": "^4.3.0",
     "vitest": "^3.0.5",
     "web-vitals": "^4.2.4"
   }

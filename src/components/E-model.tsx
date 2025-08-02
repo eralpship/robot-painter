@@ -65,7 +65,7 @@ function createPixeImageUrl() {
 
 const loadingManager = new THREE.LoadingManager()
 loadingManager.setURLModifier((url) => {
-  if (url.includes('overlay_stencil.png')) {
+  if (url.includes('paintable_uv.png')) {
     return createPixeImageUrl()
   }
   return url

@@ -11,6 +11,7 @@ Interactive 3D web application for customizing and painting robot models in real
 - **Routing**: TanStack Router (file-based)
 - **UI Controls**: Leva for real-time parameter controls
 - **Window Management**: react-rnd for draggable/resizable windows
+- **Texture Editor**: SVG + react-moveable for text manipulation
 
 ## Project Setup
 - Generated using: `npx create-tsrouter-app@latest my-app --template file-router`
@@ -53,8 +54,8 @@ npm run dev  # Start the development server (not npm start)
 - **Page Structure**: Use `mcp__playwright__browser_snapshot()` to understand layout
 
 ### 3. Research Documentation with Context7 MCP
-- **Konva Documentation**: Use `WebFetch()` with konvajs.org URLs to research best practices
-- **React-Konva Patterns**: Look up official documentation for implementation patterns
+- **Documentation Research**: Use `WebFetch()` with official URLs to research best practices
+- **Implementation Patterns**: Look up official documentation for component patterns
 - **Performance Optimization**: Research canvas synchronization and performance tips
 
 ### 4. Testing Protocol
@@ -75,15 +76,18 @@ This ensures code is pushed to both remotes (origin and eralp).
 
 ## Key Features
 1. **3D Customization**: Base colors, overlay textures, lighting controls
-2. **Texture Painting**: High-resolution canvas with real-time preview
-3. **Interactive Lighting**: Headlights, taillights with customizable properties
-4. **Animation**: Lid opening/closing, auto-rotation, flag interactions
-5. **Window Management**: Draggable and resizable texture editor window
-6. **Tooltip System**: Context-aware tooltips that follow mouse position
+2. **SVG Text Editor**: High-resolution SVG-based text manipulation with real-time canvas sync
+3. **Interactive Text Controls**: Drag, resize, and rotate text using react-moveable
+4. **Interactive Lighting**: Headlights, taillights with customizable properties
+5. **Animation**: Lid opening/closing, auto-rotation, flag interactions
+6. **Window Management**: Draggable and resizable texture editor window
+7. **Tooltip System**: Context-aware tooltips that follow mouse position
 
 ## Important Files
 - `src/components/E-model.tsx` - Main robot 3D model component
 - `src/contexts/OverlayTextureCanvasContext.tsx` - Texture painting context
+- `src/components/texture-editor/TextureEditor.tsx` - SVG-based text editor component
+- `src/components/texture-editor/utils/svgHelpers.ts` - SVG utility functions
 - `src/routes/index.tsx` - Main application route
 - `public/e-model.gltf` - Compiled 3D robot model
 - `public/textures/` - Texture assets (with _d, _n, _s suffixes for diffuse, normal, specular)
@@ -132,6 +136,32 @@ The project uses a sophisticated material swapping system that enables real-time
 
 **IMPORTANT**: This dual-mesh approach is intentional and critical for the painting functionality. Never consolidate into a single mesh or remove the canvas-based texture system.
 
+## SVG + React-Moveable Texture Editor Architecture
+
+### Technology Stack
+- **SVG Elements**: Native `<text>` elements for crisp, scalable text rendering
+- **React-Moveable**: Provides drag, resize, and rotate interactions
+- **Canvas Synchronization**: SVG serialization → Image → Canvas → 3D texture pipeline
+- **High Resolution**: 4096x4096 viewBox for detailed texture output
+
+### Key Components
+1. **SVG Viewport**: 4096x4096 viewBox scaled to fit container using CSS
+2. **Background Pattern**: SVG `<pattern>` and `<mask>` for stencil overlay
+3. **Text Elements**: SVG `<text>` with transform matrices for positioning
+4. **Moveable Controls**: Interactive transform handles for selected elements
+
+### Canvas Sync Pipeline
+```typescript
+SVG → XMLSerializer → Blob → Image → Canvas.drawImage() → 3D Texture Update
+```
+
+### Benefits Over Previous Konva Implementation
+- **Lighter Bundle**: No external canvas library dependency
+- **Native Browser Support**: SVG is built into all modern browsers  
+- **React Integration**: SVG elements work naturally with React state
+- **Debug-Friendly**: DOM elements are inspectable, not canvas pixels
+- **Performance**: Less overhead for simple text manipulation tasks
+
 ## Code Style Guidelines
 - Use TypeScript strict mode
 - Follow existing component patterns
@@ -141,7 +171,7 @@ The project uses a sophisticated material swapping system that enables real-time
 ## Documentation and API Reference
 **IMPORTANT**: Before making implementation plans or decisions, always consult official documentation using available documentation tools:
 
-1. **For all project dependencies** (React, Three.js, @react-three/fiber, @react-three/drei, @react-spring/three, TanStack Router, Leva, react-rnd, Vite, Konva, react-konva):
+1. **For all project dependencies** (React, Three.js, @react-three/fiber, @react-three/drei, @react-spring/three, TanStack Router, Leva, react-rnd, Vite):
    - Use context7 MCP server with `WebFetch()` to lookup official documentation
    - Never assume API details or make implementation plans without checking docs first
    - Always verify API signatures, available methods, and configuration options
@@ -153,11 +183,10 @@ The project uses a sophisticated material swapping system that enables real-time
    - Learning new library capabilities
    - Troubleshooting build or runtime errors
 
-3. **Specific for Konva/react-konva work**:
-   - Use `WebFetch()` with konvajs.org URLs for official documentation
-   - Research canvas synchronization patterns
-   - Look up performance optimization techniques
-   - Verify event handling best practices
+3. **Specific for SVG and react-moveable work**:
+   - Research SVG to canvas synchronization patterns
+   - Look up react-moveable API documentation and best practices
+   - Verify SVG event handling and transform calculations
 
 **Never make assumptions about library capabilities without consulting the official documentation first.**
 

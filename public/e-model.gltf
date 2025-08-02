@@ -766,8 +766,8 @@
 		},
 		{
 			"mimeType":"image/png",
-			"name":"overlay_stencil",
-			"uri":"overlay_stencil.png"
+			"name":"paintable_uv",
+			"uri":"paintable_uv.png"
 		}
 	],
 	"accessors":[

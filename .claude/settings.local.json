@@ -11,7 +11,8 @@
       "Bash(npx playwright codegen:*)",
       "Bash(node:*)",
       "mcp__playwright__browser_press_key",
-      "mcp__playwright__browser_handle_dialog"
+      "mcp__playwright__browser_handle_dialog",
+      "mcp__playwright__browser_evaluate"
     ],
     "deny": []
   }
