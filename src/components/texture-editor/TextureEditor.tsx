@@ -5,10 +5,7 @@ import PaintableUvSvg from './paintable_uv.svg?react'
 
 interface TextureEditorProps {
   baseColor: string
-  fontFamily?: string
 }
-
-const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"' // Modern system font stack
 
 export function TextureEditor({ baseColor }: TextureEditorProps) {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -54,7 +51,7 @@ export function TextureEditor({ baseColor }: TextureEditorProps) {
             style={{
               width: '100%',
               height: '100%',
-              fontFamily: fontFamily
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"'
             }}
           />
         </svg>
