@@ -12,37 +12,17 @@ export function FloatingCollapsibleWindow({ title, children }: {
   const toggleCollapse = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent drag when clicking toggle button
     setIsCollapsed(!isCollapsed)
-    if (!isCollapsed) {
-      // Collapsing - set height to just the title bar
-      setSize(prev => ({ ...prev, height: 40 }))
-    } else {
-      // Expanding - restore to a reasonable default height
-      setSize(prev => ({ ...prev, height: 540 }))
-    }
   }
 
   return (
     <Rnd
-      default={{
-        x: 20,
-        y: 20,
-        width: 540,
-        height: 540,
-      }}
+      default={{ x: 20, y: 20, ...size }}
       size={isCollapsed ? { width: size.width, height: 40 } : size}
       onResize={(_e, _direction, ref, _delta, _position) => {
-        if (isCollapsed) {
-          // When collapsed, only allow width changes
-          setSize({
-            width: parseInt(ref.style.width),
-            height: 40, // Keep height fixed at 40
-          })
-        } else {
-          setSize({
-            width: parseInt(ref.style.width),
-            height: parseInt(ref.style.height),
-          })
-        }
+        setSize({
+          width: parseInt(ref.style.width),
+          height: isCollapsed ? 40 : parseInt(ref.style.height),
+        })
       }}
       minWidth={200}
       minHeight={isCollapsed ? 40 : 200}
@@ -50,16 +30,7 @@ export function FloatingCollapsibleWindow({ title, children }: {
       bounds="window"
       dragHandleClassName="drag-handle"
       className={`overlay-texture-window ${isCollapsed ? 'collapsed' : ''}`}
-      enableResizing={isCollapsed ? {
-        top: false,
-        right: true,
-        bottom: false,
-        left: true,
-        topRight: false,
-        bottomRight: false,
-        bottomLeft: false,
-        topLeft: false,
-      } : true}
+      enableResizing={isCollapsed ? { right: true, left: true } : true}
     >
       <div className="overlay-texture-window-container">
         <div className="overlay-texture-window-title">

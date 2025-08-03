@@ -3,17 +3,8 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   z-index: 1000;
   font-family: ui-monospace, SFMono-Regular, Menlo, "Roboto Mono", monospace;
-  font-palette: normal;
-  font-synthesis: weight style small-caps;
-  font-variant: normal;
-  -webkit-font-smoothing: antialiased;
-
-
   font-size: 11px;
   user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   overflow: hidden;
 }
 
@@ -27,20 +18,12 @@
 
 .overlay-texture-window-title {
   background-color: #292d39;
-  font-size: 11px;
   color: rgb(83, 87, 96);
-  letter-spacing: normal;
   display: flex;
   align-items: center;
-
   cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-
   min-height: 40px;
-  padding: 0px 12px 0px 12px;
+  padding: 0 12px;
 }
 
 .overlay-texture-window-title:hover {
@@ -68,8 +51,6 @@
   height: 18px;
   flex-shrink: 0;
 }
-
-
 .toggle-icon {
   transition: transform 0.2s ease;
   transform: rotate(0deg); /* Points down when expanded */
@@ -88,23 +69,9 @@
   font-size: 12px;
   font-weight: 400;
   color: #b4b8bc;
-  user-select: none;
   min-height: 0;
   overflow: hidden;
-  transition: opacity 0.2s ease;
 }
-
-.overlay-texture-window.collapsed {
-  transition: height 0.2s ease;
-  overflow: hidden !important;
-  height: 40px !important;
-}
-
-.overlay-texture-window.collapsed .overlay-texture-window-container {
-  height: 40px !important;
-  overflow: hidden;
-}
-
 
 .overlay-texture-window.collapsed .overlay-texture-window-title {
   border-bottom-left-radius: 10px;
