@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Rnd } from 'react-rnd'
-import './OverlayTextureWindow.css'
+import './FloatingCollapsibleWindow.css'
 
-export function OverlayTextureWindow({ title, children }: {
+export function FloatingCollapsibleWindow({ title, children }: {
   title: string
   children?: React.ReactNode
 }) {
@@ -31,7 +31,13 @@ export function OverlayTextureWindow({ title, children }: {
       }}
       size={isCollapsed ? { width: size.width, height: 40 } : size}
       onResize={(_e, _direction, ref, _delta, _position) => {
-        if (!isCollapsed) {
+        if (isCollapsed) {
+          // When collapsed, only allow width changes
+          setSize({
+            width: parseInt(ref.style.width),
+            height: 40, // Keep height fixed at 40
+          })
+        } else {
           setSize({
             width: parseInt(ref.style.width),
             height: parseInt(ref.style.height),
@@ -44,10 +50,19 @@ export function OverlayTextureWindow({ title, children }: {
       bounds="window"
       dragHandleClassName="drag-handle"
       className={`overlay-texture-window ${isCollapsed ? 'collapsed' : ''}`}
-      disableResizing={isCollapsed}
+      enableResizing={isCollapsed ? {
+        top: false,
+        right: true,
+        bottom: false,
+        left: true,
+        topRight: false,
+        bottomRight: false,
+        bottomLeft: false,
+        topLeft: false,
+      } : true}
     >
       <div className="overlay-texture-window-container">
-        <div className="overlay-texture-window-title drag-handle">
+        <div className="overlay-texture-window-title">
           <button 
             className="overlay-texture-window-toggle"
             onClick={toggleCollapse}
@@ -62,13 +77,11 @@ export function OverlayTextureWindow({ title, children }: {
               <path d="M3.8 4.4c.4.3 1 .3 1.4 0L8 1.7A1 1 0 007.4 0H1.6a1 1 0 00-.7 1.7l3 2.7z" fill="currentColor"/>
             </svg>
           </button>
-          <span className="overlay-texture-window-title-text">{title}</span>
+          <span className="overlay-texture-window-title-text drag-handle">{title}</span>
         </div>
-        {!isCollapsed && (
           <div className="overlay-texture-window-content">
             {children}
           </div>
-        )}
       </div>
     </Rnd>
   )

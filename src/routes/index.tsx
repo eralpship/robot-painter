@@ -6,7 +6,7 @@ import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { useRef, useState, useEffect, useContext } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider, OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
-import { OverlayTextureWindow } from '../components/OverlayTextureWindow'
+import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
 import { TextureEditorWrapper } from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
 
@@ -174,9 +174,9 @@ function AppContent() {
           onStart={handleInteraction}
         />
       </Canvas>
-      <OverlayTextureWindow title='Texture Editor'>
+      <FloatingCollapsibleWindow title='Texture Editor'>
         <TextureEditorWrapper baseColor={baseColor} />
-      </OverlayTextureWindow>
+      </FloatingCollapsibleWindow>
     </div>
   )
 }

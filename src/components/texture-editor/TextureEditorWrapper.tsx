@@ -9,12 +9,12 @@ export function TextureEditorWrapper({ baseColor }: TextureEditorWrapperProps) {
     <div style={{
       height: '100%',
       width: '100%',
-      display: 'flex',
-      flexDirection: 'column'
+      display: 'grid',
+      gridTemplateRows: 'auto 1fr',
+      gridTemplateColumns: '1fr'
     }}>
       {/* Fixed Toolbar at top */}
       <div style={{
-        flex: '0 0 auto',
         padding: '8px',
         backgroundColor: '#181c20',
         borderBottom: '1px solid #444',
@@ -24,26 +24,28 @@ export function TextureEditorWrapper({ baseColor }: TextureEditorWrapperProps) {
         width: '100%',
         boxSizing: 'border-box',
         position: 'relative',
-        zIndex: 1000
       }}>
         <span style={{ fontSize: '12px', color: '#b4b8bc' }}>
           Toolbar WIP
         </span>
       </div>
       
-      {/* Flexible Canvas Area */}
+      {/* Canvas Area */}
       <div style={{
-        flex: '1',
         minHeight: 0,
-        position: 'relative',
-        zIndex: 1,
-        backgroundColor: 'blue',
+        padding: 'calc(max(0px, (100% - 100cqh) / 2)) calc(max(0px, (100% - 100cqw) / 2))',
+        containerType: 'size',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}>
         <TextureEditor 
           baseColor={baseColor}
+          style={{
+            width: 'min(100cqw, 100cqh)',
+            height: 'min(100cqw, 100cqh)',
+            aspectRatio: '1',
+          }}
         />
       </div>
     </div>

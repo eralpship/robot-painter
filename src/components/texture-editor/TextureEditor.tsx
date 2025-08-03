@@ -5,9 +5,10 @@ import PaintableUvSvg from './paintable_uv.svg?react'
 
 interface TextureEditorProps {
   baseColor: string
+  style?: React.CSSProperties
 }
 
-export function TextureEditor({ baseColor }: TextureEditorProps) {
+export function TextureEditor({ baseColor, style }: TextureEditorProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const texture = useContext(OverlayTextureContext)
   
@@ -32,28 +33,24 @@ export function TextureEditor({ baseColor }: TextureEditorProps) {
     // return () => clearInterval(interval)  
   }, [])
 
-
   return (
-        <svg
-          ref={svgRef}
-          viewBox={ `0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}` }
-          style={{ 
-            aspectRatio: '1 / 1',
-            maxWidth: '100%', 
-            maxHeight: '100%',
-            backgroundColor: baseColor,
-            overflow: 'visible',
-          }}
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid meet"
-        >  
-          <PaintableUvSvg 
-            style={{
-              width: '100%',
-              height: '100%',
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"'
-            }}
-          />
-        </svg>
+    <svg
+      ref={svgRef}
+      viewBox={ `0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}` }
+      style={{ 
+        backgroundColor: baseColor, 
+        ...style
+      }}
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid meet"
+    >  
+      <PaintableUvSvg 
+        style={{
+          width: '100%',
+          height: '100%',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"'
+        }}
+      />
+    </svg>
   )
 }
