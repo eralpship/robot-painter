@@ -33,7 +33,6 @@ export function TextureEditorWrapper({ baseColor }: TextureEditorWrapperProps) {
       {/* Canvas Area */}
       <div style={{
         minHeight: 0,
-        padding: 'calc(max(0px, (100% - 100cqh) / 2)) calc(max(0px, (100% - 100cqw) / 2))',
         containerType: 'size',
         display: 'flex',
         alignItems: 'center',

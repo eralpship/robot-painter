@@ -1,7 +1,8 @@
 import { useCallback, useContext, useEffect, useRef } from 'react'
-import { CANVAS_SIZE } from './utils/svgHelpers'
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
 import PaintableUvSvg from './paintable_uv.svg?react'
+
+export const CANVAS_SIZE = 4096;
 
 interface TextureEditorProps {
   baseColor: string
@@ -42,7 +43,6 @@ export function TextureEditor({ baseColor, style }: TextureEditorProps) {
         ...style
       }}
       xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="xMidYMid meet"
     >  
       <PaintableUvSvg 
         style={{
