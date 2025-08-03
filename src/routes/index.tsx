@@ -3,9 +3,9 @@ import '../App.css'
 import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
-import { useRef, useState, useEffect, useContext } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
-import { OverlayTextureCanvasProvider, OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
+import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
 import { TextureEditorWrapper } from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
@@ -58,8 +58,6 @@ function AppContent() {
       touchFlag: button(() => modelRef.current?.touchFlag()),
   }))
 
-  const { context } = useContext(OverlayTextureContext)!
-
   useEffect(() => {
     modelRef.current?.updateBaseColor(baseColor)
   }, [baseColor])
@@ -67,15 +65,6 @@ function AppContent() {
   useEffect(() => {
     modelRef.current?.updateOverlayTintColor(overlayTintColor)
   }, [overlayTintColor])
-
-  // Initialize with transparent canvas - no initial texture loading
-  useEffect(() => {
-    if (context) {
-      // Clear canvas to transparent
-      context.clearRect(0, 0, 4096, 4096)
-      console.log('Canvas initialized with transparent background')
-    }
-  }, [context])
 
   // Functions to manipulate light states directly in Leva
   const toggleHeadlights = () => {
