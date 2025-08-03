@@ -13,19 +13,26 @@ export function TextureEditor({ baseColor, style }: TextureEditorProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const texture = useContext(OverlayTextureContext)
   
-  const updateTexture = useCallback( () => {
-    if (!texture) return
-    texture.context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
-    if (svgRef.current) {
-      const svgString = new XMLSerializer().serializeToString(svgRef.current)
-      const img = new Image()
-      img.onload = () => {
-        texture.context.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
-        texture.triggerTextureUpdate()
-      }
-      img.src = 'data:image/svg+xml;base64,' + btoa(svgString)
+  const updateTexture = useCallback(() => {
+    if (!texture || !svgRef.current) return
+    
+    const svgString = new XMLSerializer().serializeToString(svgRef.current)
+    console.log('SVG string:', svgString.substring(0, 200) + '...')
+    
+    texture.image.onload = () => {
+      console.log('SVG image loaded successfully, dimensions:', texture.image.width, 'x', texture.image.height)
+      texture.triggerTextureUpdate()
     }
-  }, [])
+    texture.image.onerror = (error) => {
+      console.error('Failed to load SVG as image:', error)
+    }
+    
+    // Try URL encoding instead of base64
+    const encodedSvg = encodeURIComponent(svgString)
+    const dataUrl = `data:image/svg+xml,${encodedSvg}`
+    console.log('Setting image src to:', dataUrl.substring(0, 100) + '...')
+    texture.image.src = dataUrl
+  }, [texture])
 
   useEffect(() => {
     updateTexture()
@@ -36,6 +43,8 @@ export function TextureEditor({ baseColor, style }: TextureEditorProps) {
 
   return (
     <svg
+    width={CANVAS_SIZE}
+      height={CANVAS_SIZE}
       ref={svgRef}
       viewBox={ `0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}` }
       style={{ 

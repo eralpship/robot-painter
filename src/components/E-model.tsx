@@ -103,7 +103,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
   const { camera, mouse, raycaster } = useThree()
   const { setTooltip } = useTooltip()
   const currentTooltip = useRef<string | null>(null)
-  const { canvas: overlayCanvas, updateTrigger } = useContext(OverlayTextureContext)!
+  const { image: overlayImage, updateTrigger } = useContext(OverlayTextureContext)!
 
   useImperativeHandle(ref, () => ({
     updateBaseColor: (color: string) => {
@@ -238,7 +238,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
     materials.baseColor = baseColorMaterial
     materials.baseColor.color.set(initialBaseColor)
 
-    // swap out the texture for the overlay canvas
+    // swap out the texture for the overlay image
     const originalTexture = materials['body paintable new'].map
     if (!originalTexture) { 
       console.error('no texture')
@@ -248,30 +248,32 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
       console.error('no image')
       return
     }
-    if (!overlayCanvas) {
-      console.error('no canvas')
+    if (!overlayImage) {
+      console.error('no overlay image')
       return
     }
-    const canvasTexture = originalTexture.clone()
-    canvasTexture.image = overlayCanvas
-    canvasTexture.needsUpdate = true
+    const imageTexture = originalTexture.clone()
+    imageTexture.image = overlayImage
+    imageTexture.needsUpdate = true
     materials['body paintable new'].map?.dispose()
-    materials['body paintable new'].map = canvasTexture
+    materials['body paintable new'].map = imageTexture
     materials['body paintable new'].map.needsUpdate = true
     materials['body paintable new'].color.set(initialOverlayTintColor)
     materials['body paintable new'].needsUpdate = true
   }, [])
 
-  // Update texture when canvas changes
+  // Update texture when image changes
   const updateOverlayTexture = useCallback(() => {
-    if (!overlayCanvas || !materials['body paintable new']?.map) return
+    if (!overlayImage || !materials['body paintable new']?.map) return
     
-    // Mark the texture as needing update
+    console.log('E-model: Updating texture with new image')
+    // Update the texture image reference and mark as needing update
+    materials['body paintable new'].map.image = overlayImage
     materials['body paintable new'].map.needsUpdate = true
     materials['body paintable new'].needsUpdate = true
-  }, [overlayCanvas, materials])
+  }, [overlayImage, materials])
 
-  // Listen for canvas updates
+  // Listen for image updates
   useEffect(() => {
     if (updateTrigger > 0) {
       updateOverlayTexture()
