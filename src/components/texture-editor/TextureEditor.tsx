@@ -1,38 +1,50 @@
-import { useCallback, useContext, useEffect, useRef } from 'react'
+import { useCallback, useContext, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
 import PaintableUvSvg from './paintable_uv.svg?react'
 
 export const CANVAS_SIZE = 4096;
+
+function serializeSvg(svgElement: SVGSVGElement, filterElements: string[] = []): string {
+  const fullSvgString = new XMLSerializer().serializeToString(svgElement)
+  if (filterElements.length === 0) {
+    return fullSvgString
+  }
+  const labelPattern = filterElements.map(label => `${label}`).join('|')
+  const filterRegex = new RegExp(`<[^>]*inkscape:label=['"](?:${labelPattern})['"][^>]*\/?>`, 'g')
+  const cleanedSvgString = fullSvgString.replace(filterRegex, '')
+  return cleanedSvgString
+}
 
 interface TextureEditorProps {
   baseColor: string
   style?: React.CSSProperties
 }
 
-export function TextureEditor({ baseColor, style }: TextureEditorProps) {
+export interface TextureEditorRef {
+  updateTexture: () => void
+}
+
+export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(({ baseColor, style }, ref) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const texture = useContext(OverlayTextureContext)
   
   const updateTexture = useCallback(() => {
     if (!texture || !svgRef.current) return
-    
-    const svgString = new XMLSerializer().serializeToString(svgRef.current)
-    console.log('SVG string:', svgString.substring(0, 200) + '...')
-    
+    const serializedSvg = serializeSvg(svgRef.current, ["stencil"])
     texture.image.onload = () => {
-      console.log('SVG image loaded successfully, dimensions:', texture.image.width, 'x', texture.image.height)
       texture.triggerTextureUpdate()
     }
     texture.image.onerror = (error) => {
       console.error('Failed to load SVG as image:', error)
     }
-    
-    // Try URL encoding instead of base64
-    const encodedSvg = encodeURIComponent(svgString)
+    const encodedSvg = encodeURIComponent(serializedSvg)
     const dataUrl = `data:image/svg+xml,${encodedSvg}`
-    console.log('Setting image src to:', dataUrl.substring(0, 100) + '...')
     texture.image.src = dataUrl
   }, [texture])
+
+  useImperativeHandle(ref, () => ({
+    updateTexture
+  }), [updateTexture])
 
   useEffect(() => {
     updateTexture()
@@ -43,7 +55,7 @@ export function TextureEditor({ baseColor, style }: TextureEditorProps) {
 
   return (
     <svg
-    width={CANVAS_SIZE}
+      width={CANVAS_SIZE}
       height={CANVAS_SIZE}
       ref={svgRef}
       viewBox={ `0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}` }
@@ -62,4 +74,6 @@ export function TextureEditor({ baseColor, style }: TextureEditorProps) {
       />
     </svg>
   )
-}
+})
+
+TextureEditor.displayName = 'TextureEditor'

@@ -1,10 +1,12 @@
-import { TextureEditor } from './TextureEditor'
+import { useRef } from 'react'
+import { TextureEditor, type TextureEditorRef } from './TextureEditor'
 
 interface TextureEditorWrapperProps {
   baseColor: string
 }
 
 export function TextureEditorWrapper({ baseColor }: TextureEditorWrapperProps) {
+  const textureEditorRef = useRef<TextureEditorRef>(null)
   return (
     <div style={{
       height: '100%',
@@ -26,7 +28,7 @@ export function TextureEditorWrapper({ baseColor }: TextureEditorWrapperProps) {
         position: 'relative',
       }}>
         <span style={{ fontSize: '12px', color: '#b4b8bc' }}>
-          Toolbar WIP
+          <button onClick={() => textureEditorRef.current?.updateTexture()}>redraw</button>
         </span>
       </div>
       
@@ -39,6 +41,7 @@ export function TextureEditorWrapper({ baseColor }: TextureEditorWrapperProps) {
         justifyContent: 'center',
       }}>
         <TextureEditor 
+          ref={textureEditorRef}
           baseColor={baseColor}
           style={{
             width: 'min(100cqw, 100cqh)',
