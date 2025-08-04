@@ -44,50 +44,51 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#505050"
      inkscape:zoom="0.1706444"
-     inkscape:cx="2446.6083"
-     inkscape:cy="2370.4265"
-     inkscape:window-width="2032"
-     inkscape:window-height="1186"
+     inkscape:cx="1497.2657"
+     inkscape:cy="2367.4964"
+     inkscape:window-width="2560"
+     inkscape:window-height="1387"
      inkscape:window-x="0"
      inkscape:window-y="25"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="svg279" />
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg279"
+     showguides="false" />
   <desc
      id="desc1">e-model.blend, (Blender 4.4.3)</desc>
   <text
      xml:space="preserve"
-     style="font-size:17.3333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="1859.0935"
-     y="2075.8906"
+     style="font-size:17.3333px;text-align:center;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+     x="2043.9219"
+     y="2117.7969"
      id="text279"
      inkscape:label="lid"><tspan
        sodipodi:role="line"
        id="tspan279"
-       x="1859.0935"
-       y="2075.8906"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-opacity:1">LID</tspan></text>
+       x="2043.9219"
+       y="2117.7969"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-opacity:1">LID</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="2043.7098"
+     x="2041.0156"
      y="445.9715"
      id="text280"
      inkscape:label="front"><tspan
        sodipodi:role="line"
        id="tspan280"
-       x="2043.7098"
+       x="2041.0156"
        y="445.9715"
        style="text-align:center;text-anchor:middle">FRONT</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="2043.7098"
+     x="2039.0469"
      y="3725.9714"
      id="text1"
      inkscape:label="back"><tspan
        sodipodi:role="line"
        id="tspan1"
-       x="2043.7098"
+       x="2039.0469"
        y="3725.9714"
        style="text-align:center;text-anchor:middle">BACK</tspan></text>
   <path
@@ -99,27 +100,27 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="2057.0625"
+     x="2041.0156"
      y="-3423.8533"
      id="text281"
      transform="rotate(90)"
      inkscape:label="left"><tspan
        sodipodi:role="line"
        id="tspan281"
-       x="2057.0625"
+       x="2041.0156"
        y="-3423.8533"
        style="text-align:center;text-anchor:middle">LEFT</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="-2087.7705"
+     x="-2054.9844"
      y="668.39893"
      id="text282"
      transform="rotate(-90)"
      inkscape:label="right"><tspan
        sodipodi:role="line"
        id="tspan282"
-       x="-2087.7705"
+       x="-2054.9844"
        y="668.39893"
        style="text-align:center;text-anchor:middle">RIGHT</tspan></text>
   <path

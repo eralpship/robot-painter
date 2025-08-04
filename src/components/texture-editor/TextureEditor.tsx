@@ -5,14 +5,19 @@ import PaintableUvSvg from './paintable_uv.svg?react'
 export const CANVAS_SIZE = 4096;
 
 function serializeSvg(svgElement: SVGSVGElement, filterElements: string[] = []): string {
-  const fullSvgString = new XMLSerializer().serializeToString(svgElement)
-  if (filterElements.length === 0) {
-    return fullSvgString
+  let svgString = new XMLSerializer().serializeToString(svgElement)
+  
+  // Remove background-color from root SVG element only (first occurrence)
+  svgString = svgString.replace(/(<svg[^>]*style="[^"]*?)background-color:[^;"]*;?([^"]*")/, '$1$2')
+  
+  // Filter out specific labeled elements
+  if (filterElements.length > 0) {
+    const labelPattern = filterElements.join('|')
+    const filterRegex = new RegExp(`<[^>]*inkscape:label=['"](?:${labelPattern})['"][^>]*\/?>`, 'g')
+    svgString = svgString.replace(filterRegex, '')
   }
-  const labelPattern = filterElements.map(label => `${label}`).join('|')
-  const filterRegex = new RegExp(`<[^>]*inkscape:label=['"](?:${labelPattern})['"][^>]*\/?>`, 'g')
-  const cleanedSvgString = fullSvgString.replace(filterRegex, '')
-  return cleanedSvgString
+  
+  return svgString
 }
 
 interface TextureEditorProps {
