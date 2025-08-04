@@ -7,7 +7,7 @@ export function FloatingCollapsibleWindow({ title, children }: {
   children?: React.ReactNode
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [size, setSize] = useState({ width: 540, height: 540 })
+  const [size, setSize] = useState({ width: 223, height: 300 })
 
   const toggleCollapse = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent drag when clicking toggle button
