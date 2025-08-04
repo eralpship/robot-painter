@@ -108,7 +108,6 @@ function AppContent() {
     <div className="App">
       <Leva  theme={customLevaTheme} collapsed={false} titleBar={{ title: 'Options', filter: false }} />
       <Canvas
-        dpr={[1, 3]}
         style={{ height: '100vh', width: '100vw' }}
         camera={{ position: [20, 10, 20], fov: 50 }}
       >
