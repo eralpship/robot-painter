@@ -11,9 +11,16 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as TextureEditorImport } from './routes/texture-editor'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const TextureEditorRoute = TextureEditorImport.update({
+  id: '/texture-editor',
+  path: '/texture-editor',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -32,6 +39,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/texture-editor': {
+      id: '/texture-editor'
+      path: '/texture-editor'
+      fullPath: '/texture-editor'
+      preLoaderRoute: typeof TextureEditorImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -39,32 +53,37 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/texture-editor': typeof TextureEditorRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/texture-editor': typeof TextureEditorRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/texture-editor': typeof TextureEditorRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/texture-editor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/texture-editor'
+  id: '__root__' | '/' | '/texture-editor'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TextureEditorRoute: typeof TextureEditorRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TextureEditorRoute: TextureEditorRoute,
 }
 
 export const routeTree = rootRoute
@@ -77,11 +96,15 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/texture-editor"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/texture-editor": {
+      "filePath": "texture-editor.tsx"
     }
   }
 }
