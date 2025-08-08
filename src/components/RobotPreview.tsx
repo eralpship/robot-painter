@@ -18,9 +18,10 @@ export function RobotPreview({ baseColor = '#ffffff', overlayTintColor = '#fffff
   return (
     <Canvas
       style={{ height: '100%', width: '100%', background: 'transparent' }}
-      camera={{ position: [10, 5, 10], fov: 50 }}
+      orthographic
+      camera={{ position: [10, 5, 10], zoom: 20 }}
     >
-      <ambientLight intensity={5} />
+      <ambientLight intensity={8} />
       <Model 
         ref={modelRef}
         position={[0, -3, 0]} 
