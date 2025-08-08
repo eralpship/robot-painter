@@ -35,7 +35,7 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(({
   
   const updateTexture = useCallback(() => {
     if (!texture || !svgRef.current) return
-    const serializedSvg = serializeSvg(svgRef.current, ["stencil"])
+    const serializedSvg = serializeSvg(svgRef.current, ["stencil_left", "stencil_right", "stencil_front", "stencil_back", "stencil_lid", "frame"])
     texture.image.onload = () => {
       texture.triggerTextureUpdate()
     }
