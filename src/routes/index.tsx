@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { useRef, useState, useEffect } from 'react'
+import { useThree } from '@react-three/fiber'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
@@ -20,7 +21,18 @@ export const Route = createFileRoute('/')({
   component: App,
 })
 
-
+function CameraController({ fov }: { fov: number }) {
+  const { camera } = useThree()
+  
+  useEffect(() => {
+    if ('fov' in camera) {
+      camera.fov = fov
+      camera.updateProjectionMatrix()
+    }
+  }, [camera, fov])
+  
+  return null
+}
 
 function AppContent() {
   const [hasInteracted, setHasInteracted] = useState(false)
@@ -31,7 +43,7 @@ function AppContent() {
   const initialOverlayTintColor = '#ffffff'
   const modelRef = useRef<ModelRef>(null)
 
-  const [{ baseColor, overlayTintColor, tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity }, setControlStates] = useControls(() => ({
+  const [{ baseColor, overlayTintColor, tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity, fov }, setControlStates] = useControls(() => ({
       baseColor: {
         value: initialBaseColor,
         label: 'Base Color',
@@ -54,6 +66,7 @@ function AppContent() {
       backgroundIntensity: { value: 0.4, label: 'Background Intensity', max: 1, min: 0, step: 0.01  },
       backgroundBlur: { value: 0.7, label: 'Background Blur', max: 1, min: 0, step: 0.01  },
       environmentIntensity: { value: 0.7, label: 'Environment Intensity', max: 1, min: 0, step: 0.01  },
+      fov: { value: 20, label: 'FOV', min: 5, max: 60, step: 0.5 },
       resetCamera: button(() => controlsRef.current?.reset()),
       touchFlag: button(() => modelRef.current?.touchFlag()),
   }))
@@ -109,8 +122,9 @@ function AppContent() {
       <Leva  theme={customLevaTheme} collapsed={false} titleBar={{ title: 'Options', filter: false }} />
       <Canvas
         style={{ height: '100vh', width: '100vw' }}
-        camera={{ position: [20, 10, 20], fov: 50 }}
+        camera={{ position: [20, 10, 20], fov }}
       >
+        <CameraController fov={fov} />
         <Environment 
           preset="dawn"
           background

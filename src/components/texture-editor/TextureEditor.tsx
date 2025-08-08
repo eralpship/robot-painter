@@ -36,12 +36,8 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(({
   const updateTexture = useCallback(() => {
     if (!texture || !svgRef.current) return
     const serializedSvg = serializeSvg(svgRef.current, ["stencil_left", "stencil_right", "stencil_front", "stencil_back", "stencil_lid", "frame"])
-    texture.image.onload = () => {
-      texture.triggerTextureUpdate()
-    }
-    texture.image.onerror = (error) => {
-      console.error('Failed to load SVG as image:', error)
-    }
+    texture.image.onload = () => texture.triggerTextureUpdate()
+    texture.image.onerror = (error) => console.error('Failed to load SVG as image:', error)
     const encodedSvg = encodeURIComponent(serializedSvg)
     const dataUrl = `data:image/svg+xml,${encodedSvg}`
     texture.image.src = dataUrl
