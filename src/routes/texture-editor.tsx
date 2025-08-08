@@ -3,18 +3,35 @@ import { TextureEditorWrapper } from '../components/texture-editor/TextureEditor
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
 import { RobotPreview } from '../components/RobotPreview'
+import { Leva, useControls } from 'leva'
 
 export const Route = createFileRoute('/texture-editor')({
   component: TextureEditor,
 })
 
+const customLevaTheme = {
+  sizes: {
+    rootWidth: '340px',
+  },
+}
+
 function TextureEditor() {
+  const initialBaseColor = '#ffffff'
+
+  const [{ baseColor }] = useControls(() => ({
+    baseColor: {
+      value: initialBaseColor,
+      label: 'Base Color',
+    },
+  }))
+
   return (
     <OverlayTextureCanvasProvider>
       <div style={{ height: '100vh', width: '100vw' }}>
-        <TextureEditorWrapper baseColor={'white'} />
+        <Leva theme={customLevaTheme} collapsed={false} titleBar={{ title: 'Preview Controls', filter: false }} />
+        <TextureEditorWrapper baseColor={baseColor} />
         <FloatingCollapsibleWindow title="preview">
-          <RobotPreview baseColor="white" />
+          <RobotPreview baseColor={baseColor} />
         </FloatingCollapsibleWindow>
       </div>
     </OverlayTextureCanvasProvider>
