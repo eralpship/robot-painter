@@ -3,6 +3,7 @@ import '../App.css'
 import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
+import { Physics, usePlane } from '@react-three/cannon'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useRef, useState, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
@@ -33,6 +34,21 @@ function CameraController({ fov }: { fov: number }) {
   }, [camera, fov])
   
   return null
+}
+
+function Ground() {
+  const [ref] = usePlane(() => ({
+    rotation: [-Math.PI / 2, 0, 0], // Horizontal orientation
+    position: [0, -3, 0], // Match robot ground level
+    type: 'Static'
+  }))
+  
+  return (
+    <mesh ref={ref}>
+      <planeGeometry args={[10, 15]} />
+      <meshBasicMaterial color="yellow" wireframe={true} />
+    </mesh>
+  )
 }
 
 function AppContent() {
@@ -117,57 +133,60 @@ function AppContent() {
         style={{ height: '100vh', width: '100vw' }}
         camera={{ position: [40, 30, 40], fov }}
       >
-        <CameraController fov={fov} />
-        <Environment 
-          preset="dawn"
-          background
-          blur={backgroundBlur}
-          backgroundIntensity={backgroundIntensity}
-          environmentIntensity={environmentIntensity}
-          resolution={256}
-        />
+        <Physics gravity={[0, -9.81, 0]} size={10} allowSleep={false}>
+          <Ground />
+          <CameraController fov={fov} />
+          <Environment 
+            preset="dawn"
+            background
+            blur={backgroundBlur}
+            backgroundIntensity={backgroundIntensity}
+            environmentIntensity={environmentIntensity}
+            resolution={256}
+          />
 
-        {/* Ambient light to control overall brightness */}
-        <ambientLight intensity={ambientLight} />
+          {/* Ambient light to control overall brightness */}
+          <ambientLight intensity={ambientLight} />
 
-        {/* Simple contact shadow */}
-        <ContactShadows 
-          position={[0, -2.9, 0]}
-          opacity={2.5}
-          scale={180}
-          blur={2}
-          far={100}
-          resolution={256}
-          color="#000000"
-        />
-        <Model 
-          ref={modelRef}
-          position={[0, -3, 0]} 
-          scale={1} 
-          tailLightColor={tailLightColor}
-          headlightsOn={headlightsOn}
-          taillightsOn={taillightsOn}
-          onToggleHeadlights={toggleHeadlights}
-          onToggleTaillights={toggleTaillights}
-          lidOpen={lidOpen}
-          setLidOpen={lidOpen => setControlStates({ lidOpen })}
-          initialBaseColor={initialBaseColor}
-          headlightsIntensity={headlightsIntensity}
-          taillightsIntensity={taillightsIntensity}
-        />
-        <OrbitControls 
-          ref={controlsRef}
-          makeDefault
-          minPolarAngle={0} 
-          maxPolarAngle={1.55}
-          minDistance={10}
-          maxDistance={200}
-          minAzimuthAngle={-Infinity}
-          maxAzimuthAngle={Infinity}
-          autoRotate={!hasInteracted && autoRotate}
-          autoRotateSpeed={2}
-          onStart={handleInteraction}
-        />
+          {/* Simple contact shadow */}
+          <ContactShadows 
+            position={[0, -2.9, 0]}
+            opacity={2.5}
+            scale={180}
+            blur={2}
+            far={100}
+            resolution={256}
+            color="#000000"
+          />
+          <Model 
+            ref={modelRef}
+            position={[0, -3, 0]} 
+            scale={1} 
+            tailLightColor={tailLightColor}
+            headlightsOn={headlightsOn}
+            taillightsOn={taillightsOn}
+            onToggleHeadlights={toggleHeadlights}
+            onToggleTaillights={toggleTaillights}
+            lidOpen={lidOpen}
+            setLidOpen={lidOpen => setControlStates({ lidOpen })}
+            initialBaseColor={initialBaseColor}
+            headlightsIntensity={headlightsIntensity}
+            taillightsIntensity={taillightsIntensity}
+          />
+          <OrbitControls 
+            ref={controlsRef}
+            makeDefault
+            minPolarAngle={0} 
+            maxPolarAngle={1.55}
+            minDistance={10}
+            maxDistance={200}
+            minAzimuthAngle={-Infinity}
+            maxAzimuthAngle={Infinity}
+            autoRotate={!hasInteracted && autoRotate}
+            autoRotateSpeed={2}
+            onStart={handleInteraction}
+          />
+        </Physics>
       </Canvas>
       <FloatingCollapsibleWindow title='Texture Editor'>
         <TextureEditorWrapper baseColor={baseColor} />
