@@ -3,6 +3,7 @@ import '../App.css'
 import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useRef, useState, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { TooltipProvider } from '../contexts/tooltip-context'
@@ -37,7 +38,7 @@ function CameraController({ fov }: { fov: number }) {
 function AppContent() {
   const [hasInteracted, setHasInteracted] = useState(false)
   const lastInteractionTime = useRef(Date.now())
-  const controlsRef = useRef<any>(null)
+  const controlsRef = useRef<OrbitControlsImpl>(null)
   const inactivityTimeout = 5_000
   const initialBaseColor = '#ffffff'
   const initialOverlayTintColor = '#ffffff'
@@ -122,7 +123,7 @@ function AppContent() {
       <Leva  theme={customLevaTheme} collapsed={false} titleBar={{ title: 'Options', filter: false }} />
       <Canvas
         style={{ height: '100vh', width: '100vw' }}
-        camera={{ position: [20, 10, 20], fov }}
+        camera={{ position: [40, 30, 40], fov }}
       >
         <CameraController fov={fov} />
         <Environment 
