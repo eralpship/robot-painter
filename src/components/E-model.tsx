@@ -25,6 +25,7 @@ type GLTFResult = GLTF & {
     wheel_front_right: THREE.Mesh
     wheel_middle_left: THREE.Mesh
     wheel_middle_right: THREE.Mesh
+    ['rocker-bogie']: THREE.Mesh
   }
   materials: {
     ['body new']: THREE.MeshStandardMaterial
@@ -445,12 +446,14 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
           <PaintableMesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} />
           
           {/* Wheels */}
-          <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} position={[-322.374, -232.137, -139.723]} />
-          <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} position={[322.257, -232.137, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
           <mesh name="wheel_front_left" geometry={nodes.wheel_front_left.geometry} material={materials.wheel} position={[-322.374, 348.386, -139.723]} />
           <mesh name="wheel_front_right" geometry={nodes.wheel_front_right.geometry} material={materials.wheel} position={[322.257, 348.386, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
-          <mesh name="wheel_middle_left" geometry={nodes.wheel_middle_left.geometry} material={materials.wheel} position={[-322.374, 50.272, -139.723]} />
-          <mesh name="wheel_middle_right" geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} position={[322.257, 50.272, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
+          <mesh name="rocker-bogie" geometry={nodes['rocker-bogie'].geometry} material={materials['body new']} position={[0.008, -89.078, -141.649]}>
+            <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} />
+            <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} rotation={[-Math.PI, 0, -Math.PI]} />
+            <mesh name="wheel_middle_left" geometry={nodes.wheel_middle_left.geometry} material={materials.wheel} />
+            <mesh name="wheel_middle_right" geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} rotation={[-Math.PI, 0, -Math.PI]} />
+          </mesh>
         </mesh>
       </group>
   )
