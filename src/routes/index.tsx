@@ -5,7 +5,7 @@ import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import { Physics, usePlane } from '@react-three/cannon'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, Suspense } from 'react'
 import { useThree } from '@react-three/fiber'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
@@ -136,14 +136,16 @@ function AppContent() {
         <Physics gravity={[0, -9.81, 0]} size={10} allowSleep={false}>
           <Ground />
           <CameraController fov={fov} />
-          <Environment 
-            preset="dawn"
-            background
-            blur={backgroundBlur}
-            backgroundIntensity={backgroundIntensity}
-            environmentIntensity={environmentIntensity}
-            resolution={256}
-          />
+          <Suspense fallback={null}>
+            <Environment 
+              preset="dawn"
+              background
+              blur={backgroundBlur}
+              backgroundIntensity={backgroundIntensity}
+              environmentIntensity={environmentIntensity}
+              resolution={256}
+            />
+          </Suspense>
 
           {/* Ambient light to control overall brightness */}
           <ambientLight intensity={ambientLight} />
