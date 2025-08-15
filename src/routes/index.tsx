@@ -41,17 +41,12 @@ function AppContent() {
   const controlsRef = useRef<OrbitControlsImpl>(null)
   const inactivityTimeout = 5_000
   const initialBaseColor = '#ffffff'
-  const initialOverlayTintColor = '#ffffff'
   const modelRef = useRef<ModelRef>(null)
 
-  const [{ baseColor, overlayTintColor, tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity, fov }, setControlStates] = useControls(() => ({
+  const [{ baseColor, tailLightColor, headlightsOn, taillightsOn, headlightsIntensity, taillightsIntensity, lidOpen, autoRotate, ambientLight, backgroundIntensity, backgroundBlur, environmentIntensity, fov }, setControlStates] = useControls(() => ({
       baseColor: {
         value: initialBaseColor,
         label: 'Base Color',
-      },
-      overlayTintColor: {
-        value: initialOverlayTintColor,
-        label: 'Overlay Tint Color',
       },
       tailLightColor: {
         value: '#ff0000',
@@ -76,9 +71,6 @@ function AppContent() {
     modelRef.current?.updateBaseColor(baseColor)
   }, [baseColor])
 
-  useEffect(() => {
-    modelRef.current?.updateOverlayTintColor(overlayTintColor)
-  }, [overlayTintColor])
 
   // Functions to manipulate light states directly in Leva
   const toggleHeadlights = () => {
@@ -160,7 +152,6 @@ function AppContent() {
           lidOpen={lidOpen}
           setLidOpen={lidOpen => setControlStates({ lidOpen })}
           initialBaseColor={initialBaseColor}
-          initialOverlayTintColor={initialOverlayTintColor}
           headlightsIntensity={headlightsIntensity}
           taillightsIntensity={taillightsIntensity}
         />

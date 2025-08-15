@@ -5,10 +5,9 @@ import { useRef, useEffect } from 'react'
 
 interface RobotPreviewProps {
   baseColor?: string
-  overlayTintColor?: string
 }
 
-export function RobotPreview({ baseColor = '#ffffff', overlayTintColor = '#ffffff' }: RobotPreviewProps) {
+export function RobotPreview({ baseColor = '#ffffff' }: RobotPreviewProps) {
   const modelRef = useRef<ModelRef>(null)
 
   useEffect(() => {
@@ -34,7 +33,6 @@ export function RobotPreview({ baseColor = '#ffffff', overlayTintColor = '#fffff
         lidOpen={false}
         setLidOpen={() => {}}
         initialBaseColor={baseColor}
-        initialOverlayTintColor={overlayTintColor}
         headlightsIntensity={0}
         taillightsIntensity={0}
       />

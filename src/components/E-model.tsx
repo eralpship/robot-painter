@@ -45,14 +45,12 @@ interface ModelProps extends React.ComponentProps<'group'> {
   lidOpen: boolean
   setLidOpen: (open: boolean) => void
   initialBaseColor: string
-  initialOverlayTintColor: string
   headlightsIntensity: number
   taillightsIntensity: number
 }
 
 export interface ModelRef {
   updateBaseColor: (color: string) => void
-  updateOverlayTintColor: (color: string) => void
   touchFlag: () => void
 }
 
@@ -80,7 +78,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
   lidOpen,
   setLidOpen,
   initialBaseColor,
-  initialOverlayTintColor,
   headlightsIntensity: _headlightsIntensity,
   taillightsIntensity: _taillightsIntensity,
   ...props 
@@ -110,13 +107,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
       if (materials.baseColor) {
         materials.baseColor.color.set(color)
         materials.baseColor.needsUpdate = true
-      }
-    },
-    updateOverlayTintColor: (color: string) => {
-      console.log('updating overlay tint color', color)
-      if (materials['body paintable new']) {
-        materials['body paintable new'].color.set(color)
-        materials['body paintable new'].needsUpdate = true
       }
     },
     touchFlag: () => {
@@ -258,7 +248,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(({
     materials['body paintable new'].map?.dispose()
     materials['body paintable new'].map = imageTexture
     materials['body paintable new'].map.needsUpdate = true
-    materials['body paintable new'].color.set(initialOverlayTintColor)
     materials['body paintable new'].needsUpdate = true
   }, [])
 
