@@ -14,13 +14,11 @@
   },
   "dependencies": {
     "@react-spring/three": "^10.0.1",
-    "@react-three/cannon": "^6.6.0",
     "@react-three/drei": "^10.0.6",
     "@react-three/fiber": "^9.1.2",
     "@tanstack/react-router": "^1.114.3",
     "@tanstack/react-router-devtools": "^1.114.3",
     "@tanstack/router-plugin": "^1.114.3",
-    "cannon-es": "^0.20.0",
     "leva": "^0.10.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
