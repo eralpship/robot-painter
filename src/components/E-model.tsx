@@ -1,7 +1,15 @@
 import * as THREE from 'three'
 import { useAnimations } from '@react-three/drei'
 import { GLTFLoader, type GLTF } from 'three-stdlib'
-import React, { useEffect, useMemo, useRef, useCallback, useImperativeHandle, forwardRef, useContext } from 'react'
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+  useContext,
+} from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame, useLoader } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
@@ -56,407 +64,501 @@ export interface ModelRef {
 }
 
 function createPixeImageUrl() {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
-    ctx.fillRect(0, 0, 1, 1)
-    return canvas.toDataURL('image/png')
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')!
+  ctx.fillRect(0, 0, 1, 1)
+  return canvas.toDataURL('image/png')
 }
 
 const loadingManager = new THREE.LoadingManager()
-loadingManager.setURLModifier((url) => {
+loadingManager.setURLModifier(url => {
   if (url.includes('paintable_uv.png')) {
     return createPixeImageUrl()
   }
   return url
 })
 
-export const Model = forwardRef<ModelRef, ModelProps>(({ 
-  tailLightColor: tailMiddleLightColor,
-  headlightsOn,
-  taillightsOn,
-  onToggleHeadlights, 
-  onToggleTaillights, 
-  lidOpen,
-  setLidOpen,
-  initialBaseColor,
-  headlightsIntensity: _headlightsIntensity,
-  taillightsIntensity: _taillightsIntensity,
-  ...props 
-}, ref) => {
-  const group = React.useRef<THREE.Group>(null)
-  const leftHeadlightRef = useRef<THREE.PointLight>(null)
-  const rightHeadlightRef = useRef<THREE.PointLight>(null)
-  const tailLightLeftRef = useRef<THREE.PointLight>(null)
-  const tailLightMiddleLeftRef = useRef<THREE.PointLight>(null)
-  const tailLightMiddleMiddleRef = useRef<THREE.PointLight>(null)
-  const tailLightMiddleRightRef = useRef<THREE.PointLight>(null)
-  const tailLightRightRef = useRef<THREE.PointLight>(null)
-  const flagRef = useRef<THREE.Mesh>(null)
+export const Model = forwardRef<ModelRef, ModelProps>(
+  (
+    {
+      tailLightColor: tailMiddleLightColor,
+      headlightsOn,
+      taillightsOn,
+      onToggleHeadlights,
+      onToggleTaillights,
+      lidOpen,
+      setLidOpen,
+      initialBaseColor,
+      headlightsIntensity: _headlightsIntensity,
+      taillightsIntensity: _taillightsIntensity,
+      ...props
+    },
+    ref
+  ) => {
+    const group = React.useRef<THREE.Group>(null)
+    const leftHeadlightRef = useRef<THREE.PointLight>(null)
+    const rightHeadlightRef = useRef<THREE.PointLight>(null)
+    const tailLightLeftRef = useRef<THREE.PointLight>(null)
+    const tailLightMiddleLeftRef = useRef<THREE.PointLight>(null)
+    const tailLightMiddleMiddleRef = useRef<THREE.PointLight>(null)
+    const tailLightMiddleRightRef = useRef<THREE.PointLight>(null)
+    const tailLightRightRef = useRef<THREE.PointLight>(null)
+    const flagRef = useRef<THREE.Mesh>(null)
 
-  const { nodes, materials, animations } = useLoader(GLTFLoader, '/e-model.gltf', (loader) => {
-    loader.manager = loadingManager
-  }) as unknown as GLTFResult
-
-  const { actions } = useAnimations(animations, group)
-  const { camera, mouse, raycaster } = useThree()
-  const { setTooltip } = useTooltip()
-  const currentTooltip = useRef<string | null>(null)
-  const { image: overlayImage, updateTrigger } = useContext(OverlayTextureContext)!
-
-  useImperativeHandle(ref, () => ({
-    updateBaseColor: (color: string) => {
-      if (materials.baseColor) {
-        materials.baseColor.color.set(color)
-        materials.baseColor.needsUpdate = true
+    const { nodes, materials, animations } = useLoader(
+      GLTFLoader,
+      '/e-model.gltf',
+      loader => {
+        loader.manager = loadingManager
       }
-    },
-    touchFlag: () => {
-      handleFlagClick()
-    }
-  }), [materials, actions])
+    ) as unknown as GLTFResult
 
-  const { headlightIntensity } = useSpring({
-    headlightIntensity: headlightsOn ? _headlightsIntensity : 0,
-    config: { 
-      duration: 300,
-      easing: easings.linear
-    },
-    clamp: true
-  })
+    const { actions } = useAnimations(animations, group)
+    const { camera, mouse, raycaster } = useThree()
+    const { setTooltip } = useTooltip()
+    const currentTooltip = useRef<string | null>(null)
+    const { image: overlayImage, updateTrigger } = useContext(
+      OverlayTextureContext
+    )!
 
-  const { tailLightIntensity } = useSpring({
-    tailLightIntensity: taillightsOn ? _taillightsIntensity : 0,
-    config: { 
-      duration: 300,
-      easing: easings.linear
-    },
-    clamp: true
-  })
+    useImperativeHandle(
+      ref,
+      () => ({
+        updateBaseColor: (color: string) => {
+          if (materials.baseColor) {
+            materials.baseColor.color.set(color)
+            materials.baseColor.needsUpdate = true
+          }
+        },
+        touchFlag: () => {
+          handleFlagClick()
+        },
+      }),
+      [materials, actions]
+    )
 
-  const [springs, api] = useSpring(() => ({
-    rotationX: 0,
-    config: { 
-      mass: 1.2,
-      tension: 800,
-      friction: 20,
-      velocity: 0
-    }
-  }))
+    const { headlightIntensity } = useSpring({
+      headlightIntensity: headlightsOn ? _headlightsIntensity : 0,
+      config: {
+        duration: 300,
+        easing: easings.linear,
+      },
+      clamp: true,
+    })
 
-  useEffect(() => {
-    const action = actions['open lid']
-    if (action) {
-      action.loop = THREE.LoopOnce
-      action.clampWhenFinished = true
-    }
-  }, [actions])
+    const { tailLightIntensity } = useSpring({
+      tailLightIntensity: taillightsOn ? _taillightsIntensity : 0,
+      config: {
+        duration: 300,
+        easing: easings.linear,
+      },
+      clamp: true,
+    })
 
-  const handleFlagClick = useCallback((e?: ThreeEvent<MouseEvent>) => {
-    e?.stopPropagation()
-    api.start({
-      from: { rotationX: 0 },
-      to: { rotationX: 1 },
+    const [springs, api] = useSpring(() => ({
+      rotationX: 0,
       config: {
         mass: 1.2,
         tension: 800,
-        friction: 20
+        friction: 20,
+        velocity: 0,
       },
-      onRest: () => {
-        api.set({ rotationX: 0 })
+    }))
+
+    useEffect(() => {
+      const action = actions['open lid']
+      if (action) {
+        action.loop = THREE.LoopOnce
+        action.clampWhenFinished = true
+      }
+    }, [actions])
+
+    const handleFlagClick = useCallback(
+      (e?: ThreeEvent<MouseEvent>) => {
+        e?.stopPropagation()
+        api.start({
+          from: { rotationX: 0 },
+          to: { rotationX: 1 },
+          config: {
+            mass: 1.2,
+            tension: 800,
+            friction: 20,
+          },
+          onRest: () => {
+            api.set({ rotationX: 0 })
+          },
+        })
+      },
+      [api]
+    )
+
+    const interpolatedRotation = springs.rotationX.to({
+      range: [0, 0.5, 1],
+      output: [0, Math.PI / 6, 0],
+    })
+
+    useFrame(() => {
+      raycaster.setFromCamera(mouse, camera)
+      const intersects = raycaster.intersectObjects(
+        group.current?.children || [],
+        true
+      )
+      const firstIntersect = intersects[0]
+
+      let newTooltip: string | null = null
+      if (firstIntersect?.object.name.includes('lid')) {
+        newTooltip = `${lidOpen ? 'Close' : 'Open'} lid`
+      } else if (firstIntersect?.object.name.includes('headlight')) {
+        newTooltip = `${headlightsOn ? 'Turn off' : 'Turn on'} headlights`
+      } else if (firstIntersect?.object.name.includes('tail_light')) {
+        newTooltip = `${taillightsOn ? 'Turn off' : 'Turn on'} tail lights`
+      } else if (firstIntersect?.object.name.includes('flag')) {
+        newTooltip = 'Flag'
+      }
+
+      if (newTooltip !== currentTooltip.current) {
+        currentTooltip.current = newTooltip
+        setTooltip(newTooltip)
       }
     })
-  }, [api])
 
-  const interpolatedRotation = springs.rotationX.to({
-    range: [0, 0.5, 1],
-    output: [0, Math.PI / 6, 0]
-  })
+    useEffect(() => {
+      materials.wheel.metalness = 0.3
+      materials.wheel.roughness = 0.7
+      materials.wheel.envMapIntensity = 0.4
+      materials.wheel.clearcoat = 0.2
+      materials.wheel.clearcoatRoughness = 0.6
+      materials.wheel.reflectivity = 0.25
+      materials.wheel.specularIntensity = 0.6
+      materials.wheel.ior = 1.6
+      materials.wheel.sheen = 0.3
+      materials.wheel.sheenRoughness = 0.7
+      materials.wheel.sheenColor = new THREE.Color(0x2a2a2a)
+      materials.wheel.normalScale = new THREE.Vector2(2.5, 2.5)
 
-  useFrame(() => {
-    raycaster.setFromCamera(mouse, camera)
-    const intersects = raycaster.intersectObjects(group.current?.children || [], true)
-    const firstIntersect = intersects[0]
-    
-    let newTooltip: string | null = null
-    if (firstIntersect?.object.name.includes('lid')) {
-      newTooltip = `${lidOpen ? 'Close' : 'Open'} lid`
-    } 
-    else if (firstIntersect?.object.name.includes('headlight')) {
-      newTooltip = `${headlightsOn ? 'Turn off' : 'Turn on'} headlights`
-    } 
-    else if (firstIntersect?.object.name.includes('tail_light')) {
-      newTooltip = `${taillightsOn ? 'Turn off' : 'Turn on'} tail lights`
+      materials['body paintable new'].transparent = true
+      materials['body paintable new'].opacity = 1
+      materials['body paintable new'].metalness = 0.3
+      materials['body paintable new'].roughness = 0.35
+      materials['body paintable new'].alphaTest = 0.01
+
+      materials['body new'].metalness = 0.3
+      materials['body new'].roughness = 0.35
+
+      const baseColorMaterial = materials['body paintable new'].clone()
+      baseColorMaterial.map = null
+      baseColorMaterial.transparent = false
+      baseColorMaterial.opacity = 1
+      baseColorMaterial.needsUpdate = true
+      baseColorMaterial.side = THREE.FrontSide
+      materials.baseColor = baseColorMaterial
+      materials.baseColor.color.set(initialBaseColor)
+
+      // swap out the texture for the overlay image
+      const originalTexture = materials['body paintable new'].map
+      if (!originalTexture) {
+        console.error('no texture')
+        return
+      }
+      if (!originalTexture.image) {
+        console.error('no image')
+        return
+      }
+      if (!overlayImage) {
+        console.error('no overlay image')
+        return
+      }
+      const imageTexture = originalTexture.clone()
+      imageTexture.image = overlayImage
+      imageTexture.needsUpdate = true
+      materials['body paintable new'].map?.dispose()
+      materials['body paintable new'].map = imageTexture
+      materials['body paintable new'].map.needsUpdate = true
+      materials['body paintable new'].needsUpdate = true
+    }, [])
+
+    // Update texture when image changes
+    const updateOverlayTexture = useCallback(() => {
+      if (!overlayImage || !materials['body paintable new']?.map) return
+
+      console.log('E-model: Updating texture with new image')
+      // Update the texture image reference and mark as needing update
+      materials['body paintable new'].map.image = overlayImage
+      materials['body paintable new'].map.needsUpdate = true
+      materials['body paintable new'].needsUpdate = true
+    }, [overlayImage, materials])
+
+    // Listen for image updates
+    useEffect(() => {
+      if (updateTrigger > 0) {
+        updateOverlayTexture()
+      }
+    }, [updateTrigger, updateOverlayTexture])
+
+    const PaintableMesh = useCallback<
+      React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>
+    >(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
+      return (
+        <group
+          name={name}
+          onClick={onClick}
+          position={position}
+          rotation={rotation}
+          scale={scale}
+        >
+          {materials.baseColor ? (
+            <mesh
+              {...props}
+              geometry={geometry}
+              material={materials.baseColor}
+              name={name + '_base'}
+            />
+          ) : null}
+          <mesh
+            {...props}
+            geometry={geometry}
+            material={materials['body paintable new']}
+            name={name + '_overlay'}
+          />
+        </group>
+      )
+    }, [])
+
+    const handleLidClick = (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation()
+      setLidOpen(!lidOpen)
     }
-    else if (firstIntersect?.object.name.includes('flag')) {
-      newTooltip = 'Flag'
-    }
 
-    if (newTooltip !== currentTooltip.current) {
-      currentTooltip.current = newTooltip
-      setTooltip(newTooltip)
-    }
-  })
+    useEffect(() => {
+      const action = actions['open lid']
+      if (!action) {
+        return
+      }
+      action.timeScale = lidOpen ? 1 : -1
+      action.paused = false
+      action.play()
+    }, [lidOpen])
 
-  useEffect(() => {
-    materials.wheel.metalness = 0.3
-    materials.wheel.roughness = 0.7
-    materials.wheel.envMapIntensity = 0.4
-    materials.wheel.clearcoat = 0.2
-    materials.wheel.clearcoatRoughness = 0.6
-    materials.wheel.reflectivity = 0.25
-    materials.wheel.specularIntensity = 0.6
-    materials.wheel.ior = 1.6
-    materials.wheel.sheen = 0.3
-    materials.wheel.sheenRoughness = 0.7
-    materials.wheel.sheenColor = new THREE.Color(0x2a2a2a)
-    materials.wheel.normalScale = new THREE.Vector2(2.5, 2.5)
-
-    materials['body paintable new'].transparent = true
-    materials['body paintable new'].opacity = 1
-    materials['body paintable new'].metalness = 0.3
-    materials['body paintable new'].roughness = 0.35
-    materials['body paintable new'].alphaTest = 0.01
-
-    materials['body new'].metalness = 0.3
-    materials['body new'].roughness = 0.35
-    
-    const baseColorMaterial = materials['body paintable new'].clone()
-    baseColorMaterial.map = null
-    baseColorMaterial.transparent = false
-    baseColorMaterial.opacity = 1
-    baseColorMaterial.needsUpdate = true
-    baseColorMaterial.side = THREE.FrontSide
-    materials.baseColor = baseColorMaterial
-    materials.baseColor.color.set(initialBaseColor)
-
-    // swap out the texture for the overlay image
-    const originalTexture = materials['body paintable new'].map
-    if (!originalTexture) { 
-      console.error('no texture')
-       return
-    }
-    if (!originalTexture.image) {
-      console.error('no image')
-      return
-    }
-    if (!overlayImage) {
-      console.error('no overlay image')
-      return
-    }
-    const imageTexture = originalTexture.clone()
-    imageTexture.image = overlayImage
-    imageTexture.needsUpdate = true
-    materials['body paintable new'].map?.dispose()
-    materials['body paintable new'].map = imageTexture
-    materials['body paintable new'].map.needsUpdate = true
-    materials['body paintable new'].needsUpdate = true
-  }, [])
-
-  // Update texture when image changes
-  const updateOverlayTexture = useCallback(() => {
-    if (!overlayImage || !materials['body paintable new']?.map) return
-    
-    console.log('E-model: Updating texture with new image')
-    // Update the texture image reference and mark as needing update
-    materials['body paintable new'].map.image = overlayImage
-    materials['body paintable new'].map.needsUpdate = true
-    materials['body paintable new'].needsUpdate = true
-  }, [overlayImage, materials])
-
-  // Listen for image updates
-  useEffect(() => {
-    if (updateTrigger > 0) {
-      updateOverlayTexture()
-    }
-  }, [updateTrigger, updateOverlayTexture])
-
-  const PaintableMesh = useCallback<React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>>(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
-    return (
-      <group name={name} onClick={onClick} position={position} rotation={rotation} scale={scale}>
-        {materials.baseColor ? (
-          <mesh {...props} geometry={geometry} material={materials.baseColor} name={name + '_base'}  />
-        ) : null}
-        <mesh {...props} geometry={geometry} material={materials['body paintable new']} name={name + '_overlay'}  />
-      </group>
-    )
-  }, [])
-
-  const handleLidClick = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation()
-    setLidOpen(!lidOpen)
-  }
-
-  useEffect(() => {
-    const action = actions['open lid']
-    if (!action) {
-      return;
-    }
-    action.timeScale = lidOpen ? 1 : -1
-    action.paused = false
-    action.play()
-  }, [lidOpen])
-
-  const handleHitboxClick = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation()
-    console.log('Hitbox clicked:', e.object.name)
-    if (e.object.name.includes('headlight')) {
-      console.log('Toggling headlights')
-      onToggleHeadlights()
-    } else if (e.object.name.includes('tail_light')) {
-      console.log('Toggling taillights')
-      onToggleTaillights()
-    }
-  }
-
-  const hitboxes = useMemo(() => {
-    const hitboxes = []
-    const hitboxRefs = [leftHeadlightRef, rightHeadlightRef, tailLightLeftRef, tailLightMiddleLeftRef, tailLightMiddleMiddleRef, tailLightMiddleRightRef, tailLightRightRef]
-
-    for (const ref of hitboxRefs) {
-      if (ref.current) {
-        const position = ref.current.position.clone()
-        const rotation = ref.current.rotation.clone()
-        const scale = ref.current.scale.clone() 
-        const name = ref.current.name
-        
-        hitboxes.push(
-          <mesh 
-            key={`${name}_hitbox`}
-            name={`${name}_hitbox`}
-            position={position}
-            rotation={rotation}
-            scale={scale}
-            onClick={handleHitboxClick}
-          >
-            <sphereGeometry args={[1, 8, 8]} />
-            <meshBasicMaterial color="red" transparent opacity={0.5} visible={false} />
-          </mesh>
-        )
+    const handleHitboxClick = (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation()
+      console.log('Hitbox clicked:', e.object.name)
+      if (e.object.name.includes('headlight')) {
+        console.log('Toggling headlights')
+        onToggleHeadlights()
+      } else if (e.object.name.includes('tail_light')) {
+        console.log('Toggling taillights')
+        onToggleTaillights()
       }
     }
-    return hitboxes
-  }, [handleHitboxClick])
 
-  const headlightColor = '#ffe8a0'
-  const tailLightColor = '#ff0011'
+    const hitboxes = useMemo(() => {
+      const hitboxes = []
+      const hitboxRefs = [
+        leftHeadlightRef,
+        rightHeadlightRef,
+        tailLightLeftRef,
+        tailLightMiddleLeftRef,
+        tailLightMiddleMiddleRef,
+        tailLightMiddleRightRef,
+        tailLightRightRef,
+      ]
 
-  return (
+      for (const ref of hitboxRefs) {
+        if (ref.current) {
+          const position = ref.current.position.clone()
+          const rotation = ref.current.rotation.clone()
+          const scale = ref.current.scale.clone()
+          const name = ref.current.name
+
+          hitboxes.push(
+            <mesh
+              key={`${name}_hitbox`}
+              name={`${name}_hitbox`}
+              position={position}
+              rotation={rotation}
+              scale={scale}
+              onClick={handleHitboxClick}
+            >
+              <sphereGeometry args={[1, 8, 8]} />
+              <meshBasicMaterial
+                color="red"
+                transparent
+                opacity={0.5}
+                visible={false}
+              />
+            </mesh>
+          )
+        }
+      }
+      return hitboxes
+    }, [handleHitboxClick])
+
+    const headlightColor = '#ffe8a0'
+    const tailLightColor = '#ff0011'
+
+    return (
       <group ref={group} {...props} dispose={null}>
-        <mesh name="robot_new" geometry={nodes.robot_new.geometry} material={materials['body new']} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
-
+        <mesh
+          name="robot_new"
+          geometry={nodes.robot_new.geometry}
+          material={materials['body new']}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={0.01}
+        >
           {/* Hitboxes */}
           {hitboxes}
 
           {/* Lid */}
-          <PaintableMesh 
-            name="lid_new" 
-            geometry={nodes.lid_new.geometry} 
+          <PaintableMesh
+            name="lid_new"
+            geometry={nodes.lid_new.geometry}
             position={[0, 447.187, -637.429]}
             onClick={handleLidClick}
           />
 
           {/* Headlights */}
-          <animated.pointLight 
+          <animated.pointLight
             ref={leftHeadlightRef}
-            name="headlight_left" 
-            intensity={headlightIntensity} 
-            decay={2} 
-            color={headlightColor} 
-            position={[-235.912, 385.374, -301.501]} 
-            rotation={[-Math.PI, 0, 0]} 
-            scale={30} 
+            name="headlight_left"
+            intensity={headlightIntensity}
+            decay={2}
+            color={headlightColor}
+            position={[-235.912, 385.374, -301.501]}
+            rotation={[-Math.PI, 0, 0]}
+            scale={30}
           />
-          <animated.pointLight 
+          <animated.pointLight
             ref={rightHeadlightRef}
-            name="headlight_right" 
-            intensity={headlightIntensity} 
-            decay={2} 
-            color={headlightColor} 
-            position={[241.584, 386.931, -299.362]} 
-            rotation={[-Math.PI, 0, 0]} 
-            scale={30} 
+            name="headlight_right"
+            intensity={headlightIntensity}
+            decay={2}
+            color={headlightColor}
+            position={[241.584, 386.931, -299.362]}
+            rotation={[-Math.PI, 0, 0]}
+            scale={30}
           />
-
 
           {/* Tail Middle Lights */}
-          <animated.pointLight 
+          <animated.pointLight
             ref={tailLightMiddleLeftRef}
-            name="tail_light_middle_left" 
-            intensity={tailLightIntensity} 
-            decay={2} 
-            color={tailMiddleLightColor} 
-            position={[38.204, -384.368, -602.573]} 
-            rotation={[-Math.PI, 0, 0]} 
-            scale={25} 
+            name="tail_light_middle_left"
+            intensity={tailLightIntensity}
+            decay={2}
+            color={tailMiddleLightColor}
+            position={[38.204, -384.368, -602.573]}
+            rotation={[-Math.PI, 0, 0]}
+            scale={25}
           />
-          <animated.pointLight 
+          <animated.pointLight
             ref={tailLightMiddleMiddleRef}
-            name="tail_light_middle_middle" 
-            intensity={tailLightIntensity} 
-            decay={2} 
-            color={tailMiddleLightColor} 
-            position={[-0.018, -384.368, -602.573]} 
-            rotation={[-Math.PI, 0, 0]} 
-            scale={25} 
+            name="tail_light_middle_middle"
+            intensity={tailLightIntensity}
+            decay={2}
+            color={tailMiddleLightColor}
+            position={[-0.018, -384.368, -602.573]}
+            rotation={[-Math.PI, 0, 0]}
+            scale={25}
           />
-          <animated.pointLight 
+          <animated.pointLight
             ref={tailLightMiddleRightRef}
-            name="tail_light_middle_right" 
-            intensity={tailLightIntensity} 
-            decay={2} 
-            color={tailMiddleLightColor} 
-            position={[-47.829, -384.368, -602.573]} 
-            rotation={[-Math.PI, 0, 0]} 
-            scale={25} 
+            name="tail_light_middle_right"
+            intensity={tailLightIntensity}
+            decay={2}
+            color={tailMiddleLightColor}
+            position={[-47.829, -384.368, -602.573]}
+            rotation={[-Math.PI, 0, 0]}
+            scale={25}
           />
 
           {/* Tail Side Lights */}
-          <animated.pointLight 
+          <animated.pointLight
             ref={tailLightRightRef}
-            name="tail_light_right" 
-            intensity={tailLightIntensity} 
-            decay={2} 
-            color={tailLightColor} 
-            position={[-248.999, -326.223, -602.573]} 
-            rotation={[-Math.PI, 0, 0]} 
-            scale={25} 
+            name="tail_light_right"
+            intensity={tailLightIntensity}
+            decay={2}
+            color={tailLightColor}
+            position={[-248.999, -326.223, -602.573]}
+            rotation={[-Math.PI, 0, 0]}
+            scale={25}
           />
-          <animated.pointLight 
+          <animated.pointLight
             ref={tailLightLeftRef}
-            name="tail_light_left" 
-            intensity={tailLightIntensity} 
-            decay={2} 
-            color={tailLightColor} 
-            position={[250.51, -326.223, -602.573]} 
-            rotation={[-Math.PI, 0, 0]} 
-            scale={25} 
+            name="tail_light_left"
+            intensity={tailLightIntensity}
+            decay={2}
+            color={tailLightColor}
+            position={[250.51, -326.223, -602.573]}
+            rotation={[-Math.PI, 0, 0]}
+            scale={25}
           />
 
-
-          <mesh name="body_inside_new" geometry={nodes.body_inside_new.geometry} material={materials['body inside new']} position={[0, 0, -1.723]} />
-          <animated.mesh 
+          <mesh
+            name="body_inside_new"
+            geometry={nodes.body_inside_new.geometry}
+            material={materials['body inside new']}
+            position={[0, 0, -1.723]}
+          />
+          <animated.mesh
             ref={flagRef}
-            name="robot_flag_new" 
-            geometry={nodes.robot_flag_new.geometry} 
-            material={materials['body new']} 
-            position={[-301.249, 198.68, -535.916]} 
+            name="robot_flag_new"
+            geometry={nodes.robot_flag_new.geometry}
+            material={materials['body new']}
+            position={[-301.249, 198.68, -535.916]}
             rotation-x={interpolatedRotation}
-            onClick={handleFlagClick} 
+            onClick={handleFlagClick}
           />
-          <PaintableMesh name="robot_paintable_body_new" geometry={nodes.robot_paintable_body_new.geometry} />
-          
+          <PaintableMesh
+            name="robot_paintable_body_new"
+            geometry={nodes.robot_paintable_body_new.geometry}
+          />
+
           {/* Wheels */}
-          <mesh name="wheel_front_left" geometry={nodes.wheel_front_left.geometry} material={materials.wheel} position={[-322.374, 348.386, -139.723]} />
-          <mesh name="wheel_front_right" geometry={nodes.wheel_front_right.geometry} material={materials.wheel} position={[322.257, 348.386, -139.723]} rotation={[-Math.PI, 0, -Math.PI]} />
-          <mesh name="rocker-bogie" geometry={nodes['rocker-bogie'].geometry} material={materials['body new']} position={[0.008, -89.078, -141.649]}>
-            <mesh name="wheel_back_left" geometry={nodes.wheel_back_left.geometry} material={materials.wheel} />
-            <mesh name="wheel_back_right" geometry={nodes.wheel_back_right.geometry} material={materials.wheel} rotation={[-Math.PI, 0, -Math.PI]} />
-            <mesh name="wheel_middle_left" geometry={nodes.wheel_middle_left.geometry} material={materials.wheel} />
-            <mesh name="wheel_middle_right" geometry={nodes.wheel_middle_right.geometry} material={materials.wheel} rotation={[-Math.PI, 0, -Math.PI]} />
+          <mesh
+            name="wheel_front_left"
+            geometry={nodes.wheel_front_left.geometry}
+            material={materials.wheel}
+            position={[-322.374, 348.386, -139.723]}
+          />
+          <mesh
+            name="wheel_front_right"
+            geometry={nodes.wheel_front_right.geometry}
+            material={materials.wheel}
+            position={[322.257, 348.386, -139.723]}
+            rotation={[-Math.PI, 0, -Math.PI]}
+          />
+          <mesh
+            name="rocker-bogie"
+            geometry={nodes['rocker-bogie'].geometry}
+            material={materials['body new']}
+            position={[0.008, -89.078, -141.649]}
+          >
+            <mesh
+              name="wheel_back_left"
+              geometry={nodes.wheel_back_left.geometry}
+              material={materials.wheel}
+            />
+            <mesh
+              name="wheel_back_right"
+              geometry={nodes.wheel_back_right.geometry}
+              material={materials.wheel}
+              rotation={[-Math.PI, 0, -Math.PI]}
+            />
+            <mesh
+              name="wheel_middle_left"
+              geometry={nodes.wheel_middle_left.geometry}
+              material={materials.wheel}
+            />
+            <mesh
+              name="wheel_middle_right"
+              geometry={nodes.wheel_middle_right.geometry}
+              material={materials.wheel}
+              rotation={[-Math.PI, 0, -Math.PI]}
+            />
           </mesh>
         </mesh>
       </group>
-  )
-})
+    )
+  }
+)
 
 Model.displayName = 'E-Model'
