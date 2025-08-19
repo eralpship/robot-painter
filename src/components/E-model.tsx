@@ -17,8 +17,10 @@ import { useTooltip } from '../contexts/tooltip-context'
 import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
 
 interface GLTFAction extends THREE.AnimationClip {
-  name: 'open lid'
+  name: 'open lid' | 'rocker'
 }
+
+const rockerAnimationFrame = 20
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -166,10 +168,16 @@ export const Model = forwardRef<ModelRef, ModelProps>(
     }))
 
     useEffect(() => {
-      const action = actions['open lid']
-      if (action) {
-        action.loop = THREE.LoopOnce
-        action.clampWhenFinished = true
+      const lidAction = actions['open lid']
+      if (lidAction) {
+        lidAction.loop = THREE.LoopOnce
+        lidAction.clampWhenFinished = true
+      }
+
+      const rockerAction = actions['rocker']
+      if (rockerAction) {
+        rockerAction.loop = THREE.LoopPingPong
+        rockerAction.play()
       }
     }, [actions])
 
@@ -536,22 +544,26 @@ export const Model = forwardRef<ModelRef, ModelProps>(
               name="wheel_back_left"
               geometry={nodes.wheel_back_left.geometry}
               material={materials.wheel}
+              position={[-322.382, -143.059, 1.926]}
             />
             <mesh
               name="wheel_back_right"
               geometry={nodes.wheel_back_right.geometry}
               material={materials.wheel}
+              position={[322.249, -143.059, 1.926]}
               rotation={[-Math.PI, 0, -Math.PI]}
             />
             <mesh
               name="wheel_middle_left"
               geometry={nodes.wheel_middle_left.geometry}
               material={materials.wheel}
+              position={[-322.382, 139.349, 1.926]}
             />
             <mesh
               name="wheel_middle_right"
               geometry={nodes.wheel_middle_right.geometry}
               material={materials.wheel}
+              position={[322.249, 139.349, 1.926]}
               rotation={[-Math.PI, 0, -Math.PI]}
             />
           </mesh>
