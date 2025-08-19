@@ -17,6 +17,7 @@ import {
   useCallback,
   forwardRef,
   useImperativeHandle,
+  useState,
 } from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
@@ -29,6 +30,10 @@ import { Leva, useControls, button } from 'leva'
 import { PerspectiveCamera } from 'three'
 
 const FOV_INITIAL = 20
+const INITIAL_AMBIENT_LIGHT = 0.8
+const INITIAL_ENVIRONMENT_INTENSITY = 0.7
+const INITIAL_BACKGROUND_BLUR = 0.7
+const INITIAL_BACKGROUND_INTENSITY = 0.4
 
 const customLevaTheme = {
   sizes: {
@@ -45,11 +50,15 @@ function useModelControls({
   cameraControlsRef,
   textureEditorRef,
   cameraControllerRef,
+  ambientLightRef,
+  environmentWrapperRef,
 }: {
   modelRef: React.RefObject<ModelRef | null>
   cameraControlsRef: React.RefObject<OrbitControlsImpl | null>
   textureEditorRef: React.RefObject<TextureEditorWrapperRef | null>
   cameraControllerRef: React.RefObject<CameraControllerRef | null>
+  ambientLightRef: React.RefObject<any>
+  environmentWrapperRef: React.RefObject<EnvironmentWrapperRef | null>
 }) {
   useControls('Appearence', {
     baseColor: {
@@ -136,15 +145,69 @@ function useModelControls({
     resetCamera: button(() => cameraControlsRef.current?.reset()),
   })
 
-  const setLidOpen = useCallback((lidOpen: boolean) => {
-    setAnimation({ lidOpen })
-  }, [setAnimation])
-  const setTaillightIntensity = useCallback((taillightsIntensity: number) => {
-    setLighting({ taillightsIntensity })
-  }, [setLighting])
-  const setHeadlightsIntensity = useCallback((headlightsIntensity: number) => {
-    setLighting({ headlightsIntensity })
-  }, [setLighting])
+  const [_environment, setEnvironment] = useControls('Environment', () => ({
+    ambientLight: {
+      value: INITIAL_AMBIENT_LIGHT,
+      label: 'Ambient Light',
+      max: 2,
+      min: 0,
+      step: 0.1,
+      onChange: (value: number) => {
+        if (ambientLightRef.current) {
+          ambientLightRef.current.intensity = value
+        }
+      },
+    },
+    backgroundIntensity: {
+      value: INITIAL_BACKGROUND_INTENSITY,
+      label: 'Background Intensity',
+      max: 1,
+      min: 0,
+      step: 0.01,
+      onChange: (value: number) => {
+        environmentWrapperRef.current?.setBackgroundIntensity(value)
+      },
+    },
+    backgroundBlur: {
+      value: INITIAL_BACKGROUND_BLUR,
+      label: 'Background Blur',
+      max: 1,
+      min: 0,
+      step: 0.01,
+      onChange: (value: number) => {
+        environmentWrapperRef.current?.setBackgroundBlur(value)
+      },
+    },
+    environmentIntensity: {
+      value: INITIAL_ENVIRONMENT_INTENSITY,
+      label: 'Environment Intensity',
+      max: 1,
+      min: 0,
+      step: 0.01,
+      onChange: (value: number) => {
+        environmentWrapperRef.current?.setEnvironmentIntensity(value)
+      },
+    },
+  }))
+
+  const setLidOpen = useCallback(
+    (lidOpen: boolean) => {
+      setAnimation({ lidOpen })
+    },
+    [setAnimation]
+  )
+  const setTaillightIntensity = useCallback(
+    (taillightsIntensity: number) => {
+      setLighting({ taillightsIntensity })
+    },
+    [setLighting]
+  )
+  const setHeadlightsIntensity = useCallback(
+    (headlightsIntensity: number) => {
+      setLighting({ headlightsIntensity })
+    },
+    [setLighting]
+  )
 
   return {
     setLidOpen,
@@ -178,6 +241,45 @@ const CameraController = forwardRef<CameraControllerRef>((_, ref) => {
   return null
 })
 
+type EnvironmentWrapperRef = {
+  setBackgroundIntensity: (value: number) => void
+  setBackgroundBlur: (value: number) => void
+  setEnvironmentIntensity: (value: number) => void
+}
+
+const EnvironmentWrapper = forwardRef<EnvironmentWrapperRef>((_, ref) => {
+  const [backgroundIntensity, setBackgroundIntensity] = useState(
+    INITIAL_BACKGROUND_INTENSITY
+  )
+  const [backgroundBlur, setBackgroundBlur] = useState(INITIAL_BACKGROUND_BLUR)
+  const [environmentIntensity, setEnvironmentIntensity] = useState(
+    INITIAL_ENVIRONMENT_INTENSITY
+  )
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      setBackgroundIntensity,
+      setBackgroundBlur,
+      setEnvironmentIntensity,
+    }),
+    []
+  )
+
+  return (
+    <Suspense fallback={null}>
+      <Environment
+        preset="dawn"
+        background
+        blur={backgroundBlur}
+        backgroundIntensity={backgroundIntensity}
+        environmentIntensity={environmentIntensity}
+        resolution={256}
+      />
+    </Suspense>
+  )
+})
+
 function AppContent() {
   const inactivityTimeout = 5_000
   const hasInteractedRef = useRef(false)
@@ -185,6 +287,8 @@ function AppContent() {
   const cameraControlsRef = useRef<OrbitControlsImpl | null>(null)
   const textureEditorRef = useRef<TextureEditorWrapperRef | null>(null)
   const cameraControllerRef = useRef<CameraControllerRef | null>(null)
+  const ambientLightRef = useRef<any>(null)
+  const environmentWrapperRef = useRef<EnvironmentWrapperRef | null>(null)
 
   const modelRef = useRef<ModelRef | null>(null)
   const { setLidOpen, setHeadlightsIntensity, setTaillightIntensity } =
@@ -193,16 +297,14 @@ function AppContent() {
       cameraControlsRef,
       cameraControllerRef,
       textureEditorRef,
+      ambientLightRef,
+      environmentWrapperRef,
     })
 
   console.log('AppContent rendered')
 
   // Static values - never change, no re-renders
   const initialAutoRotate = true
-  const ambientLight = 0.8
-  const backgroundIntensity = 0.4
-  const backgroundBlur = 0.7
-  const environmentIntensity = 0.7
 
   const handleInteraction = useCallback(() => {
     lastInteractionTimeRef.current = Date.now()
@@ -256,19 +358,10 @@ function AppContent() {
         }}
       >
         <CameraController ref={cameraControllerRef} />
-        <Suspense fallback={null}>
-          <Environment
-            preset="dawn"
-            background
-            blur={backgroundBlur}
-            backgroundIntensity={backgroundIntensity}
-            environmentIntensity={environmentIntensity}
-            resolution={256}
-          />
-        </Suspense>
+        <EnvironmentWrapper ref={environmentWrapperRef} />
 
         {/* Ambient light to control overall brightness */}
-        <ambientLight intensity={ambientLight} />
+        <ambientLight ref={ambientLightRef} intensity={INITIAL_AMBIENT_LIGHT} />
 
         {/* Simple contact shadow */}
         <ContactShadows
