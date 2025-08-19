@@ -15,7 +15,6 @@ import { useThree, useFrame, useLoader } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
 import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
-import { debounce } from 'lodash'
 
 export const HEADLIGHT_INTENSITY_DEFAULT = 12
 export const TAILLIGHT_INTENSITY_DEFAULT = 12
@@ -130,15 +129,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       },
     }))
 
-    const throttledRockerAnimation = useCallback(
-      debounce((frame: number) => {
-        rockerApi.start({
-          to: { progress: frame },
-        })
-      }, 200),
-      [rockerApi]
-    )
-
     useImperativeHandle(
       ref,
       () => ({
@@ -152,7 +142,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           handleFlagClick()
         },
         animateRockerToFrame: (frame: number) => {
-          throttledRockerAnimation(frame)
+          rockerApi.start({
+            to: { progress: frame },
+          })
         },
         setTailLightColor: (color: string) => {
           updateTailLightColor(color)
