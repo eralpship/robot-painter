@@ -5,6 +5,7 @@ import {
   BASE_COLOR_DEFAULT,
   HEADLIGHT_INTENSITY_DEFAULT,
   Model,
+  TAILLIGHT_COLOR_DEFAULT,
   TAILLIGHT_INTENSITY_DEFAULT,
   type ModelRef,
 } from '../components/E-model'
@@ -93,7 +94,7 @@ function useModelControls({
       },
     },
     tailLightColor: {
-      value: '#ff0000',
+      value: TAILLIGHT_COLOR_DEFAULT,
       label: 'Tail Light Color',
       onChange: (value: string) => {
         modelRef.current?.setTailLightColor(value)
@@ -122,73 +123,81 @@ function useModelControls({
     touchFlag: button(() => modelRef.current?.touchFlag()),
   }))
 
-  useControls('Camera', {
-    autoRotate: {
-      value: true,
-      label: 'Auto Rotate',
-      onChange: (value: boolean) => {
-        if (cameraControlsRef.current) {
-          cameraControlsRef.current.autoRotate = value
-        }
+  useControls(
+    'Camera',
+    {
+      autoRotate: {
+        value: true,
+        label: 'Auto Rotate',
+        onChange: (value: boolean) => {
+          if (cameraControlsRef.current) {
+            cameraControlsRef.current.autoRotate = value
+          }
+        },
       },
-    },
-    fov: {
-      value: FOV_INITIAL,
-      label: 'FOV',
-      min: 5,
-      max: 60,
-      step: 0.5,
-      onChange: (value: number) => {
-        cameraControllerRef.current?.setFov(value)
+      fov: {
+        value: FOV_INITIAL,
+        label: 'FOV',
+        min: 5,
+        max: 60,
+        step: 0.5,
+        onChange: (value: number) => {
+          cameraControllerRef.current?.setFov(value)
+        },
       },
+      resetCamera: button(() => cameraControlsRef.current?.reset()),
     },
-    resetCamera: button(() => cameraControlsRef.current?.reset()),
-  })
+    { collapsed: true }
+  )
 
-  const [_environment, setEnvironment] = useControls('Environment', () => ({
-    ambientLight: {
-      value: INITIAL_AMBIENT_LIGHT,
-      label: 'Ambient Light',
-      max: 2,
-      min: 0,
-      step: 0.1,
-      onChange: (value: number) => {
-        if (ambientLightRef.current) {
-          ambientLightRef.current.intensity = value
-        }
+  useControls(
+    'Environment',
+    () => ({
+      ambientLight: {
+        value: INITIAL_AMBIENT_LIGHT,
+        label: 'Ambient Light',
+        max: 2,
+        min: 0,
+        step: 0.1,
+        onChange: (value: number) => {
+          if (ambientLightRef.current) {
+            ambientLightRef.current.intensity = value
+          }
+        },
       },
-    },
-    backgroundIntensity: {
-      value: INITIAL_BACKGROUND_INTENSITY,
-      label: 'Background Intensity',
-      max: 1,
-      min: 0,
-      step: 0.01,
-      onChange: (value: number) => {
-        environmentWrapperRef.current?.setBackgroundIntensity(value)
+      backgroundIntensity: {
+        value: INITIAL_BACKGROUND_INTENSITY,
+        label: 'Background Intensity',
+        max: 1,
+        min: 0,
+        step: 0.01,
+        onChange: (value: number) => {
+          environmentWrapperRef.current?.setBackgroundIntensity(value)
+        },
       },
-    },
-    backgroundBlur: {
-      value: INITIAL_BACKGROUND_BLUR,
-      label: 'Background Blur',
-      max: 1,
-      min: 0,
-      step: 0.01,
-      onChange: (value: number) => {
-        environmentWrapperRef.current?.setBackgroundBlur(value)
+      backgroundBlur: {
+        value: INITIAL_BACKGROUND_BLUR,
+        label: 'Background Blur',
+        max: 1,
+        min: 0,
+        step: 0.01,
+        onChange: (value: number) => {
+          environmentWrapperRef.current?.setBackgroundBlur(value)
+        },
       },
-    },
-    environmentIntensity: {
-      value: INITIAL_ENVIRONMENT_INTENSITY,
-      label: 'Environment Intensity',
-      max: 1,
-      min: 0,
-      step: 0.01,
-      onChange: (value: number) => {
-        environmentWrapperRef.current?.setEnvironmentIntensity(value)
+      environmentIntensity: {
+        value: INITIAL_ENVIRONMENT_INTENSITY,
+        label: 'Environment Intensity',
+        max: 1,
+        min: 0,
+        step: 0.01,
+        onChange: (value: number) => {
+          environmentWrapperRef.current?.setEnvironmentIntensity(value)
+        },
       },
-    },
-  }))
+    }),
+    { collapsed: true }
+  )
 
   const setLidOpen = useCallback(
     (lidOpen: boolean) => {
