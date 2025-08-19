@@ -106,6 +106,15 @@ function useModelControls({
         modelRef.current?.animateRockerToFrame(value)
       },
     },
+    autoRotate: {
+      value: true,
+      label: 'Auto Rotate',
+      onChange: (value: boolean) => {
+        if (cameraControlsRef.current) {
+          cameraControlsRef.current.autoRotate = value
+        }
+      },
+    },
     resetCamera: button(() => cameraControlsRef.current?.reset()),
     touchFlag: button(() => modelRef.current?.touchFlag()),
   }))
@@ -134,7 +143,7 @@ function AppContent() {
   console.log('AppContent rendered')
 
   // Static values - never change, no re-renders
-  const autoRotate = true
+  const initialAutoRotate = true
   const ambientLight = 0.8
   const backgroundIntensity = 0.4
   const backgroundBlur = 0.7
@@ -177,7 +186,7 @@ function AppContent() {
         hasInteractedRef.current = false
         // Update OrbitControls autoRotate directly
         if (cameraControlsRef.current) {
-          cameraControlsRef.current.autoRotate = autoRotate
+          cameraControlsRef.current.autoRotate = initialAutoRotate
         }
       }
       frameId = requestAnimationFrame(checkInactivity)
@@ -240,7 +249,7 @@ function AppContent() {
           maxDistance={200}
           minAzimuthAngle={-Infinity}
           maxAzimuthAngle={Infinity}
-          autoRotate={autoRotate}
+          autoRotate={initialAutoRotate}
           autoRotateSpeed={2}
           onStart={handleInteraction}
         />
