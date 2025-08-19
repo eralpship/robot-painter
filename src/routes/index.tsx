@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import '../App.css'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import {
   BASE_COLOR_DEFAULT,
   HEADLIGHT_INTENSITY_DEFAULT,
@@ -10,7 +10,14 @@ import {
 } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
-import { useRef, useEffect, Suspense, useCallback } from 'react'
+import {
+  useRef,
+  useEffect,
+  Suspense,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from 'react'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
@@ -19,7 +26,7 @@ import {
   type TextureEditorWrapperRef,
 } from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
-import type { PerspectiveCamera } from 'three'
+import { PerspectiveCamera } from 'three'
 
 const FOV_INITIAL = 20
 
@@ -37,12 +44,12 @@ function useModelControls({
   modelRef,
   cameraControlsRef,
   textureEditorRef,
-  cameraRef,
+  cameraControllerRef,
 }: {
   modelRef: React.RefObject<ModelRef | null>
   cameraControlsRef: React.RefObject<OrbitControlsImpl | null>
   textureEditorRef: React.RefObject<TextureEditorWrapperRef | null>
-  cameraRef: React.RefObject<PerspectiveCamera | null>
+  cameraControllerRef: React.RefObject<CameraControllerRef | null>
 }) {
   const [, set] = useControls(() => ({
     baseColor: {
@@ -113,9 +120,7 @@ function useModelControls({
       max: 60,
       step: 0.5,
       onChange: (value: number) => {
-        if (cameraRef.current) {
-          cameraRef.current.near = value
-        }
+        cameraControllerRef.current?.setFov(value)
       },
     },
     resetCamera: button(() => cameraControlsRef.current?.reset()),
@@ -139,21 +144,46 @@ function useModelControls({
   }
 }
 
+type CameraControllerRef = { setFov: (fov: number) => void }
+const CameraController = forwardRef<CameraControllerRef>((_, ref) => {
+  const { camera } = useThree()
+
+  const setFov = useCallback(
+    (fov: number) => {
+      if (camera instanceof PerspectiveCamera) {
+        camera.fov = fov
+        camera.updateProjectionMatrix()
+      }
+    },
+    [camera]
+  )
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      setFov,
+    }),
+    [setFov]
+  )
+
+  return null
+})
+
 function AppContent() {
+  const inactivityTimeout = 5_000
   const hasInteractedRef = useRef(false)
   const lastInteractionTimeRef = useRef(Date.now())
   const cameraControlsRef = useRef<OrbitControlsImpl | null>(null)
-  const inactivityTimeout = 5_000
   const textureEditorRef = useRef<TextureEditorWrapperRef | null>(null)
-  const cameraRef = useRef<PerspectiveCamera | null>(null)
+  const cameraControllerRef = useRef<CameraControllerRef | null>(null)
 
   const modelRef = useRef<ModelRef | null>(null)
   const { setLidOpen, setHeadlightsIntensity, setTaillightIntensity } =
     useModelControls({
       modelRef,
       cameraControlsRef,
+      cameraControllerRef,
       textureEditorRef,
-      cameraRef,
     })
 
   console.log('AppContent rendered')
@@ -165,7 +195,6 @@ function AppContent() {
   const backgroundBlur = 0.7
   const environmentIntensity = 0.7
 
-  // Handle user interaction - no state changes, only ref updates
   const handleInteraction = useCallback(() => {
     lastInteractionTimeRef.current = Date.now()
     if (!hasInteractedRef.current) {
@@ -213,11 +242,11 @@ function AppContent() {
           width: '100vw',
         }}
         camera={{
-          ref: cameraRef,
           position: [40, 30, 40],
           fov: FOV_INITIAL,
         }}
       >
+        <CameraController ref={cameraControllerRef} />
         <Suspense fallback={null}>
           <Environment
             preset="dawn"
