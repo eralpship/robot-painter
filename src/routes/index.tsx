@@ -308,7 +308,10 @@ function AppContent() {
 
   const handleInteraction = useCallback(() => {
     lastInteractionTimeRef.current = Date.now()
-    if (!hasInteractedRef.current) {
+    if (
+      !hasInteractedRef.current &&
+      cameraControlsRef.current?.autoRotate !== false
+    ) {
       hasInteractedRef.current = true
     }
 
