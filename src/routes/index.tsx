@@ -4,12 +4,15 @@ import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
-import { useRef, useState, useEffect, Suspense } from 'react'
+import { useRef, useEffect, Suspense, useCallback } from 'react'
 import { useThree } from '@react-three/fiber'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
-import { TextureEditorWrapper } from '../components/texture-editor/TextureEditorWrapper'
+import {
+  TextureEditorWrapper,
+  type TextureEditorWrapperRef,
+} from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
 
 const customLevaTheme = {
@@ -35,117 +38,141 @@ function CameraController({ fov }: { fov: number }) {
   return null
 }
 
-function AppContent() {
-  const [hasInteracted, setHasInteracted] = useState(false)
-  const lastInteractionTime = useRef(Date.now())
-  const controlsRef = useRef<OrbitControlsImpl>(null)
-  const inactivityTimeout = 5_000
-  const initialBaseColor = '#ffffff'
-  const modelRef = useRef<ModelRef>(null)
-
-  const [
-    {
-      baseColor,
-      tailLightColor,
-      headlightsOn,
-      taillightsOn,
-      headlightsIntensity,
-      taillightsIntensity,
-      lidOpen,
-      autoRotate,
-      ambientLight,
-      backgroundIntensity,
-      backgroundBlur,
-      environmentIntensity,
-      fov,
-    },
-    setControlStates,
-  ] = useControls(() => ({
+function useModelControls({
+  modelRef,
+  cameraControlsRef,
+  textureEditorRef,
+}: {
+  modelRef: React.RefObject<ModelRef | null>
+  cameraControlsRef: React.RefObject<OrbitControlsImpl | null>
+  textureEditorRef: React.RefObject<TextureEditorWrapperRef | null>
+}) {
+  const [, set] = useControls(() => ({
     baseColor: {
-      value: initialBaseColor,
+      value: '#ffffff',
       label: 'Base Color',
+      onChange: (value: string) => {
+        modelRef.current?.updateBaseColor(value)
+        textureEditorRef.current?.setBaseColor(value)
+      },
     },
     tailLightColor: {
       value: '#ff0000',
       label: 'Tail Light Color',
+      onChange: (value: string) => {
+        modelRef.current?.setTailLightColor(value)
+      },
     },
-    headlightsOn: { value: true, label: 'Headlights On' },
+    headlightsOn: {
+      value: true,
+      label: 'Headlights On',
+      onChange: (value: boolean) => {
+        modelRef.current?.setHeadlightsOn(value)
+      },
+    },
     headlightsIntensity: {
       value: 12,
       label: 'Headlights Intensity',
       max: 60,
       min: 0,
       step: 0.1,
+      onChange: (value: number) => {
+        modelRef.current?.setHeadlightsIntensity(value)
+      },
     },
-    taillightsOn: { value: true, label: 'Taillights On' },
+    taillightsOn: {
+      value: true,
+      label: 'Taillights On',
+      onChange: (value: boolean) => {
+        modelRef.current?.setTaillightsOn(value)
+      },
+    },
     taillightsIntensity: {
       value: 12,
       label: 'Taillights Intensity',
       max: 60,
       min: 0,
       step: 0.1,
+      onChange: (value: number) => {
+        modelRef.current?.setTaillightsIntensity(value)
+      },
     },
-    lidOpen: { value: false, label: 'Lid Open' },
-    autoRotate: { value: true, label: 'Auto Rotate' },
-    ambientLight: {
-      value: 0.8,
-      label: 'Ambient Light',
-      max: 2,
+    lidOpen: {
+      value: false,
+      label: 'Lid Open',
+      onChange: (value: boolean) => {
+        modelRef.current?.setLidOpen(value)
+      },
+    },
+    bogie: {
+      value: 0.5,
+      label: 'Bogie',
       min: 0,
+      max: 1,
       step: 0.1,
+      onChange: (value: number) => {
+        modelRef.current?.animateRockerToFrame(value)
+      },
     },
-    backgroundIntensity: {
-      value: 0.4,
-      label: 'Background Intensity',
-      max: 1,
-      min: 0,
-      step: 0.01,
-    },
-    backgroundBlur: {
-      value: 0.7,
-      label: 'Background Blur',
-      max: 1,
-      min: 0,
-      step: 0.01,
-    },
-    environmentIntensity: {
-      value: 0.7,
-      label: 'Environment Intensity',
-      max: 1,
-      min: 0,
-      step: 0.01,
-    },
-    fov: { value: 20, label: 'FOV', min: 5, max: 60, step: 0.5 },
-    resetCamera: button(() => controlsRef.current?.reset()),
+    resetCamera: button(() => cameraControlsRef.current?.reset()),
     touchFlag: button(() => modelRef.current?.touchFlag()),
   }))
 
-  useEffect(() => {
-    modelRef.current?.updateBaseColor(baseColor)
-  }, [baseColor])
+  const setLidOpen = useCallback((open: boolean) => set({ lidOpen: open }), [])
 
-  // Functions to manipulate light states directly in Leva
-  const toggleHeadlights = () => {
-    console.log('toggleHeadlights called, current state:', headlightsOn)
-    const newValue = !headlightsOn
-    setControlStates({ headlightsOn: newValue })
-    console.log('New headlights state:', newValue)
+  return {
+    setLidOpen,
   }
+}
 
-  const toggleTaillights = () => {
-    console.log('toggleTaillights called, current state:', taillightsOn)
-    const newValue = !taillightsOn
-    setControlStates({ taillightsOn: newValue })
-    console.log('New taillights state:', newValue)
-  }
+function AppContent() {
+  const hasInteractedRef = useRef(false)
+  const lastInteractionTimeRef = useRef(Date.now())
+  const cameraControlsRef = useRef<OrbitControlsImpl | null>(null)
+  const inactivityTimeout = 5_000
+  const initialBaseColor = '#ffffff' // TODO: this is duplicated in many places, refactor
+  const textureEditorRef = useRef<TextureEditorWrapperRef | null>(null)
 
-  // Handle user interaction
-  const handleInteraction = () => {
-    lastInteractionTime.current = Date.now()
-    if (!hasInteracted) {
-      setHasInteracted(true)
+  const modelRef = useRef<ModelRef | null>(null)
+  const { setLidOpen } = useModelControls({
+    modelRef,
+    cameraControlsRef,
+    textureEditorRef,
+  })
+
+  console.log('AppContent rendered')
+
+  // Static values - never change, no re-renders
+  const autoRotate = true
+  const ambientLight = 0.8
+  const backgroundIntensity = 0.4
+  const backgroundBlur = 0.7
+  const environmentIntensity = 0.7
+  const fov = 20
+
+  // Simple toggle functions that call imperative handles
+  const toggleHeadlights = useCallback(() => {
+    // We'll need to track state in the Model component itself
+    console.log('toggleHeadlights called')
+  }, [])
+
+  const toggleTaillights = useCallback(() => {
+    // We'll need to track state in the Model component itself
+    console.log('toggleTaillights called')
+  }, [])
+
+  // Handle user interaction - no state changes, only ref updates
+  const handleInteraction = useCallback(() => {
+    lastInteractionTimeRef.current = Date.now()
+    if (!hasInteractedRef.current) {
+      hasInteractedRef.current = true
     }
-  }
+
+    // Update OrbitControls autoRotate directly
+    if (cameraControlsRef.current) {
+      cameraControlsRef.current.autoRotate = false
+    }
+  }, [])
 
   useEffect(() => {
     let frameId: number
@@ -153,17 +180,21 @@ function AppContent() {
     const checkInactivity = () => {
       const now = Date.now()
       if (
-        hasInteracted &&
-        now - lastInteractionTime.current > inactivityTimeout
+        hasInteractedRef.current &&
+        now - lastInteractionTimeRef.current > inactivityTimeout
       ) {
-        setHasInteracted(false)
+        hasInteractedRef.current = false
+        // Update OrbitControls autoRotate directly
+        if (cameraControlsRef.current) {
+          cameraControlsRef.current.autoRotate = autoRotate
+        }
       }
       frameId = requestAnimationFrame(checkInactivity)
     }
 
     frameId = requestAnimationFrame(checkInactivity)
     return () => cancelAnimationFrame(frameId)
-  }, [hasInteracted])
+  }, [])
 
   return (
     <div className="App">
@@ -205,19 +236,19 @@ function AppContent() {
           ref={modelRef}
           position={[0, -3, 0]}
           scale={1}
-          tailLightColor={tailLightColor}
-          headlightsOn={headlightsOn}
-          taillightsOn={taillightsOn}
           onToggleHeadlights={toggleHeadlights}
           onToggleTaillights={toggleTaillights}
-          lidOpen={lidOpen}
-          setLidOpen={lidOpen => setControlStates({ lidOpen })}
+          setLidOpen={setLidOpen}
           initialBaseColor={initialBaseColor}
-          headlightsIntensity={headlightsIntensity}
-          taillightsIntensity={taillightsIntensity}
+          initialTailLightColor="#ff0000"
+          initialHeadlightsOn={true}
+          initialTaillightsOn={true}
+          initialLidOpen={false}
+          initialHeadlightsIntensity={12}
+          initialTaillightsIntensity={12}
         />
         <OrbitControls
-          ref={controlsRef}
+          ref={cameraControlsRef}
           makeDefault
           minPolarAngle={0}
           maxPolarAngle={1.55}
@@ -225,13 +256,13 @@ function AppContent() {
           maxDistance={200}
           minAzimuthAngle={-Infinity}
           maxAzimuthAngle={Infinity}
-          autoRotate={!hasInteracted && autoRotate}
+          autoRotate={autoRotate}
           autoRotateSpeed={2}
           onStart={handleInteraction}
         />
       </Canvas>
       <FloatingCollapsibleWindow title="Texture Editor">
-        <TextureEditorWrapper baseColor={baseColor} />
+        <TextureEditorWrapper ref={textureEditorRef} />
       </FloatingCollapsibleWindow>
     </div>
   )
