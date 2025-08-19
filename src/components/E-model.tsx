@@ -194,7 +194,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       const wasOn = (tailLightLeftRef.current?.intensity ?? 0) > 0
       const newIntensity = wasOn ? 0 : TAILLIGHT_INTENSITY_DEFAULT
       updateTaillights(newIntensity)
-      onHeadlightIntensityChanged(newIntensity)
+      onTaillightIntensityChanged(newIntensity)
     }
     const updateTaillights = (intensity?: number) => {
       const taillightRefs = [

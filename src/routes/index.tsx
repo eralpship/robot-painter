@@ -11,7 +11,6 @@ import {
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useRef, useEffect, Suspense, useCallback } from 'react'
-import { useThree } from '@react-three/fiber'
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
@@ -20,6 +19,9 @@ import {
   type TextureEditorWrapperRef,
 } from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
+import type { PerspectiveCamera } from 'three'
+
+const FOV_INITIAL = 20
 
 const customLevaTheme = {
   sizes: {
@@ -31,29 +33,18 @@ export const Route = createFileRoute('/')({
   component: App,
 })
 
-function CameraController({ fov }: { fov: number }) {
-  const { camera } = useThree()
-
-  useEffect(() => {
-    if ('fov' in camera) {
-      camera.fov = fov
-      camera.updateProjectionMatrix()
-    }
-  }, [camera, fov])
-
-  return null
-}
-
 function useModelControls({
   modelRef,
   cameraControlsRef,
   textureEditorRef,
+  cameraRef,
 }: {
   modelRef: React.RefObject<ModelRef | null>
   cameraControlsRef: React.RefObject<OrbitControlsImpl | null>
   textureEditorRef: React.RefObject<TextureEditorWrapperRef | null>
+  cameraRef: React.RefObject<PerspectiveCamera | null>
 }) {
-  const [{ fov }, set] = useControls(() => ({
+  const [, set] = useControls(() => ({
     baseColor: {
       value: BASE_COLOR_DEFAULT,
       label: 'Base Color',
@@ -116,22 +107,35 @@ function useModelControls({
       },
     },
     fov: {
-      value: 20,
+      value: FOV_INITIAL,
       label: 'FOV',
       min: 5,
       max: 60,
       step: 0.5,
-      // FOV is handled by CameraController component
+      onChange: (value: number) => {
+        if (cameraRef.current) {
+          cameraRef.current.near = value
+        }
+      },
     },
     resetCamera: button(() => cameraControlsRef.current?.reset()),
     touchFlag: button(() => modelRef.current?.touchFlag()),
   }))
 
-  const setLidOpen = useCallback((open: boolean) => set({ lidOpen: open }), [])
+  const setLidOpen = useCallback((lidOpen: boolean) => set({ lidOpen }), [])
+  const setTaillightIntensity = useCallback(
+    (taillightsIntensity: number) => set({ taillightsIntensity }),
+    []
+  )
+  const setHeadlightsIntensity = useCallback(
+    (headlightsIntensity: number) => set({ headlightsIntensity }),
+    []
+  )
 
   return {
     setLidOpen,
-    fov,
+    setHeadlightsIntensity,
+    setTaillightIntensity,
   }
 }
 
@@ -141,13 +145,16 @@ function AppContent() {
   const cameraControlsRef = useRef<OrbitControlsImpl | null>(null)
   const inactivityTimeout = 5_000
   const textureEditorRef = useRef<TextureEditorWrapperRef | null>(null)
+  const cameraRef = useRef<PerspectiveCamera | null>(null)
 
   const modelRef = useRef<ModelRef | null>(null)
-  const { setLidOpen, fov } = useModelControls({
-    modelRef,
-    cameraControlsRef,
-    textureEditorRef,
-  })
+  const { setLidOpen, setHeadlightsIntensity, setTaillightIntensity } =
+    useModelControls({
+      modelRef,
+      cameraControlsRef,
+      textureEditorRef,
+      cameraRef,
+    })
 
   console.log('AppContent rendered')
 
@@ -157,17 +164,6 @@ function AppContent() {
   const backgroundIntensity = 0.4
   const backgroundBlur = 0.7
   const environmentIntensity = 0.7
-
-  // Simple toggle functions that call imperative handles
-  const toggleHeadlights = useCallback(() => {
-    // We'll need to track state in the Model component itself
-    console.log('toggleHeadlights called')
-  }, [])
-
-  const toggleTaillights = useCallback(() => {
-    // We'll need to track state in the Model component itself
-    console.log('toggleTaillights called')
-  }, [])
 
   // Handle user interaction - no state changes, only ref updates
   const handleInteraction = useCallback(() => {
@@ -212,10 +208,16 @@ function AppContent() {
         titleBar={{ title: 'Options', filter: false }}
       />
       <Canvas
-        style={{ height: '100vh', width: '100vw' }}
-        camera={{ position: [40, 30, 40], fov }}
+        style={{
+          height: '100vh',
+          width: '100vw',
+        }}
+        camera={{
+          ref: cameraRef,
+          position: [40, 30, 40],
+          fov: FOV_INITIAL,
+        }}
       >
-        <CameraController fov={fov} />
         <Suspense fallback={null}>
           <Environment
             preset="dawn"
@@ -244,8 +246,8 @@ function AppContent() {
           ref={modelRef}
           position={[0, -3, 0]}
           scale={1}
-          onHeadlightIntensityChanged={toggleHeadlights}
-          onTaillightIntensityChanged={toggleTaillights}
+          onHeadlightIntensityChanged={setHeadlightsIntensity}
+          onTaillightIntensityChanged={setTaillightIntensity}
           onLidOpenChanged={setLidOpen}
         />
         <OrbitControls
