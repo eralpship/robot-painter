@@ -53,7 +53,7 @@ function useModelControls({
   cameraControlsRef: React.RefObject<OrbitControlsImpl | null>
   textureEditorRef: React.RefObject<TextureEditorWrapperRef | null>
 }) {
-  const [, set] = useControls(() => ({
+  const [{ fov }, set] = useControls(() => ({
     baseColor: {
       value: BASE_COLOR_DEFAULT,
       label: 'Base Color',
@@ -115,6 +115,14 @@ function useModelControls({
         }
       },
     },
+    fov: {
+      value: 20,
+      label: 'FOV',
+      min: 5,
+      max: 60,
+      step: 0.5,
+      // FOV is handled by CameraController component
+    },
     resetCamera: button(() => cameraControlsRef.current?.reset()),
     touchFlag: button(() => modelRef.current?.touchFlag()),
   }))
@@ -123,6 +131,7 @@ function useModelControls({
 
   return {
     setLidOpen,
+    fov,
   }
 }
 
@@ -134,7 +143,7 @@ function AppContent() {
   const textureEditorRef = useRef<TextureEditorWrapperRef | null>(null)
 
   const modelRef = useRef<ModelRef | null>(null)
-  const { setLidOpen } = useModelControls({
+  const { setLidOpen, fov } = useModelControls({
     modelRef,
     cameraControlsRef,
     textureEditorRef,
@@ -148,7 +157,6 @@ function AppContent() {
   const backgroundIntensity = 0.4
   const backgroundBlur = 0.7
   const environmentIntensity = 0.7
-  const fov = 20
 
   // Simple toggle functions that call imperative handles
   const toggleHeadlights = useCallback(() => {
