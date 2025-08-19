@@ -51,7 +51,7 @@ function useModelControls({
   textureEditorRef: React.RefObject<TextureEditorWrapperRef | null>
   cameraControllerRef: React.RefObject<CameraControllerRef | null>
 }) {
-  const [, set] = useControls(() => ({
+  useControls('Appearence', {
     baseColor: {
       value: BASE_COLOR_DEFAULT,
       label: 'Base Color',
@@ -60,13 +60,9 @@ function useModelControls({
         textureEditorRef.current?.setBaseColor(value)
       },
     },
-    tailLightColor: {
-      value: '#ff0000',
-      label: 'Tail Light Color',
-      onChange: (value: string) => {
-        modelRef.current?.setTailLightColor(value)
-      },
-    },
+  })
+
+  const [_lighting, setLighting] = useControls('Lighting', () => ({
     headlightsIntensity: {
       value: HEADLIGHT_INTENSITY_DEFAULT,
       label: 'Headlights Intensity',
@@ -87,6 +83,16 @@ function useModelControls({
         modelRef.current?.setTaillightsIntensity(value)
       },
     },
+    tailLightColor: {
+      value: '#ff0000',
+      label: 'Tail Light Color',
+      onChange: (value: string) => {
+        modelRef.current?.setTailLightColor(value)
+      },
+    },
+  }))
+
+  const [_animation, setAnimation] = useControls('Animation', () => ({
     lidOpen: {
       value: false,
       label: 'Lid Open',
@@ -104,6 +110,10 @@ function useModelControls({
         modelRef.current?.animateRockerToFrame(value)
       },
     },
+    touchFlag: button(() => modelRef.current?.touchFlag()),
+  }))
+
+  useControls('Camera', {
     autoRotate: {
       value: true,
       label: 'Auto Rotate',
@@ -124,18 +134,17 @@ function useModelControls({
       },
     },
     resetCamera: button(() => cameraControlsRef.current?.reset()),
-    touchFlag: button(() => modelRef.current?.touchFlag()),
-  }))
+  })
 
-  const setLidOpen = useCallback((lidOpen: boolean) => set({ lidOpen }), [])
-  const setTaillightIntensity = useCallback(
-    (taillightsIntensity: number) => set({ taillightsIntensity }),
-    []
-  )
-  const setHeadlightsIntensity = useCallback(
-    (headlightsIntensity: number) => set({ headlightsIntensity }),
-    []
-  )
+  const setLidOpen = useCallback((lidOpen: boolean) => {
+    setAnimation({ lidOpen })
+  }, [])
+  const setTaillightIntensity = useCallback((taillightsIntensity: number) => {
+    setLighting({ taillightsIntensity })
+  }, [])
+  const setHeadlightsIntensity = useCallback((headlightsIntensity: number) => {
+    setLighting({ headlightsIntensity })
+  }, [])
 
   return {
     setLidOpen,
