@@ -138,13 +138,13 @@ function useModelControls({
 
   const setLidOpen = useCallback((lidOpen: boolean) => {
     setAnimation({ lidOpen })
-  }, [])
+  }, [setAnimation])
   const setTaillightIntensity = useCallback((taillightsIntensity: number) => {
     setLighting({ taillightsIntensity })
-  }, [])
+  }, [setLighting])
   const setHeadlightsIntensity = useCallback((headlightsIntensity: number) => {
     setLighting({ headlightsIntensity })
-  }, [])
+  }, [setLighting])
 
   return {
     setLidOpen,
