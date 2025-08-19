@@ -21,26 +21,15 @@ export function RobotPreview({ baseColor = '#ffffff' }: RobotPreviewProps) {
       camera={{ position: [10, 5, 10], zoom: 20 }}
     >
       <ambientLight intensity={8} />
-      <Model 
+      <Model
         ref={modelRef}
-        position={[0, -3, 0]} 
-        scale={1} 
-        tailLightColor="#ff0000"
-        headlightsOn={false}
-        taillightsOn={false}
-        onToggleHeadlights={() => {}}
-        onToggleTaillights={() => {}}
-        lidOpen={false}
-        setLidOpen={() => {}}
-        initialBaseColor={baseColor}
-        headlightsIntensity={0}
-        taillightsIntensity={0}
+        position={[0, -3, 0]}
+        scale={1}
+        onLidOpenChanged={() => {}}
+        onTaillightIntensityChanged={() => {}}
+        onHeadlightIntensityChanged={() => {}}
       />
-      <OrbitControls 
-        makeDefault
-        enableZoom={true}
-        enablePan={false}
-      />
+      <OrbitControls makeDefault enableZoom={true} enablePan={false} />
     </Canvas>
   )
 }

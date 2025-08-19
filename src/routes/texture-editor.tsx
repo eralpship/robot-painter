@@ -28,8 +28,12 @@ function TextureEditor() {
   return (
     <OverlayTextureCanvasProvider>
       <div style={{ height: '100vh', width: '100vw' }}>
-        <Leva theme={customLevaTheme} collapsed={false} titleBar={{ title: 'Preview Controls', filter: false }} />
-        <TextureEditorWrapper baseColor={baseColor} />
+        <Leva
+          theme={customLevaTheme}
+          collapsed={false}
+          titleBar={{ title: 'Preview Controls', filter: false }}
+        />
+        <TextureEditorWrapper />
         <FloatingCollapsibleWindow title="preview">
           <RobotPreview baseColor={baseColor} />
         </FloatingCollapsibleWindow>

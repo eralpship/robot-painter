@@ -15,7 +15,12 @@ import { useThree, useFrame, useLoader } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
 import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
-import { debounce, throttle } from 'lodash'
+import { debounce } from 'lodash'
+
+export const HEADLIGHT_INTENSITY_DEFAULT = 12
+export const TAILLIGHT_INTENSITY_DEFAULT = 12
+export const TAILLIGHT_COLOR_DEFAULT = '#ff0000'
+export const BASE_COLOR_DEFAULT = '#ffffff'
 
 interface GLTFAction extends THREE.AnimationClip {
   name: 'open lid' | 'rocker'
@@ -47,16 +52,9 @@ type GLTFResult = GLTF & {
 }
 
 interface ModelProps extends React.ComponentProps<'group'> {
-  initialTailLightColor: string
-  initialHeadlightsOn: boolean
-  initialTaillightsOn: boolean
-  initialLidOpen: boolean
-  initialHeadlightsIntensity: number
-  initialTaillightsIntensity: number
-  initialBaseColor: string
-  onToggleHeadlights: () => void
-  onToggleTaillights: () => void
-  setLidOpen: (open: boolean) => void
+  onHeadlightIntensityChanged: (value: number) => void
+  onTaillightIntensityChanged: (value: number) => void
+  onLidOpenChanged: (open: boolean) => void
 }
 
 export interface ModelRef {
@@ -64,8 +62,6 @@ export interface ModelRef {
   touchFlag: () => void
   animateRockerToFrame: (frame: number) => void
   setTailLightColor: (color: string) => void
-  setHeadlightsOn: (on: boolean) => void
-  setTaillightsOn: (on: boolean) => void
   setLidOpen: (open: boolean) => void
   setHeadlightsIntensity: (intensity: number) => void
   setTaillightsIntensity: (intensity: number) => void
@@ -90,16 +86,9 @@ loadingManager.setURLModifier(url => {
 export const Model = forwardRef<ModelRef, ModelProps>(
   (
     {
-      initialTailLightColor,
-      initialHeadlightsOn,
-      initialTaillightsOn,
-      onToggleHeadlights,
-      onToggleTaillights,
-      initialLidOpen,
-      setLidOpen,
-      initialBaseColor,
-      initialHeadlightsIntensity,
-      initialTaillightsIntensity,
+      onLidOpenChanged,
+      onHeadlightIntensityChanged,
+      onTaillightIntensityChanged,
       ...props
     },
     ref
@@ -116,13 +105,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
     const flagRef = useRef<THREE.Mesh>(null)
 
     console.log('Model component rendered')
-
-    // Use props directly
-    const tailLightColor = initialTailLightColor
-    const headlightsOn = initialHeadlightsOn
-    const taillightsOn = initialTaillightsOn
-    const headlightsIntensity = initialHeadlightsIntensity
-    const taillightsIntensity = initialTaillightsIntensity
 
     const { nodes, materials, animations } = useLoader(
       GLTFLoader,
@@ -175,20 +157,14 @@ export const Model = forwardRef<ModelRef, ModelProps>(
         setTailLightColor: (color: string) => {
           updateTailLightColor(color)
         },
-        setHeadlightsOn: (on: boolean) => {
-          updateHeadlights(on)
-        },
-        setTaillightsOn: (on: boolean) => {
-          updateTaillights(on)
-        },
         setLidOpen: (open: boolean) => {
           internalSetLidOpen(open)
         },
         setHeadlightsIntensity: (intensity: number) => {
-          updateHeadlights(headlightsOn, intensity)
+          updateHeadlights(intensity)
         },
         setTaillightsIntensity: (intensity: number) => {
-          updateTaillights(taillightsOn, intensity)
+          updateTaillights(intensity)
         },
         updateLevaLidState: (open: boolean) => {
           if (updateLevaLidStateRef.current) {
@@ -199,23 +175,28 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       [materials, actions, rockerApi]
     )
 
-    // Internal functions to update lights and lid
-    const updateHeadlights = (on: boolean, intensity?: number) => {
-      const actualIntensity = intensity ?? headlightsIntensity
-      const targetIntensity = on ? actualIntensity : 0
-
+    const toggleHeadlights = () => {
+      const wasOn = (leftHeadlightRef.current?.intensity ?? 0) > 0
+      const newIntensity = wasOn ? 0 : HEADLIGHT_INTENSITY_DEFAULT
+      updateHeadlights(newIntensity)
+      onHeadlightIntensityChanged(newIntensity)
+    }
+    const updateHeadlights = (intensity?: number) => {
       if (leftHeadlightRef.current) {
-        leftHeadlightRef.current.intensity = targetIntensity
+        leftHeadlightRef.current.intensity = intensity ?? 0
       }
       if (rightHeadlightRef.current) {
-        rightHeadlightRef.current.intensity = targetIntensity
+        rightHeadlightRef.current.intensity = intensity ?? 0
       }
     }
 
-    const updateTaillights = (on: boolean, intensity?: number) => {
-      const actualIntensity = intensity ?? taillightsIntensity
-      const targetIntensity = on ? actualIntensity : 0
-
+    const toggleTaillights = () => {
+      const wasOn = (tailLightLeftRef.current?.intensity ?? 0) > 0
+      const newIntensity = wasOn ? 0 : TAILLIGHT_INTENSITY_DEFAULT
+      updateTaillights(newIntensity)
+      onHeadlightIntensityChanged(newIntensity)
+    }
+    const updateTaillights = (intensity?: number) => {
       const taillightRefs = [
         tailLightLeftRef,
         tailLightMiddleLeftRef,
@@ -225,7 +206,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       ]
       taillightRefs.forEach(ref => {
         if (ref.current) {
-          ref.current.intensity = targetIntensity
+          ref.current.intensity = intensity ?? 0
         }
       })
     }
@@ -252,6 +233,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
         action.paused = false
         action.play()
       }
+      onLidOpenChanged(open)
     }
 
     const [springs, api] = useSpring(() => ({
@@ -269,15 +251,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       if (lidAction) {
         lidAction.loop = THREE.LoopOnce
         lidAction.clampWhenFinished = true
-
-        // Set initial lid position based on initialLidOpen
-        if (initialLidOpen) {
-          // Start at end (open position)
-          lidAction.time = lidAction.getClip().duration
-        } else {
-          // Start at beginning (closed position)
-          lidAction.time = 0
-        }
+        lidAction.time = 0
         lidAction.paused = true // Keep it paused at initial position
       }
 
@@ -291,7 +265,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
         rockerAction.reset()
         rockerAction.paused = true
       }
-    }, [actions, initialLidOpen])
+    }, [actions])
 
     const handleFlagClick = useCallback(
       (e?: ThreeEvent<MouseEvent>) => {
@@ -380,7 +354,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       baseColorMaterial.needsUpdate = true
       baseColorMaterial.side = THREE.FrontSide
       materials.baseColor = baseColorMaterial
-      materials.baseColor.color.set(initialBaseColor)
+      materials.baseColor.color.set('#ffffff') // TODO: refactor this is hardcoded in many places
 
       // swap out the texture for the overlay image
       const originalTexture = materials['body paintable new'].map
@@ -475,7 +449,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       )
 
       internalSetLidOpen(newLidOpen)
-      setLidOpen(newLidOpen) // Call the callback with new state
 
       // Update Leva control to reflect the new state
       if (updateLevaLidStateRef.current) {
@@ -488,10 +461,10 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       console.log('Hitbox clicked:', e.object.name)
       if (e.object.name.includes('headlight')) {
         console.log('Toggling headlights')
-        onToggleHeadlights()
+        toggleHeadlights()
       } else if (e.object.name.includes('tail_light')) {
         console.log('Toggling taillights')
-        onToggleTaillights()
+        toggleTaillights()
       }
     }
 
@@ -538,7 +511,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
     }, [handleHitboxClick])
 
     const headlightColor = '#ffe8a0'
-    const defaultTailLightColor = '#ff0011'
 
     return (
       <group ref={group} {...props} dispose={null}>
@@ -564,7 +536,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={leftHeadlightRef}
             name="headlight_left"
-            intensity={headlightsOn ? headlightsIntensity : 0}
+            intensity={HEADLIGHT_INTENSITY_DEFAULT}
             decay={2}
             color={headlightColor}
             position={[-235.912, 385.374, -301.501]}
@@ -574,7 +546,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={rightHeadlightRef}
             name="headlight_right"
-            intensity={headlightsOn ? headlightsIntensity : 0}
+            intensity={HEADLIGHT_INTENSITY_DEFAULT}
             decay={2}
             color={headlightColor}
             position={[241.584, 386.931, -299.362]}
@@ -586,9 +558,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightMiddleLeftRef}
             name="tail_light_middle_left"
-            intensity={taillightsOn ? taillightsIntensity : 0}
+            intensity={TAILLIGHT_INTENSITY_DEFAULT}
             decay={2}
-            color={tailLightColor}
+            color={TAILLIGHT_COLOR_DEFAULT}
             position={[38.204, -384.368, -602.573]}
             rotation={[-Math.PI, 0, 0]}
             scale={25}
@@ -596,9 +568,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightMiddleMiddleRef}
             name="tail_light_middle_middle"
-            intensity={taillightsOn ? taillightsIntensity : 0}
+            intensity={TAILLIGHT_INTENSITY_DEFAULT}
             decay={2}
-            color={tailLightColor}
+            color={TAILLIGHT_COLOR_DEFAULT}
             position={[-0.018, -384.368, -602.573]}
             rotation={[-Math.PI, 0, 0]}
             scale={25}
@@ -606,9 +578,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightMiddleRightRef}
             name="tail_light_middle_right"
-            intensity={taillightsOn ? taillightsIntensity : 0}
+            intensity={TAILLIGHT_INTENSITY_DEFAULT}
             decay={2}
-            color={tailLightColor}
+            color={TAILLIGHT_COLOR_DEFAULT}
             position={[-47.829, -384.368, -602.573]}
             rotation={[-Math.PI, 0, 0]}
             scale={25}
@@ -618,9 +590,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightRightRef}
             name="tail_light_right"
-            intensity={taillightsOn ? taillightsIntensity : 0}
+            intensity={TAILLIGHT_INTENSITY_DEFAULT}
             decay={2}
-            color={tailLightColor}
+            color={TAILLIGHT_COLOR_DEFAULT}
             position={[-248.999, -326.223, -602.573]}
             rotation={[-Math.PI, 0, 0]}
             scale={25}
@@ -628,9 +600,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightLeftRef}
             name="tail_light_left"
-            intensity={taillightsOn ? taillightsIntensity : 0}
+            intensity={TAILLIGHT_INTENSITY_DEFAULT}
             decay={2}
-            color={tailLightColor}
+            color={TAILLIGHT_COLOR_DEFAULT}
             position={[250.51, -326.223, -602.573]}
             rotation={[-Math.PI, 0, 0]}
             scale={25}

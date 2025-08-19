@@ -1,7 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import '../App.css'
 import { Canvas } from '@react-three/fiber'
-import { Model, type ModelRef } from '../components/E-model'
+import {
+  BASE_COLOR_DEFAULT,
+  HEADLIGHT_INTENSITY_DEFAULT,
+  Model,
+  TAILLIGHT_INTENSITY_DEFAULT,
+  type ModelRef,
+} from '../components/E-model'
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useRef, useEffect, Suspense, useCallback } from 'react'
@@ -49,7 +55,7 @@ function useModelControls({
 }) {
   const [, set] = useControls(() => ({
     baseColor: {
-      value: '#ffffff',
+      value: BASE_COLOR_DEFAULT,
       label: 'Base Color',
       onChange: (value: string) => {
         modelRef.current?.updateBaseColor(value)
@@ -63,15 +69,8 @@ function useModelControls({
         modelRef.current?.setTailLightColor(value)
       },
     },
-    headlightsOn: {
-      value: true,
-      label: 'Headlights On',
-      onChange: (value: boolean) => {
-        modelRef.current?.setHeadlightsOn(value)
-      },
-    },
     headlightsIntensity: {
-      value: 12,
+      value: HEADLIGHT_INTENSITY_DEFAULT,
       label: 'Headlights Intensity',
       max: 60,
       min: 0,
@@ -80,15 +79,8 @@ function useModelControls({
         modelRef.current?.setHeadlightsIntensity(value)
       },
     },
-    taillightsOn: {
-      value: true,
-      label: 'Taillights On',
-      onChange: (value: boolean) => {
-        modelRef.current?.setTaillightsOn(value)
-      },
-    },
     taillightsIntensity: {
-      value: 12,
+      value: TAILLIGHT_INTENSITY_DEFAULT,
       label: 'Taillights Intensity',
       max: 60,
       min: 0,
@@ -130,7 +122,6 @@ function AppContent() {
   const lastInteractionTimeRef = useRef(Date.now())
   const cameraControlsRef = useRef<OrbitControlsImpl | null>(null)
   const inactivityTimeout = 5_000
-  const initialBaseColor = '#ffffff' // TODO: this is duplicated in many places, refactor
   const textureEditorRef = useRef<TextureEditorWrapperRef | null>(null)
 
   const modelRef = useRef<ModelRef | null>(null)
@@ -236,16 +227,9 @@ function AppContent() {
           ref={modelRef}
           position={[0, -3, 0]}
           scale={1}
-          onToggleHeadlights={toggleHeadlights}
-          onToggleTaillights={toggleTaillights}
-          setLidOpen={setLidOpen}
-          initialBaseColor={initialBaseColor}
-          initialTailLightColor="#ff0000"
-          initialHeadlightsOn={true}
-          initialTaillightsOn={true}
-          initialLidOpen={false}
-          initialHeadlightsIntensity={12}
-          initialTaillightsIntensity={12}
+          onHeadlightIntensityChanged={toggleHeadlights}
+          onTaillightIntensityChanged={toggleTaillights}
+          onLidOpenChanged={setLidOpen}
         />
         <OrbitControls
           ref={cameraControlsRef}
