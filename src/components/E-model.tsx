@@ -54,6 +54,8 @@ interface ModelProps extends React.ComponentProps<'group'> {
   onHeadlightIntensityChanged: (value: number) => void
   onTaillightIntensityChanged: (value: number) => void
   onLidOpenChanged: (open: boolean) => void
+  initialHeadlightIntensity: number
+  initialTailLightIntensity: number
 }
 
 export interface ModelRef {
@@ -88,6 +90,8 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       onLidOpenChanged,
       onHeadlightIntensityChanged,
       onTaillightIntensityChanged,
+      initialHeadlightIntensity,
+      initialTailLightIntensity,
       ...props
     },
     ref
@@ -530,7 +534,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={leftHeadlightRef}
             name="headlight_left"
-            intensity={HEADLIGHT_INTENSITY_DEFAULT}
+            intensity={initialHeadlightIntensity}
             decay={2}
             color={headlightColor}
             position={[-235.912, 385.374, -301.501]}
@@ -540,7 +544,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={rightHeadlightRef}
             name="headlight_right"
-            intensity={HEADLIGHT_INTENSITY_DEFAULT}
+            intensity={initialHeadlightIntensity}
             decay={2}
             color={headlightColor}
             position={[241.584, 386.931, -299.362]}
@@ -552,7 +556,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightMiddleLeftRef}
             name="tail_light_middle_left"
-            intensity={TAILLIGHT_INTENSITY_DEFAULT}
+            intensity={initialTailLightIntensity}
             decay={2}
             color={TAILLIGHT_COLOR_DEFAULT}
             position={[38.204, -384.368, -602.573]}
@@ -562,7 +566,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightMiddleMiddleRef}
             name="tail_light_middle_middle"
-            intensity={TAILLIGHT_INTENSITY_DEFAULT}
+            intensity={initialTailLightIntensity}
             decay={2}
             color={TAILLIGHT_COLOR_DEFAULT}
             position={[-0.018, -384.368, -602.573]}
@@ -572,7 +576,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightMiddleRightRef}
             name="tail_light_middle_right"
-            intensity={TAILLIGHT_INTENSITY_DEFAULT}
+            intensity={initialTailLightIntensity}
             decay={2}
             color={TAILLIGHT_COLOR_DEFAULT}
             position={[-47.829, -384.368, -602.573]}
@@ -584,7 +588,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightRightRef}
             name="tail_light_right"
-            intensity={TAILLIGHT_INTENSITY_DEFAULT}
+            intensity={initialTailLightIntensity}
             decay={2}
             color={TAILLIGHT_COLOR_DEFAULT}
             position={[-248.999, -326.223, -602.573]}
@@ -594,7 +598,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <pointLight
             ref={tailLightLeftRef}
             name="tail_light_left"
-            intensity={TAILLIGHT_INTENSITY_DEFAULT}
+            intensity={initialTailLightIntensity}
             decay={2}
             color={TAILLIGHT_COLOR_DEFAULT}
             position={[250.51, -326.223, -602.573]}

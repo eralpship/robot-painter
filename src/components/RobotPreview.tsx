@@ -28,6 +28,8 @@ export function RobotPreview({ baseColor = '#ffffff' }: RobotPreviewProps) {
         onLidOpenChanged={() => {}}
         onTaillightIntensityChanged={() => {}}
         onHeadlightIntensityChanged={() => {}}
+        initialHeadlightIntensity={0}
+        initialTailLightIntensity={0}
       />
       <OrbitControls makeDefault enableZoom={true} enablePan={false} />
     </Canvas>

@@ -389,6 +389,8 @@ function AppContent() {
           ref={modelRef}
           position={[0, -3, 0]}
           scale={1}
+          initialHeadlightIntensity={HEADLIGHT_INTENSITY_DEFAULT}
+          initialTailLightIntensity={TAILLIGHT_INTENSITY_DEFAULT}
           onHeadlightIntensityChanged={setHeadlightsIntensity}
           onTaillightIntensityChanged={setTaillightIntensity}
           onLidOpenChanged={setLidOpen}
