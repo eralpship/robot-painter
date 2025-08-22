@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { TextureEditorWrapper } from '../components/texture-editor/TextureEditorWrapper'
+import type { TextureEditorWrapperRef } from '../components/texture-editor/TextureEditorWrapper'
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
-import { RobotPreview } from '../components/RobotPreview'
+import { RobotPreview, type RobotPreviewRef } from '../components/RobotPreview'
 import { Leva, useControls } from 'leva'
+import { useRef } from 'react'
 
 export const Route = createFileRoute('/texture-editor')({
   component: TextureEditor,
@@ -18,10 +20,16 @@ const customLevaTheme = {
 function TextureEditor() {
   const initialBaseColor = '#ffffff'
 
-  const [{ baseColor }] = useControls(() => ({
+  const robotPreviewRef = useRef<RobotPreviewRef | null>(null)
+  const textureEditorRef = useRef<TextureEditorWrapperRef | null>(null)
+  useControls(() => ({
     baseColor: {
       value: initialBaseColor,
       label: 'Base Color',
+      onChange: color => {
+        textureEditorRef.current?.setBaseColor(color)
+        robotPreviewRef.current?.setBaseColor(color)
+      },
     },
   }))
 
@@ -33,9 +41,9 @@ function TextureEditor() {
           collapsed={false}
           titleBar={{ title: 'Preview Controls', filter: false }}
         />
-        <TextureEditorWrapper mode="full" />
+        <TextureEditorWrapper mode="full" ref={textureEditorRef} />
         <FloatingCollapsibleWindow title="preview" x={10} y={40}>
-          <RobotPreview baseColor={baseColor} />
+          <RobotPreview ref={robotPreviewRef} />
         </FloatingCollapsibleWindow>
       </div>
     </OverlayTextureCanvasProvider>

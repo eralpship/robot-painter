@@ -1,18 +1,24 @@
 import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from './E-model'
 import { OrbitControls } from '@react-three/drei'
-import { useRef, useEffect } from 'react'
+import { useRef, forwardRef, useImperativeHandle } from 'react'
 
-interface RobotPreviewProps {
-  baseColor?: string
+export interface RobotPreviewRef {
+  setBaseColor: (color: string) => void
 }
 
-export function RobotPreview({ baseColor = '#ffffff' }: RobotPreviewProps) {
+export const RobotPreview = forwardRef<RobotPreviewRef>((_, ref) => {
   const modelRef = useRef<ModelRef>(null)
 
-  useEffect(() => {
-    modelRef.current?.updateBaseColor(baseColor)
-  }, [baseColor])
+  useImperativeHandle(
+    ref,
+    () => ({
+      setBaseColor: (color: string) => {
+        modelRef.current?.updateBaseColor(color)
+      },
+    }),
+    []
+  )
 
   return (
     <Canvas
@@ -23,7 +29,7 @@ export function RobotPreview({ baseColor = '#ffffff' }: RobotPreviewProps) {
       <ambientLight intensity={8} />
       <Model
         ref={modelRef}
-        position={[0, -3, 0]}
+        position={[0, -3, -0.3]}
         scale={1}
         onLidOpenChanged={() => {}}
         onTaillightIntensityChanged={() => {}}
@@ -34,4 +40,6 @@ export function RobotPreview({ baseColor = '#ffffff' }: RobotPreviewProps) {
       <OrbitControls makeDefault enableZoom={true} enablePan={false} />
     </Canvas>
   )
-}
+})
+
+RobotPreview.displayName = 'RobotPreview'
