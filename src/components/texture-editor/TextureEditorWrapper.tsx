@@ -1,4 +1,7 @@
 import { TextureEditor, type TextureEditorRef } from './TextureEditor'
+import { CommonToolbar } from './CommonToolbar'
+import { ElementToolbar } from './ElementToolbar'
+import { TextToolbar } from './TextToolbar'
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 
 interface ElementProperties {
@@ -142,64 +145,33 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
             position: 'relative',
           }}
         >
-          <span style={{ fontSize: '12px', color: '#b4b8bc' }}>
-            <button onClick={() => textureEditorRef.current?.updateTexture()}>
-              redraw
-            </button>
-            <button 
-              onClick={handleChangeText}
-              disabled={!selectedElement}
-              style={{
-                marginLeft: '8px',
-                opacity: selectedElement ? 1 : 0.5,
-                cursor: selectedElement ? 'pointer' : 'not-allowed'
-              }}
-            >
-              change text
-            </button>
-            <button 
-              onClick={handleChangeFontSize}
-              disabled={!selectedElement}
-              style={{
-                marginLeft: '8px',
-                opacity: selectedElement ? 1 : 0.5,
-                cursor: selectedElement ? 'pointer' : 'not-allowed'
-              }}
-            >
-              font size
-            </button>
-            <button 
-              onClick={handleChangeRotation}
-              disabled={!selectedElement}
-              style={{
-                marginLeft: '8px',
-                opacity: selectedElement ? 1 : 0.5,
-                cursor: selectedElement ? 'pointer' : 'not-allowed'
-              }}
-            >
-              rotation
-            </button>
-            <button 
-              onClick={() => textureEditorRef.current?.addText?.()}
-              style={{
-                marginLeft: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              add text
-            </button>
-            <button 
-              onClick={handleRemoveElement}
-              disabled={!selectedElement}
-              style={{
-                marginLeft: '8px',
-                opacity: selectedElement ? 1 : 0.5,
-                cursor: selectedElement ? 'pointer' : 'not-allowed'
-              }}
-            >
-              remove
-            </button>
-          </span>
+          <div style={{ 
+            fontSize: '12px', 
+            color: 'rgb(180, 184, 188)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            flexDirection: 'row',
+            alignItems: 'start',
+            justifyContent: 'start',
+            gap: '8px'
+          }}>
+            <CommonToolbar
+              onRedraw={() => textureEditorRef.current?.updateTexture()}
+              onAddText={() => textureEditorRef.current?.addText?.()}
+            />
+            {selectedElement && (
+              <ElementToolbar
+                onRotation={handleChangeRotation}
+                onRemove={handleRemoveElement}
+              />
+            )}
+            {selectedElement && selectedElement.properties.type === 'text' && (
+              <TextToolbar
+                onChangeText={handleChangeText}
+                onChangeFontSize={handleChangeFontSize}
+              />
+            )}
+          </div>
         </div>
 
         {/* Canvas Area */}
