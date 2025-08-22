@@ -33,8 +33,8 @@ function TextureEditor() {
           collapsed={false}
           titleBar={{ title: 'Preview Controls', filter: false }}
         />
-        <TextureEditorWrapper />
-        <FloatingCollapsibleWindow title="preview" x={10} y={50}>
+        <TextureEditorWrapper mode="full" />
+        <FloatingCollapsibleWindow title="preview" x={10} y={40}>
           <RobotPreview baseColor={baseColor} />
         </FloatingCollapsibleWindow>
       </div>

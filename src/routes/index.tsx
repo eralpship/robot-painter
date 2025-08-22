@@ -408,7 +408,7 @@ function AppContent() {
         />
       </Canvas>
       <FloatingCollapsibleWindow title="Texture Editor" x={20} y={20}>
-        <TextureEditorWrapper ref={textureEditorRef} />
+        <TextureEditorWrapper ref={textureEditorRef} mode="basic" />
       </FloatingCollapsibleWindow>
     </div>
   )
