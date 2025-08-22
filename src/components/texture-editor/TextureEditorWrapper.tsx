@@ -190,6 +190,7 @@ export const TextureEditorWrapper = forwardRef<
             : null
         )
       }
+
       // If invalid format, fall back to previous value (do nothing)
     }
   }

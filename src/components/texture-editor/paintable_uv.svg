@@ -44,8 +44,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#505050"
      inkscape:zoom="0.10918592"
-     inkscape:cx="2701.8137"
-     inkscape:cy="3077.32"
+     inkscape:cx="2701.8136"
+     inkscape:cy="3077.3199"
      inkscape:window-width="1728"
      inkscape:window-height="1051"
      inkscape:window-x="0"
@@ -55,18 +55,6 @@
      showguides="false" />
   <desc
      id="desc1">e-model.blend, (Blender 4.4.3)</desc>
-  <text
-     xml:space="preserve"
-     style="font-size:17.3333px;text-align:center;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="2043.9219"
-     y="2117.7969"
-     id="text279"
-     inkscape:label="text_lid"><tspan
-       sodipodi:role="line"
-       id="tspan279"
-       x="2043.9219"
-       y="2117.7969"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-opacity:1">LID</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
@@ -155,4 +143,16 @@
      d="M 43.107677,43.107677 H 4109.1077 V 4109.1077 H 43.107677 Z"
      transform="translate(-28.107677,-28.107677)"
      inkscape:label="frame" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+     x="2043.9219"
+     y="2117.7969"
+     id="text2"
+     inkscape:label="text_lid"><tspan
+       sodipodi:role="line"
+       id="tspan2"
+       x="2043.9219"
+       y="2117.7969"
+       style="text-align:center;text-anchor:middle">LID</tspan></text>
 </svg>
