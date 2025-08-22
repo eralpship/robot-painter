@@ -37,17 +37,24 @@ function serializeSvg(
   return svgString
 }
 
+interface ElementProperties {
+  type: 'text'
+  text: string
+}
+
 interface TextureEditorProps {
   style?: React.CSSProperties
+  onSelectedElement?: (svgElementId: string, properties: ElementProperties) => void
 }
 
 export interface TextureEditorRef {
   updateTexture: () => void
   setBaseColor: (color: string) => void
+  updateElement: (identifier: string, properties: Partial<ElementProperties>) => void
 }
 
 export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
-  ({ style }, ref) => {
+  ({ style, onSelectedElement }, ref) => {
     const svgRef = useRef<SVGSVGElement>(null)
     const texture = useContext(OverlayTextureContext)
 
@@ -71,14 +78,37 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
     }, [texture])
 
     const [baseColor, setBaseColor] = useState('#ffffff')
+    const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
+
+    const updateElement = useCallback((identifier: string, properties: Partial<ElementProperties>) => {
+      const element = paintableUvSvgRef.current?.querySelector(`[inkscape\\:label="${identifier}"]`) as SVGTextElement
+      if (!element) {
+        console.error('Element not found:', identifier)
+        return
+      }
+
+      // Update text content
+      if (properties.text !== undefined) {
+        const tspan = element.querySelector('tspan')
+        if (tspan) {
+          tspan.textContent = properties.text
+        }
+        
+        // Update texture after text change
+        setTimeout(() => {
+          updateTexture()
+        }, 10)
+      }
+    }, [updateTexture])
 
     useImperativeHandle(
       ref,
       () => ({
         updateTexture,
         setBaseColor,
+        updateElement,
       }),
-      [updateTexture]
+      [updateTexture, updateElement]
     )
 
     useEffect(() => {
@@ -169,12 +199,9 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
       }
 
       const mouseDownHandler = (e: MouseEvent) => {
-        console.log(
-          'MOUSEDOWN on element:',
-          element.getAttribute('inkscape:label'),
-          'isDragging was:',
-          isDragging
-        )
+        const elementId = element.getAttribute('inkscape:label') || element.id
+        console.log('MOUSEDOWN on element:', elementId, 'isDragging was:', isDragging)
+        
         isDragging = true
         element.style.cursor = 'grabbing'
 
@@ -185,18 +212,22 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           y: parseFloat(element.getAttribute('y') || '0'),
         }
 
-        console.log(
-          'Setting drag state - startPos:',
-          dragStartMousePos,
-          'elementPos:',
-          dragStartElementPos
-        )
-
         // Store globally for SVG mousemove handler
         ;(svgRef.current as any)._draggedElement = element
         ;(svgRef.current as any)._isDragging = true
         ;(svgRef.current as any)._dragStartMousePos = dragStartMousePos
         ;(svgRef.current as any)._dragStartElementPos = dragStartElementPos
+
+        // Report selection to parent
+        setSelectedElementId(elementId)
+        if (onSelectedElement && elementId) {
+          const tspan = element.querySelector('tspan')
+          const currentText = tspan?.textContent || ''
+          onSelectedElement(elementId, {
+            type: 'text',
+            text: currentText
+          })
+        }
 
         updateSelectionRect()
         e.preventDefault()
@@ -212,34 +243,6 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         
         // Trigger texture update after drag ends
         updateTexture()
-      }
-
-      const doubleClickHandler = (e: MouseEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        
-        console.log('DOUBLE CLICK on element:', element.getAttribute('inkscape:label'))
-        
-        // Get current text content
-        const tspan = element.querySelector('tspan')
-        const currentText = tspan?.textContent || ''
-        
-        // Prompt for new text
-        const newText = window.prompt('Enter new text:', currentText)
-        
-        if (newText !== null && newText !== currentText) {
-          // Update the text content
-          if (tspan) {
-            tspan.textContent = newText
-          }
-          
-          // Update selection rectangle to match new text size
-          setTimeout(() => {
-            updateSelectionRect()
-          }, 10) // Small delay to allow text to re-render
-          
-          console.log('Updated text from', currentText, 'to', newText)
-        }
       }
 
       // Set up MutationObserver to watch for changes to this element
@@ -285,10 +288,9 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
       ;(element as any)._mutationObserver = observer
 
       element.addEventListener('mousedown', mouseDownHandler)
-      element.addEventListener('dblclick', doubleClickHandler)
       element.addEventListener('dragEnd', dragEndHandler)
       element.style.cursor = 'grab'
-    }, [])
+    }, [onSelectedElement, updateTexture])
     useEffect(() => {
       const svg = paintableUvSvgRef.current
       if (!svg) {
