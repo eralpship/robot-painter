@@ -34,6 +34,19 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
       setSelectedElement({ id: svgElementId, properties })
     }
 
+    const handleRemoveElement = () => {
+      if (!selectedElement) {
+        alert('Please select a text element first')
+        return
+      }
+
+      // Call the remove function
+      textureEditorRef.current?.removeElement?.(selectedElement.id)
+      
+      // Clear local selection state
+      setSelectedElement(null)
+    }
+
     const handleChangeText = () => {
       if (!selectedElement) {
         alert('Please select a text element first')
@@ -165,6 +178,26 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
               }}
             >
               rotation
+            </button>
+            <button 
+              onClick={() => textureEditorRef.current?.addText?.()}
+              style={{
+                marginLeft: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              add text
+            </button>
+            <button 
+              onClick={handleRemoveElement}
+              disabled={!selectedElement}
+              style={{
+                marginLeft: '8px',
+                opacity: selectedElement ? 1 : 0.5,
+                cursor: selectedElement ? 'pointer' : 'not-allowed'
+              }}
+            >
+              remove
             </button>
           </span>
         </div>

@@ -41,6 +41,7 @@ interface ElementProperties {
   type: 'text'
   text: string
   fontSize: number
+  rotation: number
 }
 
 interface TextureEditorProps {
@@ -52,6 +53,8 @@ export interface TextureEditorRef {
   updateTexture: () => void
   setBaseColor: (color: string) => void
   updateElement: (identifier: string, properties: Partial<ElementProperties>) => void
+  addText: () => void
+  removeElement: (identifier?: string) => void
 }
 
 export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
@@ -110,6 +113,31 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         }
         shouldUpdate = true
       }
+
+      // Update rotation
+      if (properties.rotation !== undefined) {
+        const currentTransform = element.getAttribute('transform') || ''
+        
+        // Remove any existing rotation from transform
+        const withoutRotation = currentTransform.replace(/rotate\([^)]*\)/g, '').trim()
+        
+        // Calculate element center for rotation pivot
+        const bbox = element.getBBox({ fill: true, stroke: true, markers: true })
+        const centerX = bbox.x + bbox.width / 2
+        const centerY = bbox.y + bbox.height / 2
+        
+        // Add new rotation if not zero, using element center as pivot
+        const newTransform = properties.rotation !== 0 
+          ? `${withoutRotation} rotate(${properties.rotation} ${centerX} ${centerY})`.trim()
+          : withoutRotation
+        
+        if (newTransform) {
+          element.setAttribute('transform', newTransform)
+        } else {
+          element.removeAttribute('transform')
+        }
+        shouldUpdate = true
+      }
         
       if (shouldUpdate) {
         // Update selection rectangle to match new dimensions
@@ -157,14 +185,19 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
       }
     }, [updateTexture])
 
+    const [addTextFunction, setAddTextFunction] = useState<(() => void) | null>(null)
+    const [removeElementFunction, setRemoveElementFunction] = useState<((identifier?: string) => void) | null>(null)
+
     useImperativeHandle(
       ref,
       () => ({
         updateTexture,
         setBaseColor,
         updateElement,
+        addText: addTextFunction || (() => console.log('addText not ready yet')),
+        removeElement: removeElementFunction || (() => console.log('removeElement not ready yet')),
       }),
-      [updateTexture, updateElement]
+      [updateTexture, updateElement, addTextFunction, removeElementFunction]
     )
 
     useEffect(() => {
@@ -285,10 +318,16 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           const fontSizeMatch = currentStyle.match(/font-size:\s*(\d+(?:\.\d+)?)px/)
           const currentFontSize = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 192 // Default from SVG
           
+          // Extract current rotation from transform attribute
+          const currentTransform = element.getAttribute('transform') || ''
+          const rotationMatch = currentTransform.match(/rotate\(([^,\s]+)/)
+          const currentRotation = rotationMatch ? parseFloat(rotationMatch[1]) : 0
+          
           onSelectedElement(elementId, {
             type: 'text',
             text: currentText,
-            fontSize: currentFontSize
+            fontSize: currentFontSize,
+            rotation: currentRotation
           })
         }
 
@@ -501,6 +540,115 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           ;(parentSvg as any)._dragStartElementPos = null
         })
       }
+
+      // Set up addText function now that makeInteractive is available
+      setAddTextFunction(() => () => {
+        const svg = paintableUvSvgRef.current
+        if (!svg) {
+          console.error('SVG not available')
+          return
+        }
+
+        // Create unique ID for new text element
+        const timestamp = Date.now()
+        const newTextId = `text_custom_${timestamp}`
+        
+        // Get SVG center coordinates
+        const centerX = CANVAS_SIZE / 2
+        const centerY = CANVAS_SIZE / 2
+        
+        // Create new text element with structure matching existing ones
+        const newTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        newTextElement.setAttribute('xml:space', 'preserve')
+        newTextElement.setAttribute('style', 'font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal')
+        newTextElement.setAttribute('x', centerX.toString())
+        newTextElement.setAttribute('y', centerY.toString())
+        newTextElement.setAttribute('id', newTextId)
+        newTextElement.setAttribute('inkscape:label', newTextId)
+        
+        // Create tspan element
+        const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan')
+        tspan.setAttribute('sodipodi:role', 'line')
+        tspan.setAttribute('id', `tspan_${timestamp}`)
+        tspan.setAttribute('x', centerX.toString())
+        tspan.setAttribute('y', centerY.toString())
+        tspan.setAttribute('style', 'text-align:center;text-anchor:middle')
+        tspan.textContent = 'Sample Text'
+        
+        newTextElement.appendChild(tspan)
+        svg.appendChild(newTextElement)
+        
+        // Make the new element interactive
+        makeInteractive(newTextElement as SVGTextElement)
+        
+        // Immediately select the new element by calling the selection callback directly
+        setTimeout(() => {
+          setSelectedElementId(newTextId)
+          if (onSelectedElement) {
+            onSelectedElement(newTextId, {
+              type: 'text',
+              text: 'Sample Text',
+              fontSize: 192,
+              rotation: 0
+            })
+          }
+          
+          // Update selection rectangle to show the new element
+          const bbox = newTextElement.getBBox({ fill: true, stroke: true, markers: true })
+          const parentSvg = svgRef.current
+          if (parentSvg && selectionRectRef.current) {
+            selectionRectRef.current.setAttribute('x', bbox.x.toString())
+            selectionRectRef.current.setAttribute('y', bbox.y.toString())
+            selectionRectRef.current.setAttribute('width', bbox.width.toString())
+            selectionRectRef.current.setAttribute('height', bbox.height.toString())
+          }
+        }, 100)
+        
+        // Update texture
+        updateTexture()
+      })
+
+      // Set up removeElement function
+      setRemoveElementFunction(() => (identifier?: string) => {
+        if (!identifier) {
+          console.warn('No element identifier provided for removal')
+          return
+        }
+
+        const svg = paintableUvSvgRef.current
+        if (!svg) {
+          console.error('SVG not available')
+          return
+        }
+
+        // Find the element to remove
+        const elementToRemove = svg.querySelector(`[inkscape\\:label="${identifier}"]`)
+        if (!elementToRemove) {
+          console.error('Element not found for removal:', identifier)
+          return
+        }
+
+        // Remove the element from the SVG
+        elementToRemove.remove()
+
+        // Clear selection if the removed element was selected
+        setSelectedElementId(null)
+        if (onSelectedElement) {
+          // Clear selection in parent component
+          // We'll pass null but need to match the expected signature, so we'll pass empty values
+        }
+
+        // Hide selection rectangle
+        if (selectionRectRef.current) {
+          selectionRectRef.current.setAttribute('x', '0')
+          selectionRectRef.current.setAttribute('y', '0') 
+          selectionRectRef.current.setAttribute('width', '0')
+          selectionRectRef.current.setAttribute('height', '0')
+        }
+
+        // Update texture
+        updateTexture()
+      })
     }, [])
 
     return (
