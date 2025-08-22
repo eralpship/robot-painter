@@ -4,6 +4,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 interface ElementProperties {
   type: 'text'
   text: string
+  fontSize: number
 }
 
 export type TextureEditorWrapperRef = {
@@ -51,6 +52,32 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
       }
     }
 
+    const handleChangeFontSize = () => {
+      if (!selectedElement) {
+        alert('Please select a text element first')
+        return
+      }
+
+      const currentFontSize = selectedElement.properties.fontSize.toString()
+      const input = window.prompt('Enter font size (number only):', currentFontSize)
+      
+      if (input !== null) {
+        const newFontSize = parseFloat(input)
+        
+        // Validate input - must be a positive number
+        if (!isNaN(newFontSize) && newFontSize > 0) {
+          textureEditorRef.current?.updateElement(selectedElement.id, { fontSize: newFontSize })
+          
+          // Update local state
+          setSelectedElement(prev => prev ? {
+            ...prev,
+            properties: { ...prev.properties, fontSize: newFontSize }
+          } : null)
+        }
+        // If invalid, fall back to previous value (do nothing)
+      }
+    }
+
     return (
       <div
         style={{
@@ -90,11 +117,17 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
             >
               change text
             </button>
-            {selectedElement && (
-              <span style={{ marginLeft: '8px', fontSize: '10px', color: '#888' }}>
-                Selected: {selectedElement.id} ("{selectedElement.properties.text}")
-              </span>
-            )}
+            <button 
+              onClick={handleChangeFontSize}
+              disabled={!selectedElement}
+              style={{
+                marginLeft: '8px',
+                opacity: selectedElement ? 1 : 0.5,
+                cursor: selectedElement ? 'pointer' : 'not-allowed'
+              }}
+            >
+              font size
+            </button>
           </span>
         </div>
 

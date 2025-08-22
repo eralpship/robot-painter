@@ -40,6 +40,7 @@ function serializeSvg(
 interface ElementProperties {
   type: 'text'
   text: string
+  fontSize: number
 }
 
 interface TextureEditorProps {
@@ -87,15 +88,70 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         return
       }
 
+      let shouldUpdate = false
+
       // Update text content
       if (properties.text !== undefined) {
         const tspan = element.querySelector('tspan')
         if (tspan) {
           tspan.textContent = properties.text
         }
+        shouldUpdate = true
+      }
+
+      // Update font size
+      if (properties.fontSize !== undefined) {
+        const tspan = element.querySelector('tspan')
+        if (tspan) {
+          tspan.setAttribute('style', 
+            tspan.getAttribute('style')?.replace(/font-size:[^;]*;?/g, '') + 
+            `font-size:${properties.fontSize}px;`
+          )
+        }
+        shouldUpdate = true
+      }
         
-        // Update texture after text change
+      if (shouldUpdate) {
+        // Update selection rectangle to match new dimensions
         setTimeout(() => {
+          // Find the element's selection rect updater
+          const parentSvg = svgRef.current
+          if (parentSvg && selectionRectRef.current) {
+            const bbox = element.getBBox({ fill: true, stroke: true, markers: true })
+            const ctm = element.getCTM()
+            if (ctm) {
+              const corners = [
+                { x: bbox.x, y: bbox.y },
+                { x: bbox.x + bbox.width, y: bbox.y },
+                { x: bbox.x, y: bbox.y + bbox.height },
+                { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
+              ]
+              
+              const transformedCorners = corners.map(corner => {
+                const point = parentSvg.createSVGPoint()
+                point.x = corner.x
+                point.y = corner.y
+                return point.matrixTransform(ctm)
+              })
+              
+              const xs = transformedCorners.map(p => p.x)
+              const ys = transformedCorners.map(p => p.y)
+              
+              const normalizedBbox = {
+                x: Math.min(...xs),
+                y: Math.min(...ys),
+                width: Math.max(...xs) - Math.min(...xs),
+                height: Math.max(...ys) - Math.min(...ys),
+              }
+              
+              selectionRectRef.current.setAttribute('x', normalizedBbox.x.toString())
+              selectionRectRef.current.setAttribute('y', normalizedBbox.y.toString())
+              selectionRectRef.current.setAttribute('width', normalizedBbox.width.toString())
+              selectionRectRef.current.setAttribute('height', normalizedBbox.height.toString())
+            }
+          }
+          
+          // Update texture after changes
           updateTexture()
         }, 10)
       }
@@ -223,9 +279,16 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         if (onSelectedElement && elementId) {
           const tspan = element.querySelector('tspan')
           const currentText = tspan?.textContent || ''
+          
+          // Extract current font size from style attribute
+          const currentStyle = tspan?.getAttribute('style') || ''
+          const fontSizeMatch = currentStyle.match(/font-size:\s*(\d+(?:\.\d+)?)px/)
+          const currentFontSize = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 192 // Default from SVG
+          
           onSelectedElement(elementId, {
             type: 'text',
-            text: currentText
+            text: currentText,
+            fontSize: currentFontSize
           })
         }
 
