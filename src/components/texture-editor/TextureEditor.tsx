@@ -89,9 +89,6 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
     }, [texture])
 
     const [baseColor, setBaseColor] = useState('#ffffff')
-    const [selectedElementId, setSelectedElementId] = useState<string | null>(
-      null
-    )
 
     const updateElement = useCallback(
       (identifier: string, properties: Partial<ElementProperties>) => {
@@ -368,7 +365,6 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           ;(svgRef.current as any)._dragStartElementPos = dragStartElementPos
 
           // Report selection to parent
-          setSelectedElementId(elementId)
           if (onSelectedElement && elementId) {
             const tspan = element.querySelector('tspan')
             const currentText = tspan?.textContent || ''
@@ -681,7 +677,6 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
 
         // Immediately select the new element by calling the selection callback directly
         setTimeout(() => {
-          setSelectedElementId(newTextId)
           if (onSelectedElement) {
             onSelectedElement(newTextId, {
               type: 'text',
@@ -743,7 +738,6 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         elementToRemove.remove()
 
         // Clear selection if the removed element was selected
-        setSelectedElementId(null)
         if (onSelectedElement) {
           // Clear selection in parent component
           // We'll pass null but need to match the expected signature, so we'll pass empty values

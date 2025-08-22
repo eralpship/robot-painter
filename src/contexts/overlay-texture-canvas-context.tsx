@@ -5,7 +5,6 @@ interface OverlayTextureContextType {
   image: HTMLImageElement
   triggerTextureUpdate: () => void
   updateTrigger: number
-  setBaseColor: (color: string) => void
 }
 
 export const OverlayTextureContext =
@@ -36,15 +35,12 @@ export function OverlayTextureCanvasProvider({
     setUpdateTrigger(prev => prev + 1)
   }, [])
 
-  const [baseColor, setBaseColor] = useState('#ffffff')
-
   return (
     <OverlayTextureContext.Provider
       value={{
         image,
         triggerTextureUpdate,
         updateTrigger,
-        setBaseColor,
       }}
     >
       {children}
