@@ -1,4 +1,5 @@
 import { TextureEditor, type TextureEditorRef } from './TextureEditor'
+import { CommonToolbar } from './CommonToolbar'
 import { AddElementToolbar } from './AddElementToolbar'
 import { ElementToolbar } from './ElementToolbar'
 import { TextToolbar } from './TextToolbar'
@@ -229,6 +230,7 @@ export const TextureEditorWrapper = forwardRef<
             gap: '8px',
           }}
         >
+          <CommonToolbar mode={mode} />
           {mode === 'full' ? (
             <>
               <AddElementToolbar

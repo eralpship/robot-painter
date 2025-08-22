@@ -15,7 +15,6 @@ import { useThree, useFrame, useLoader } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
 import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
-import { texture } from 'three/tsl'
 
 export const HEADLIGHT_INTENSITY_DEFAULT = 12
 export const TAILLIGHT_INTENSITY_DEFAULT = 12
