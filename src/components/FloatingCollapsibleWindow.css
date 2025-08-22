@@ -2,7 +2,7 @@
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   z-index: 1000;
-  font-family: ui-monospace, SFMono-Regular, Menlo, "Roboto Mono", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, 'Roboto Mono', monospace;
   font-size: 11px;
   user-select: none;
   overflow: hidden;
@@ -34,6 +34,7 @@
   flex: 1;
   text-align: center;
   margin-right: 18px; /* Offset to center text accounting for toggle button */
+  user-select: none;
 }
 
 .overlay-texture-window-toggle {
@@ -76,4 +77,4 @@
 .overlay-texture-window.collapsed .overlay-texture-window-title {
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
-} 
+}
