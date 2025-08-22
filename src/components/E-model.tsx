@@ -15,6 +15,7 @@ import { useThree, useFrame, useLoader } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
 import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
+import { texture } from 'three/tsl'
 
 export const HEADLIGHT_INTENSITY_DEFAULT = 12
 export const TAILLIGHT_INTENSITY_DEFAULT = 12
@@ -117,9 +118,12 @@ export const Model = forwardRef<ModelRef, ModelProps>(
     const { camera, mouse, raycaster } = useThree()
     const { setTooltip } = useTooltip()
     const currentTooltip = useRef<string | null>(null)
-    const { image: overlayImage, updateTrigger } = useContext(
-      OverlayTextureContext
-    )!
+    const texture = useContext(OverlayTextureContext)
+    if (!texture) {
+      console.error('no texture')
+      return
+    }
+    const { image: overlayImage, updateTrigger } = texture
 
     const [rockerSpring, rockerApi] = useSpring(() => ({
       progress: 0.5,
@@ -249,7 +253,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
       const rockerAction = actions['rocker']
       if (rockerAction) {
-        console.log('Rocker action found:', rockerAction)
         rockerAction.loop = THREE.LoopOnce
         rockerAction.clampWhenFinished = true
         rockerAction.timeScale = 1

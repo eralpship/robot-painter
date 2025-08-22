@@ -37,7 +37,6 @@ export function OverlayTextureCanvasProvider({
   }, [])
 
   const [baseColor, setBaseColor] = useState('#ffffff')
-  console.log('OverlayTextureCanvasProvider baseColor', baseColor)
 
   return (
     <OverlayTextureContext.Provider
