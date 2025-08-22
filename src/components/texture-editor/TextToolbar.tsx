@@ -3,11 +3,13 @@ import React from 'react'
 interface TextToolbarProps {
   onChangeText: () => void
   onChangeFontSize: () => void
+  onChangeColor: () => void
 }
 
 export const TextToolbar: React.FC<TextToolbarProps> = ({
   onChangeText,
   onChangeFontSize,
+  onChangeColor,
 }) => {
   return (
     <>
@@ -26,6 +28,14 @@ export const TextToolbar: React.FC<TextToolbarProps> = ({
         }}
       >
         font size
+      </button>
+      <button 
+        onClick={onChangeColor}
+        style={{
+          cursor: 'pointer'
+        }}
+      >
+        change color
       </button>
     </>
   )

@@ -9,6 +9,7 @@ interface ElementProperties {
   text: string
   fontSize: number
   rotation: number
+  color: string
 }
 
 export type TextureEditorWrapperRef = {
@@ -121,6 +122,32 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
       }
     }
 
+    const handleChangeColor = () => {
+      if (!selectedElement) {
+        alert('Please select a text element first')
+        return
+      }
+
+      const currentColor = selectedElement.properties.color
+      const input = window.prompt('Enter hex color (e.g., #ff0000, #000000):', currentColor)
+      
+      if (input !== null) {
+        // Validate hex color format
+        const hexColorRegex = /^#[0-9A-Fa-f]{6}$/
+        
+        if (hexColorRegex.test(input)) {
+          textureEditorRef.current?.updateElement(selectedElement.id, { color: input })
+          
+          // Update local state
+          setSelectedElement(prev => prev ? {
+            ...prev,
+            properties: { ...prev.properties, color: input }
+          } : null)
+        }
+        // If invalid format, fall back to previous value (do nothing)
+      }
+    }
+
     return (
       <div
         style={{
@@ -169,6 +196,7 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
               <TextToolbar
                 onChangeText={handleChangeText}
                 onChangeFontSize={handleChangeFontSize}
+                onChangeColor={handleChangeColor}
               />
             )}
           </div>

@@ -42,17 +42,24 @@ interface ElementProperties {
   text: string
   fontSize: number
   rotation: number
+  color: string
 }
 
 interface TextureEditorProps {
   style?: React.CSSProperties
-  onSelectedElement?: (svgElementId: string, properties: ElementProperties) => void
+  onSelectedElement?: (
+    svgElementId: string,
+    properties: ElementProperties
+  ) => void
 }
 
 export interface TextureEditorRef {
   updateTexture: () => void
   setBaseColor: (color: string) => void
-  updateElement: (identifier: string, properties: Partial<ElementProperties>) => void
+  updateElement: (
+    identifier: string,
+    properties: Partial<ElementProperties>
+  ) => void
   addText: () => void
   removeElement: (identifier?: string) => void
 }
@@ -82,111 +89,155 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
     }, [texture])
 
     const [baseColor, setBaseColor] = useState('#ffffff')
-    const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
+    const [selectedElementId, setSelectedElementId] = useState<string | null>(
+      null
+    )
 
-    const updateElement = useCallback((identifier: string, properties: Partial<ElementProperties>) => {
-      const element = paintableUvSvgRef.current?.querySelector(`[inkscape\\:label="${identifier}"]`) as SVGTextElement
-      if (!element) {
-        console.error('Element not found:', identifier)
-        return
-      }
-
-      let shouldUpdate = false
-
-      // Update text content
-      if (properties.text !== undefined) {
-        const tspan = element.querySelector('tspan')
-        if (tspan) {
-          tspan.textContent = properties.text
+    const updateElement = useCallback(
+      (identifier: string, properties: Partial<ElementProperties>) => {
+        const element = paintableUvSvgRef.current?.querySelector(
+          `[inkscape\\:label="${identifier}"]`
+        ) as SVGTextElement
+        if (!element) {
+          console.error('Element not found:', identifier)
+          return
         }
-        shouldUpdate = true
-      }
 
-      // Update font size
-      if (properties.fontSize !== undefined) {
-        const tspan = element.querySelector('tspan')
-        if (tspan) {
-          tspan.setAttribute('style', 
-            tspan.getAttribute('style')?.replace(/font-size:[^;]*;?/g, '') + 
-            `font-size:${properties.fontSize}px;`
-          )
-        }
-        shouldUpdate = true
-      }
+        let shouldUpdate = false
 
-      // Update rotation
-      if (properties.rotation !== undefined) {
-        const currentTransform = element.getAttribute('transform') || ''
-        
-        // Remove any existing rotation from transform
-        const withoutRotation = currentTransform.replace(/rotate\([^)]*\)/g, '').trim()
-        
-        // Calculate element center for rotation pivot
-        const bbox = element.getBBox({ fill: true, stroke: true, markers: true })
-        const centerX = bbox.x + bbox.width / 2
-        const centerY = bbox.y + bbox.height / 2
-        
-        // Add new rotation if not zero, using element center as pivot
-        const newTransform = properties.rotation !== 0 
-          ? `${withoutRotation} rotate(${properties.rotation} ${centerX} ${centerY})`.trim()
-          : withoutRotation
-        
-        if (newTransform) {
-          element.setAttribute('transform', newTransform)
-        } else {
-          element.removeAttribute('transform')
-        }
-        shouldUpdate = true
-      }
-        
-      if (shouldUpdate) {
-        // Update selection rectangle to match new dimensions
-        setTimeout(() => {
-          // Find the element's selection rect updater
-          const parentSvg = svgRef.current
-          if (parentSvg && selectionRectRef.current) {
-            const bbox = element.getBBox({ fill: true, stroke: true, markers: true })
-            const ctm = element.getCTM()
-            if (ctm) {
-              const corners = [
-                { x: bbox.x, y: bbox.y },
-                { x: bbox.x + bbox.width, y: bbox.y },
-                { x: bbox.x, y: bbox.y + bbox.height },
-                { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
-              ]
-              
-              const transformedCorners = corners.map(corner => {
-                const point = parentSvg.createSVGPoint()
-                point.x = corner.x
-                point.y = corner.y
-                return point.matrixTransform(ctm)
-              })
-              
-              const xs = transformedCorners.map(p => p.x)
-              const ys = transformedCorners.map(p => p.y)
-              
-              const normalizedBbox = {
-                x: Math.min(...xs),
-                y: Math.min(...ys),
-                width: Math.max(...xs) - Math.min(...xs),
-                height: Math.max(...ys) - Math.min(...ys),
-              }
-              
-              selectionRectRef.current.setAttribute('x', normalizedBbox.x.toString())
-              selectionRectRef.current.setAttribute('y', normalizedBbox.y.toString())
-              selectionRectRef.current.setAttribute('width', normalizedBbox.width.toString())
-              selectionRectRef.current.setAttribute('height', normalizedBbox.height.toString())
-            }
+        // Update text content
+        if (properties.text !== undefined) {
+          const tspan = element.querySelector('tspan')
+          if (tspan) {
+            tspan.textContent = properties.text
           }
-          
-          // Update texture after changes
-          updateTexture()
-        }, 10)
-      }
-    }, [updateTexture])
+          shouldUpdate = true
+        }
 
-    const [addTextFunction, setAddTextFunction] = useState<(() => void) | null>(null)
-    const [removeElementFunction, setRemoveElementFunction] = useState<((identifier?: string) => void) | null>(null)
+        // Update font size
+        if (properties.fontSize !== undefined) {
+          const tspan = element.querySelector('tspan')
+          if (tspan) {
+            tspan.setAttribute(
+              'style',
+              tspan.getAttribute('style')?.replace(/font-size:[^;]*;?/g, '') +
+                `font-size:${properties.fontSize}px;`
+            )
+          }
+          shouldUpdate = true
+        }
+
+        // Update rotation
+        if (properties.rotation !== undefined) {
+          const currentTransform = element.getAttribute('transform') || ''
+
+          // Remove any existing rotation from transform
+          const withoutRotation = currentTransform
+            .replace(/rotate\([^)]*\)/g, '')
+            .trim()
+
+          // Calculate element center for rotation pivot
+          const bbox = element.getBBox({
+            fill: true,
+            stroke: true,
+            markers: true,
+          })
+          const centerX = bbox.x + bbox.width / 2
+          const centerY = bbox.y + bbox.height / 2
+
+          // Add new rotation if not zero, using element center as pivot
+          const newTransform =
+            properties.rotation !== 0
+              ? `${withoutRotation} rotate(${properties.rotation} ${centerX} ${centerY})`.trim()
+              : withoutRotation
+
+          if (newTransform) {
+            element.setAttribute('transform', newTransform)
+          } else {
+            element.removeAttribute('transform')
+          }
+          shouldUpdate = true
+        }
+
+        // Update color
+        if (properties.color !== undefined) {
+          const tspan = element.querySelector('tspan')
+          if (tspan) {
+            tspan.setAttribute('fill', properties.color)
+          }
+          shouldUpdate = true
+        }
+
+        if (shouldUpdate) {
+          // Update selection rectangle to match new dimensions
+          setTimeout(() => {
+            // Find the element's selection rect updater
+            const parentSvg = svgRef.current
+            if (parentSvg && selectionRectRef.current) {
+              const bbox = element.getBBox({
+                fill: true,
+                stroke: true,
+                markers: true,
+              })
+              const ctm = element.getCTM()
+              if (ctm) {
+                const corners = [
+                  { x: bbox.x, y: bbox.y },
+                  { x: bbox.x + bbox.width, y: bbox.y },
+                  { x: bbox.x, y: bbox.y + bbox.height },
+                  { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
+                ]
+
+                const transformedCorners = corners.map(corner => {
+                  const point = parentSvg.createSVGPoint()
+                  point.x = corner.x
+                  point.y = corner.y
+                  return point.matrixTransform(ctm)
+                })
+
+                const xs = transformedCorners.map(p => p.x)
+                const ys = transformedCorners.map(p => p.y)
+
+                const normalizedBbox = {
+                  x: Math.min(...xs),
+                  y: Math.min(...ys),
+                  width: Math.max(...xs) - Math.min(...xs),
+                  height: Math.max(...ys) - Math.min(...ys),
+                }
+
+                selectionRectRef.current.setAttribute(
+                  'x',
+                  normalizedBbox.x.toString()
+                )
+                selectionRectRef.current.setAttribute(
+                  'y',
+                  normalizedBbox.y.toString()
+                )
+                selectionRectRef.current.setAttribute(
+                  'width',
+                  normalizedBbox.width.toString()
+                )
+                selectionRectRef.current.setAttribute(
+                  'height',
+                  normalizedBbox.height.toString()
+                )
+              }
+            }
+
+            // Update texture after changes
+            updateTexture()
+          }, 10)
+        }
+      },
+      [updateTexture]
+    )
+
+    const [addTextFunction, setAddTextFunction] = useState<(() => void) | null>(
+      null
+    )
+    const [removeElementFunction, setRemoveElementFunction] = useState<
+      ((identifier?: string) => void) | null
+    >(null)
 
     useImperativeHandle(
       ref,
@@ -194,8 +245,11 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         updateTexture,
         setBaseColor,
         updateElement,
-        addText: addTextFunction || (() => console.log('addText not ready yet')),
-        removeElement: removeElementFunction || (() => console.log('removeElement not ready yet')),
+        addText:
+          addTextFunction || (() => console.log('addText not ready yet')),
+        removeElement:
+          removeElementFunction ||
+          (() => console.log('removeElement not ready yet')),
       }),
       [updateTexture, updateElement, addTextFunction, removeElementFunction]
     )
@@ -209,190 +263,225 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
 
     const selectionRectRef = useRef<SVGRectElement | null>(null)
     const paintableUvSvgRef = useRef<SVGSVGElement | null>(null)
-    const makeInteractive = useCallback((element: SVGTextElement) => {
-      console.log({ id: element.id })
-      if (!element) {
-        console.error('element was falsy')
-        return
-      }
-
-      // Check if already made interactive to avoid duplicate listeners
-      if ((element as any)._isInteractive) {
-        console.log(
-          'Element already interactive, skipping:',
-          element.getAttribute('inkscape:label')
-        )
-        return
-      }
-      ;(element as any)._isInteractive = true
-
-      let isDragging = false
-      let dragStartMousePos = { x: 0, y: 0 }
-      let dragStartElementPos = { x: 0, y: 0 }
-
-      const updateSelectionRect = () => {
-        // Get bbox and update selection rectangle
-        const bbox = element.getBBox({
-          fill: true,
-          stroke: true,
-          markers: true,
-        })
-        const parentSvg = svgRef.current
-        if (parentSvg) {
-          const ctm = element.getCTM()
-          if (ctm) {
-            const corners = [
-              { x: bbox.x, y: bbox.y },
-              { x: bbox.x + bbox.width, y: bbox.y },
-              { x: bbox.x, y: bbox.y + bbox.height },
-              { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
-            ]
-
-            const transformedCorners = corners.map(corner => {
-              const point = parentSvg.createSVGPoint()
-              point.x = corner.x
-              point.y = corner.y
-              return point.matrixTransform(ctm)
-            })
-
-            const xs = transformedCorners.map(p => p.x)
-            const ys = transformedCorners.map(p => p.y)
-
-            const normalizedBbox = {
-              x: Math.min(...xs),
-              y: Math.min(...ys),
-              width: Math.max(...xs) - Math.min(...xs),
-              height: Math.max(...ys) - Math.min(...ys),
-            }
-
-            if (selectionRectRef.current) {
-              selectionRectRef.current.setAttribute(
-                'x',
-                normalizedBbox.x.toString()
-              )
-              selectionRectRef.current.setAttribute(
-                'y',
-                normalizedBbox.y.toString()
-              )
-              selectionRectRef.current.setAttribute(
-                'width',
-                normalizedBbox.width.toString()
-              )
-              selectionRectRef.current.setAttribute(
-                'height',
-                normalizedBbox.height.toString()
-              )
-            }
-          }
-        }
-      }
-
-      const mouseDownHandler = (e: MouseEvent) => {
-        const elementId = element.getAttribute('inkscape:label') || element.id
-        console.log('MOUSEDOWN on element:', elementId, 'isDragging was:', isDragging)
-        
-        isDragging = true
-        element.style.cursor = 'grabbing'
-
-        // Record starting positions
-        dragStartMousePos = { x: e.clientX, y: e.clientY }
-        dragStartElementPos = {
-          x: parseFloat(element.getAttribute('x') || '0'),
-          y: parseFloat(element.getAttribute('y') || '0'),
+    const makeInteractive = useCallback(
+      (element: SVGTextElement) => {
+        console.log({ id: element.id })
+        if (!element) {
+          console.error('element was falsy')
+          return
         }
 
-        // Store globally for SVG mousemove handler
-        ;(svgRef.current as any)._draggedElement = element
-        ;(svgRef.current as any)._isDragging = true
-        ;(svgRef.current as any)._dragStartMousePos = dragStartMousePos
-        ;(svgRef.current as any)._dragStartElementPos = dragStartElementPos
+        // Check if already made interactive to avoid duplicate listeners
+        if ((element as any)._isInteractive) {
+          console.log(
+            'Element already interactive, skipping:',
+            element.getAttribute('inkscape:label')
+          )
+          return
+        }
+        ;(element as any)._isInteractive = true
 
-        // Report selection to parent
-        setSelectedElementId(elementId)
-        if (onSelectedElement && elementId) {
-          const tspan = element.querySelector('tspan')
-          const currentText = tspan?.textContent || ''
-          
-          // Extract current font size from style attribute
-          const currentStyle = tspan?.getAttribute('style') || ''
-          const fontSizeMatch = currentStyle.match(/font-size:\s*(\d+(?:\.\d+)?)px/)
-          const currentFontSize = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 192 // Default from SVG
-          
-          // Extract current rotation from transform attribute
-          const currentTransform = element.getAttribute('transform') || ''
-          const rotationMatch = currentTransform.match(/rotate\(([^,\s]+)/)
-          const currentRotation = rotationMatch ? parseFloat(rotationMatch[1]) : 0
-          
-          onSelectedElement(elementId, {
-            type: 'text',
-            text: currentText,
-            fontSize: currentFontSize,
-            rotation: currentRotation
+        let isDragging = false
+        let dragStartMousePos = { x: 0, y: 0 }
+        let dragStartElementPos = { x: 0, y: 0 }
+
+        const updateSelectionRect = () => {
+          // Get bbox and update selection rectangle
+          const bbox = element.getBBox({
+            fill: true,
+            stroke: true,
+            markers: true,
           })
-        }
+          const parentSvg = svgRef.current
+          if (parentSvg) {
+            const ctm = element.getCTM()
+            if (ctm) {
+              const corners = [
+                { x: bbox.x, y: bbox.y },
+                { x: bbox.x + bbox.width, y: bbox.y },
+                { x: bbox.x, y: bbox.y + bbox.height },
+                { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
+              ]
 
-        updateSelectionRect()
-        e.preventDefault()
-        e.stopPropagation()
-      }
+              const transformedCorners = corners.map(corner => {
+                const point = parentSvg.createSVGPoint()
+                point.x = corner.x
+                point.y = corner.y
+                return point.matrixTransform(ctm)
+              })
 
-      const dragEndHandler = () => {
-        console.log(
-          'DRAG END event received for:',
-          element.getAttribute('inkscape:label')
-        )
-        isDragging = false
-        
-        // Trigger texture update after drag ends
-        updateTexture()
-      }
+              const xs = transformedCorners.map(p => p.x)
+              const ys = transformedCorners.map(p => p.y)
 
-      // Set up MutationObserver to watch for changes to this element
-      const observer = new MutationObserver((mutations) => {
-        let shouldUpdate = false
-        
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes') {
-            // Only update texture for position changes if we're not currently dragging
-            if (mutation.attributeName === 'x' || mutation.attributeName === 'y') {
-              if (!isDragging) {
-                console.log('Position changed for:', element.getAttribute('inkscape:label'), '(not dragging)')
-                shouldUpdate = true
-              } else {
-                console.log('Position changed for:', element.getAttribute('inkscape:label'), '(dragging - skipping update)')
+              const normalizedBbox = {
+                x: Math.min(...xs),
+                y: Math.min(...ys),
+                width: Math.max(...xs) - Math.min(...xs),
+                height: Math.max(...ys) - Math.min(...ys),
+              }
+
+              if (selectionRectRef.current) {
+                selectionRectRef.current.setAttribute(
+                  'x',
+                  normalizedBbox.x.toString()
+                )
+                selectionRectRef.current.setAttribute(
+                  'y',
+                  normalizedBbox.y.toString()
+                )
+                selectionRectRef.current.setAttribute(
+                  'width',
+                  normalizedBbox.width.toString()
+                )
+                selectionRectRef.current.setAttribute(
+                  'height',
+                  normalizedBbox.height.toString()
+                )
               }
             }
-          } else if (mutation.type === 'childList' || mutation.type === 'characterData') {
-            // Always update for text content changes
-            console.log('Content changed for:', element.getAttribute('inkscape:label'))
-            shouldUpdate = true
+          }
+        }
+
+        const mouseDownHandler = (e: MouseEvent) => {
+          const elementId = element.getAttribute('inkscape:label') || element.id
+          console.log(
+            'MOUSEDOWN on element:',
+            elementId,
+            'isDragging was:',
+            isDragging
+          )
+
+          isDragging = true
+          element.style.cursor = 'grabbing'
+
+          // Record starting positions
+          dragStartMousePos = { x: e.clientX, y: e.clientY }
+          dragStartElementPos = {
+            x: parseFloat(element.getAttribute('x') || '0'),
+            y: parseFloat(element.getAttribute('y') || '0'),
+          }
+
+          // Store globally for SVG mousemove handler
+          ;(svgRef.current as any)._draggedElement = element
+          ;(svgRef.current as any)._isDragging = true
+          ;(svgRef.current as any)._dragStartMousePos = dragStartMousePos
+          ;(svgRef.current as any)._dragStartElementPos = dragStartElementPos
+
+          // Report selection to parent
+          setSelectedElementId(elementId)
+          if (onSelectedElement && elementId) {
+            const tspan = element.querySelector('tspan')
+            const currentText = tspan?.textContent || ''
+
+            // Extract current font size from style attribute
+            const currentStyle = tspan?.getAttribute('style') || ''
+            const fontSizeMatch = currentStyle.match(
+              /font-size:\s*(\d+(?:\.\d+)?)px/
+            )
+            const currentFontSize = fontSizeMatch
+              ? parseFloat(fontSizeMatch[1])
+              : 192 // Default from SVG
+
+            // Extract current rotation from transform attribute
+            const currentTransform = element.getAttribute('transform') || ''
+            const rotationMatch = currentTransform.match(/rotate\(([^,\s]+)/)
+            const currentRotation = rotationMatch
+              ? parseFloat(rotationMatch[1])
+              : 0
+
+            // Extract current color from fill attribute
+            const currentColor = tspan?.getAttribute('fill') || '#000000' // Default to black
+
+            onSelectedElement(elementId, {
+              type: 'text',
+              text: currentText,
+              fontSize: currentFontSize,
+              rotation: currentRotation,
+              color: currentColor,
+            })
+          }
+
+          updateSelectionRect()
+          e.preventDefault()
+          e.stopPropagation()
+        }
+
+        const dragEndHandler = () => {
+          console.log(
+            'DRAG END event received for:',
+            element.getAttribute('inkscape:label')
+          )
+          isDragging = false
+
+          // Trigger texture update after drag ends
+          updateTexture()
+        }
+
+        // Set up MutationObserver to watch for changes to this element
+        const observer = new MutationObserver(mutations => {
+          let shouldUpdate = false
+
+          mutations.forEach(mutation => {
+            if (mutation.type === 'attributes') {
+              // Only update texture for position changes if we're not currently dragging
+              if (
+                mutation.attributeName === 'x' ||
+                mutation.attributeName === 'y'
+              ) {
+                if (!isDragging) {
+                  console.log(
+                    'Position changed for:',
+                    element.getAttribute('inkscape:label'),
+                    '(not dragging)'
+                  )
+                  shouldUpdate = true
+                } else {
+                  console.log(
+                    'Position changed for:',
+                    element.getAttribute('inkscape:label'),
+                    '(dragging - skipping update)'
+                  )
+                }
+              }
+            } else if (
+              mutation.type === 'childList' ||
+              mutation.type === 'characterData'
+            ) {
+              // Always update for text content changes
+              console.log(
+                'Content changed for:',
+                element.getAttribute('inkscape:label')
+              )
+              shouldUpdate = true
+            }
+          })
+
+          if (shouldUpdate) {
+            // Debounce the updates to avoid excessive calls
+            setTimeout(() => {
+              updateTexture()
+            }, 50)
           }
         })
-        
-        if (shouldUpdate) {
-          // Debounce the updates to avoid excessive calls
-          setTimeout(() => {
-            updateTexture()
-          }, 50)
-        }
-      })
-      
-      // Observe the text element and its children (tspan)
-      observer.observe(element, {
-        attributes: true,
-        attributeFilter: ['x', 'y'],
-        childList: true,
-        subtree: true,
-        characterData: true
-      })
-      
-      // Store observer for cleanup if needed
-      ;(element as any)._mutationObserver = observer
 
-      element.addEventListener('mousedown', mouseDownHandler)
-      element.addEventListener('dragEnd', dragEndHandler)
-      element.style.cursor = 'grab'
-    }, [onSelectedElement, updateTexture])
+        // Observe the text element and its children (tspan)
+        observer.observe(element, {
+          attributes: true,
+          attributeFilter: ['x', 'y'],
+          childList: true,
+          subtree: true,
+          characterData: true,
+        })
+
+        // Store observer for cleanup if needed
+        ;(element as any)._mutationObserver = observer
+
+        element.addEventListener('mousedown', mouseDownHandler)
+        element.addEventListener('dragEnd', dragEndHandler)
+        element.style.cursor = 'grab'
+      },
+      [onSelectedElement, updateTexture]
+    )
     useEffect(() => {
       const svg = paintableUvSvgRef.current
       if (!svg) {
@@ -552,35 +641,44 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         // Create unique ID for new text element
         const timestamp = Date.now()
         const newTextId = `text_custom_${timestamp}`
-        
+
         // Get SVG center coordinates
         const centerX = CANVAS_SIZE / 2
         const centerY = CANVAS_SIZE / 2
-        
+
         // Create new text element with structure matching existing ones
-        const newTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        const newTextElement = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'text'
+        )
         newTextElement.setAttribute('xml:space', 'preserve')
-        newTextElement.setAttribute('style', 'font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal')
+        newTextElement.setAttribute(
+          'style',
+          'font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal'
+        )
         newTextElement.setAttribute('x', centerX.toString())
         newTextElement.setAttribute('y', centerY.toString())
         newTextElement.setAttribute('id', newTextId)
         newTextElement.setAttribute('inkscape:label', newTextId)
-        
+
         // Create tspan element
-        const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan')
+        const tspan = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'tspan'
+        )
         tspan.setAttribute('sodipodi:role', 'line')
         tspan.setAttribute('id', `tspan_${timestamp}`)
         tspan.setAttribute('x', centerX.toString())
         tspan.setAttribute('y', centerY.toString())
         tspan.setAttribute('style', 'text-align:center;text-anchor:middle')
         tspan.textContent = 'Sample Text'
-        
+
         newTextElement.appendChild(tspan)
         svg.appendChild(newTextElement)
-        
+
         // Make the new element interactive
         makeInteractive(newTextElement as SVGTextElement)
-        
+
         // Immediately select the new element by calling the selection callback directly
         setTimeout(() => {
           setSelectedElementId(newTextId)
@@ -589,21 +687,32 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
               type: 'text',
               text: 'Sample Text',
               fontSize: 192,
-              rotation: 0
+              rotation: 0,
+              color: '#000000',
             })
           }
-          
+
           // Update selection rectangle to show the new element
-          const bbox = newTextElement.getBBox({ fill: true, stroke: true, markers: true })
+          const bbox = newTextElement.getBBox({
+            fill: true,
+            stroke: true,
+            markers: true,
+          })
           const parentSvg = svgRef.current
           if (parentSvg && selectionRectRef.current) {
             selectionRectRef.current.setAttribute('x', bbox.x.toString())
             selectionRectRef.current.setAttribute('y', bbox.y.toString())
-            selectionRectRef.current.setAttribute('width', bbox.width.toString())
-            selectionRectRef.current.setAttribute('height', bbox.height.toString())
+            selectionRectRef.current.setAttribute(
+              'width',
+              bbox.width.toString()
+            )
+            selectionRectRef.current.setAttribute(
+              'height',
+              bbox.height.toString()
+            )
           }
         }, 100)
-        
+
         // Update texture
         updateTexture()
       })
@@ -622,7 +731,9 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         }
 
         // Find the element to remove
-        const elementToRemove = svg.querySelector(`[inkscape\\:label="${identifier}"]`)
+        const elementToRemove = svg.querySelector(
+          `[inkscape\\:label="${identifier}"]`
+        )
         if (!elementToRemove) {
           console.error('Element not found for removal:', identifier)
           return
@@ -641,7 +752,7 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         // Hide selection rectangle
         if (selectionRectRef.current) {
           selectionRectRef.current.setAttribute('x', '0')
-          selectionRectRef.current.setAttribute('y', '0') 
+          selectionRectRef.current.setAttribute('y', '0')
           selectionRectRef.current.setAttribute('width', '0')
           selectionRectRef.current.setAttribute('height', '0')
         }
@@ -685,8 +796,8 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         <rect
           ref={selectionRectRef}
           id="selection-rect"
-          x="100"
-          y="100"
+          x="-100"
+          y="-100"
           width="200"
           height="100"
           fill="transparent"
