@@ -5,6 +5,7 @@ interface ElementProperties {
   type: 'text'
   text: string
   fontSize: number
+  rotation: number
 }
 
 export type TextureEditorWrapperRef = {
@@ -78,6 +79,32 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
       }
     }
 
+    const handleChangeRotation = () => {
+      if (!selectedElement) {
+        alert('Please select a text element first')
+        return
+      }
+
+      const currentRotation = selectedElement.properties.rotation.toString()
+      const input = window.prompt('Enter rotation in degrees (negative allowed):', currentRotation)
+      
+      if (input !== null) {
+        const newRotation = parseFloat(input)
+        
+        // Validate input - must be a number (positive or negative)
+        if (!isNaN(newRotation)) {
+          textureEditorRef.current?.updateElement(selectedElement.id, { rotation: newRotation })
+          
+          // Update local state
+          setSelectedElement(prev => prev ? {
+            ...prev,
+            properties: { ...prev.properties, rotation: newRotation }
+          } : null)
+        }
+        // If invalid, fall back to previous value (do nothing)
+      }
+    }
+
     return (
       <div
         style={{
@@ -127,6 +154,17 @@ export const TextureEditorWrapper = forwardRef<TextureEditorWrapperRef>(
               }}
             >
               font size
+            </button>
+            <button 
+              onClick={handleChangeRotation}
+              disabled={!selectedElement}
+              style={{
+                marginLeft: '8px',
+                opacity: selectedElement ? 1 : 0.5,
+                cursor: selectedElement ? 'pointer' : 'not-allowed'
+              }}
+            >
+              rotation
             </button>
           </span>
         </div>
