@@ -29,7 +29,6 @@ import {
 } from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
 import { PerspectiveCamera } from 'three'
-import { set } from 'lodash'
 
 const FOV_INITIAL = 20
 const INITIAL_AMBIENT_LIGHT = 0.8
