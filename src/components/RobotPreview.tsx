@@ -36,6 +36,7 @@ export const RobotPreview = forwardRef<RobotPreviewRef>((_, ref) => {
         onHeadlightIntensityChanged={() => {}}
         initialHeadlightIntensity={0}
         initialTailLightIntensity={0}
+        onBogieAmountChanged={() => {}}
       />
       <OrbitControls makeDefault enableZoom={true} enablePan={false} />
     </Canvas>

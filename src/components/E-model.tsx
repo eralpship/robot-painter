@@ -56,12 +56,13 @@ interface ModelProps extends React.ComponentProps<'group'> {
   onLidOpenChanged: (open: boolean) => void
   initialHeadlightIntensity: number
   initialTailLightIntensity: number
+  onBogieAmountChanged: (amount: number) => void
 }
 
 export interface ModelRef {
   updateBaseColor: (color: string) => void
   touchFlag: () => void
-  animateRockerToFrame: (frame: number) => void
+  setBogieAmount: (amount: number) => void
   setTailLightColor: (color: string) => void
   setLidOpen: (open: boolean) => void
   setHeadlightsIntensity: (intensity: number) => void
@@ -92,6 +93,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       onTaillightIntensityChanged,
       initialHeadlightIntensity,
       initialTailLightIntensity,
+      onBogieAmountChanged,
       ...props
     },
     ref
@@ -134,7 +136,18 @@ export const Model = forwardRef<ModelRef, ModelProps>(
         easing: easings.easeOutBounce,
         duration: 1500,
       },
+      onStart: () => {
+        onBogieAmountChanged(rockerSpring.progress.goal)
+      },
+      onRest: () => {
+        const finalAmount = rockerSpring.progress.get()
+        onBogieAmountChanged(finalAmount)
+      },
     }))
+
+    const internalSetBogieAmount = (amount: number) => {
+      rockerApi.start({ progress: amount })
+    }
 
     useImperativeHandle(
       ref,
@@ -148,10 +161,8 @@ export const Model = forwardRef<ModelRef, ModelProps>(
         touchFlag: () => {
           handleFlagClick()
         },
-        animateRockerToFrame: (frame: number) => {
-          rockerApi.start({
-            to: { progress: frame },
-          })
+        setBogieAmount: (amount: number) => {
+          internalSetBogieAmount(amount)
         },
         setTailLightColor: (color: string) => {
           updateTailLightColor(color)
@@ -307,13 +318,15 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
       let newTooltip: string | null = null
       if (firstIntersect?.object.name.includes('lid')) {
-        newTooltip = 'Toggle lid'
+        newTooltip = `Lid (${currentLidStateOpen() ? 'Close' : 'Open'})`
       } else if (firstIntersect?.object.name.includes('headlight')) {
-        newTooltip = 'Toggle headlights'
+        newTooltip = 'Head Lights (Toggle)'
       } else if (firstIntersect?.object.name.includes('tail_light')) {
-        newTooltip = 'Toggle tail lights'
+        newTooltip = 'Tail Lights (Toggle)'
       } else if (firstIntersect?.object.name.includes('flag')) {
-        newTooltip = 'Flag'
+        newTooltip = 'Flag (Flick)'
+      } else if (firstIntersect?.object.name.includes('wheel')) {
+        newTooltip = 'Wheel (Toggle Bogie)'
       }
 
       if (newTooltip !== currentTooltip.current) {
@@ -424,35 +437,22 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       )
     }, [])
 
-    const handleLidClick = (e: ThreeEvent<MouseEvent>) => {
-      e.stopPropagation()
-
-      // Check current animation state to determine if lid is open or closed
+    const currentLidStateOpen = useCallback(() => {
       const lidAction = actions['open lid']
-      if (!lidAction) return
-
+      if (!lidAction) return false
       const duration = lidAction.getClip().duration
       const currentProgress = lidAction.time / duration
+      return currentProgress >= 0.5
+    }, [actions])
 
-      // If closer to beginning (< 0.5), it's closed, so open it
-      // If closer to end (>= 0.5), it's open, so close it
-      const isCurrentlyClosed = currentProgress < 0.5
-      const newLidOpen = isCurrentlyClosed
-
-      console.log(
-        'Lid click - current progress:',
-        currentProgress,
-        'new state:',
-        newLidOpen ? 'open' : 'closed'
-      )
-
+    const handleLidClick = useCallback((e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation()
+      const newLidOpen = !currentLidStateOpen()
       internalSetLidOpen(newLidOpen)
-
-      // Update Leva control to reflect the new state
       if (updateLevaLidStateRef.current) {
         updateLevaLidStateRef.current(newLidOpen)
       }
-    }
+    }, [])
 
     const handleHitboxClick = (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation()
@@ -464,6 +464,32 @@ export const Model = forwardRef<ModelRef, ModelProps>(
         console.log('Toggling taillights')
         toggleTaillights()
       }
+    }
+
+    const toggleBogieToTarget = (target: number) => {
+      const currentAmount = rockerSpring.progress.get()
+      const distanceToNormal = Math.abs(currentAmount - 0.5)
+      const distanceToTarget = Math.abs(currentAmount - target)
+      if (distanceToNormal < distanceToTarget) {
+        internalSetBogieAmount(target)
+      } else {
+        internalSetBogieAmount(0.5)
+      }
+    }
+
+    const hanldeOnFrontWheelClick = (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation()
+      toggleBogieToTarget(1)
+    }
+
+    const handleOnMiddleWheelClick = (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation()
+      toggleBogieToTarget(0)
+    }
+
+    const handleOnBackWheelClick = (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation()
+      toggleBogieToTarget(1)
     }
 
     const hitboxes = useMemo(() => {
@@ -629,12 +655,14 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           {/* Wheels */}
           <mesh
             name="wheel_front_left"
+            onClick={hanldeOnFrontWheelClick}
             geometry={nodes.wheel_front_left.geometry}
             material={materials.wheel}
             position={[-322.374, 348.386, -139.723]}
           />
           <mesh
             name="wheel_front_right"
+            onClick={hanldeOnFrontWheelClick}
             geometry={nodes.wheel_front_right.geometry}
             material={materials.wheel}
             position={[322.257, 348.386, -139.723]}
@@ -648,24 +676,28 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           >
             <mesh
               name="wheel_back_left"
+              onClick={handleOnBackWheelClick}
               geometry={nodes.wheel_back_left.geometry}
               material={materials.wheel}
               position={[-322.382, -143.059, 1.926]}
             />
             <mesh
               name="wheel_back_right"
+              onClick={handleOnBackWheelClick}
               geometry={nodes.wheel_back_right.geometry}
               material={materials.wheel}
               position={[322.249, -143.059, 1.926]}
               rotation={[-Math.PI, 0, -Math.PI]}
             />
             <mesh
+              onClick={handleOnMiddleWheelClick}
               name="wheel_middle_left"
               geometry={nodes.wheel_middle_left.geometry}
               material={materials.wheel}
               position={[-322.382, 139.349, 1.926]}
             />
             <mesh
+              onClick={handleOnMiddleWheelClick}
               name="wheel_middle_right"
               geometry={nodes.wheel_middle_right.geometry}
               material={materials.wheel}

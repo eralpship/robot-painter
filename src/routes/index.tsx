@@ -29,6 +29,7 @@ import {
 } from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
 import { PerspectiveCamera } from 'three'
+import { set } from 'lodash'
 
 const FOV_INITIAL = 20
 const INITIAL_AMBIENT_LIGHT = 0.8
@@ -117,7 +118,7 @@ function useModelControls({
       max: 1,
       step: 0.1,
       onChange: (value: number) => {
-        modelRef.current?.animateRockerToFrame(value)
+        modelRef.current?.setBogieAmount(value)
       },
     },
     touchFlag: button(() => modelRef.current?.touchFlag()),
@@ -217,11 +218,18 @@ function useModelControls({
     },
     [setLighting]
   )
+  const setBogieAmount = useCallback(
+    (bogie: number) => {
+      setAnimation({ bogie })
+    },
+    [setAnimation]
+  )
 
   return {
     setLidOpen,
     setHeadlightsIntensity,
     setTaillightIntensity,
+    setBogieAmount,
   }
 }
 
@@ -300,15 +308,19 @@ function AppContent() {
   const environmentWrapperRef = useRef<EnvironmentWrapperRef | null>(null)
 
   const modelRef = useRef<ModelRef | null>(null)
-  const { setLidOpen, setHeadlightsIntensity, setTaillightIntensity } =
-    useModelControls({
-      modelRef,
-      cameraControlsRef,
-      cameraControllerRef,
-      textureEditorRef,
-      ambientLightRef,
-      environmentWrapperRef,
-    })
+  const {
+    setLidOpen,
+    setHeadlightsIntensity,
+    setTaillightIntensity,
+    setBogieAmount,
+  } = useModelControls({
+    modelRef,
+    cameraControlsRef,
+    cameraControllerRef,
+    textureEditorRef,
+    ambientLightRef,
+    environmentWrapperRef,
+  })
 
   console.log('AppContent rendered')
 
@@ -394,6 +406,7 @@ function AppContent() {
           onHeadlightIntensityChanged={setHeadlightsIntensity}
           onTaillightIntensityChanged={setTaillightIntensity}
           onLidOpenChanged={setLidOpen}
+          onBogieAmountChanged={setBogieAmount}
         />
         <OrbitControls
           ref={cameraControlsRef}
