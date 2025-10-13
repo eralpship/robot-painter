@@ -771,37 +771,53 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           return
         }
 
-        // Create unique ID for new image element
-        const timestamp = Date.now()
-        const newImageId = `image_custom_${timestamp}`
+        // Load image to get dimensions
+        const img = new Image()
+        img.onload = () => {
+          const maxSize = 512
+          const aspectRatio = img.width / img.height
 
-        // Get SVG center coordinates
-        const centerX = CANVAS_SIZE / 2
-        const centerY = CANVAS_SIZE / 2
+          let width, height
+          if (img.width > img.height) {
+            // Landscape or square
+            width = maxSize
+            height = maxSize / aspectRatio
+          } else {
+            // Portrait
+            height = maxSize
+            width = maxSize * aspectRatio
+          }
 
-        // Reasonable default size (can be adjusted)
-        const imageSize = 512
+          // Create unique ID for new image element
+          const timestamp = Date.now()
+          const newImageId = `image_custom_${timestamp}`
 
-        // Create new image element
-        const newImageElement = document.createElementNS(
-          'http://www.w3.org/2000/svg',
-          'image'
-        )
-        newImageElement.setAttribute('href', base64image)
-        newImageElement.setAttribute('x', (centerX - imageSize / 2).toString())
-        newImageElement.setAttribute('y', (centerY - imageSize / 2).toString())
-        newImageElement.setAttribute('width', imageSize.toString())
-        newImageElement.setAttribute('height', imageSize.toString())
-        newImageElement.setAttribute('id', newImageId)
-        newImageElement.setAttribute('inkscape:label', newImageId)
+          // Get SVG center coordinates
+          const centerX = CANVAS_SIZE / 2
+          const centerY = CANVAS_SIZE / 2
 
-        svg.appendChild(newImageElement)
+          // Create new image element
+          const newImageElement = document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            'image'
+          )
+          newImageElement.setAttribute('href', base64image)
+          newImageElement.setAttribute('x', (centerX - width / 2).toString())
+          newImageElement.setAttribute('y', (centerY - height / 2).toString())
+          newImageElement.setAttribute('width', width.toString())
+          newImageElement.setAttribute('height', height.toString())
+          newImageElement.setAttribute('id', newImageId)
+          newImageElement.setAttribute('inkscape:label', newImageId)
 
-        // Make the new element interactive
-        makeInteractive(newImageElement as any)
+          svg.appendChild(newImageElement)
 
-        // Update texture
-        updateTexture()
+          // Make the new element interactive
+          makeInteractive(newImageElement as any)
+
+          // Update texture
+          updateTexture()
+        }
+        img.src = base64image
       })
     }, [])
 
