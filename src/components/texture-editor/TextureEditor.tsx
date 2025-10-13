@@ -410,7 +410,8 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           }
         }
 
-        const mouseDownHandler = (e: MouseEvent) => {
+        const mouseDownHandler = (e: Event) => {
+          const mouseEvent = e as MouseEvent
           const elementId = element.getAttribute('inkscape:label') || element.id
           console.log(
             'MOUSEDOWN on element:',
@@ -423,7 +424,7 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           element.style.cursor = 'grabbing'
 
           // Record starting positions
-          dragStartMousePos = { x: e.clientX, y: e.clientY }
+          dragStartMousePos = { x: mouseEvent.clientX, y: mouseEvent.clientY }
           dragStartElementPos = {
             x: parseFloat(element.getAttribute('x') || '0'),
             y: parseFloat(element.getAttribute('y') || '0'),
@@ -469,8 +470,8 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           }
 
           updateSelectionRect()
-          e.preventDefault()
-          e.stopPropagation()
+          mouseEvent.preventDefault()
+          mouseEvent.stopPropagation()
         }
 
         const dragEndHandler = () => {
