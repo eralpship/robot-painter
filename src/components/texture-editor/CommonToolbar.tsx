@@ -2,9 +2,15 @@ import React from 'react'
 
 interface CommonToolbarProps {
   mode: 'full' | 'basic'
+  onSave: () => void
+  onLoad: () => void
 }
 
-export const CommonToolbar: React.FC<CommonToolbarProps> = ({ mode }) => {
+export const CommonToolbar: React.FC<CommonToolbarProps> = ({
+  mode,
+  onSave,
+  onLoad,
+}) => {
   const handleNavigation = () => {
     if (mode === 'full') {
       // Robot editor mode - go to main page
@@ -15,18 +21,32 @@ export const CommonToolbar: React.FC<CommonToolbarProps> = ({ mode }) => {
     }
   }
 
-  const getButtonText = () => {
-    return mode === 'full' ? 'robot editor' : 'texture editor'
-  }
-
   return (
-    <button 
-      onClick={handleNavigation}
-      style={{
-        cursor: 'pointer'
-      }}
-    >
-      {getButtonText()}
-    </button>
+    <>
+      <button
+        onClick={handleNavigation}
+        style={{
+          cursor: 'pointer',
+        }}
+      >
+        {mode === 'full' ? 'robot editor' : 'texture editor'}
+      </button>
+      <button
+        onClick={onSave}
+        style={{
+          cursor: 'pointer',
+        }}
+      >
+        save
+      </button>
+      <button
+        onClick={onLoad}
+        style={{
+          cursor: 'pointer',
+        }}
+      >
+        load
+      </button>
+    </>
   )
 }

@@ -231,7 +231,11 @@ export const TextureEditorWrapper = forwardRef<
             gap: '8px',
           }}
         >
-          <CommonToolbar mode={mode} />
+          <CommonToolbar
+            mode={mode}
+            onSave={() => textureEditorRef.current?.saveTexture?.()}
+            onLoad={() => textureEditorRef.current?.loadTexture?.()}
+          />
           {mode === 'full' ? (
             <>
               <AddElementToolbar

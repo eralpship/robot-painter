@@ -27,8 +27,9 @@ export const AddElementToolbar: React.FC<AddElementToolbarProps> = ({
             if (file) {
               const reader = new FileReader()
               reader.onload = () => {
-                const base64 = onAddImage(reader.result as string)
+                const base64 = reader.result as string
                 console.log(base64)
+                onAddImage(base64)
               }
               reader.readAsDataURL(file)
             }

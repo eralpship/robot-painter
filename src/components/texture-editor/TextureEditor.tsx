@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
 import PaintableUvSvg from './paintable_uv.svg?react'
+import { useTexturePersistence } from '../../hooks/useTexturePersistence'
 
 export const CANVAS_SIZE = 4096
 
@@ -63,12 +64,18 @@ export interface TextureEditorRef {
   addText: () => void
   addImage: (base64image: string) => void
   removeElement: (identifier?: string) => void
+  saveTexture: () => void
+  loadTexture: () => void
 }
 
 export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
   ({ style, onSelectedElement }, ref) => {
     const svgRef = useRef<SVGSVGElement>(null)
+    const selectionRectRef = useRef<SVGRectElement | null>(null)
+    const paintableUvSvgRef = useRef<SVGSVGElement | null>(null)
+    const makeInteractiveRef = useRef<((element: SVGTextElement | SVGImageElement) => void) | null>(null)
     const texture = useContext(OverlayTextureContext)
+    const { saveTexture, loadTexture } = useTexturePersistence()
 
     const updateTexture = useCallback(() => {
       if (!texture || !svgRef.current) return
@@ -241,6 +248,56 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
       ((base64image?: string) => void) | null
     >(null)
 
+    const handleSaveTexture = useCallback(() => {
+      if (!svgRef.current) {
+        console.error('SVG not available for saving')
+        return
+      }
+      const serializedSvg = serializeSvg(svgRef.current, [])
+      saveTexture(serializedSvg)
+    }, [saveTexture])
+
+    const handleLoadTexture = useCallback(() => {
+      const savedSvg = loadTexture()
+      if (!savedSvg || !svgRef.current) {
+        console.error('No saved texture or SVG not available')
+        return
+      }
+
+      // Parse the saved SVG and restore it
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(savedSvg, 'image/svg+xml')
+      const savedSvgElement = doc.documentElement as unknown as SVGSVGElement
+
+      // Replace the current SVG's innerHTML with the saved one
+      if (svgRef.current && savedSvgElement) {
+        svgRef.current.innerHTML = savedSvgElement.innerHTML
+
+        // Re-query and update refs to the newly loaded DOM elements
+        const newSelectionRect = svgRef.current.querySelector('#selection-rect') as SVGRectElement
+        if (newSelectionRect) {
+          selectionRectRef.current = newSelectionRect
+        }
+
+        const newPaintableUvSvg = svgRef.current.querySelector('svg') as SVGSVGElement
+        if (newPaintableUvSvg) {
+          paintableUvSvgRef.current = newPaintableUvSvg
+        }
+
+        // Re-attach event listeners to all loaded elements
+        // Query from the newly loaded svgRef, not the stale paintableUvSvgRef
+        if (svgRef.current && makeInteractiveRef.current) {
+          const textElements = svgRef.current.querySelectorAll('text')
+          const imageElements = svgRef.current.querySelectorAll('image')
+
+          textElements.forEach(element => makeInteractiveRef.current?.(element as SVGTextElement))
+          imageElements.forEach(element => makeInteractiveRef.current?.(element as SVGImageElement))
+        }
+
+        updateTexture()
+      }
+    }, [loadTexture, updateTexture])
+
     useImperativeHandle(
       ref,
       () => ({
@@ -254,8 +311,17 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         removeElement:
           removeElementFunction ||
           (() => console.log('removeElement not ready yet')),
+        saveTexture: handleSaveTexture,
+        loadTexture: handleLoadTexture,
       }),
-      [updateTexture, updateElement, addTextFunction, removeElementFunction]
+      [
+        updateTexture,
+        updateElement,
+        addTextFunction,
+        removeElementFunction,
+        handleSaveTexture,
+        handleLoadTexture,
+      ]
     )
 
     useEffect(() => {
@@ -265,10 +331,8 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
       // return () => clearInterval(interval)
     }, [])
 
-    const selectionRectRef = useRef<SVGRectElement | null>(null)
-    const paintableUvSvgRef = useRef<SVGSVGElement | null>(null)
     const makeInteractive = useCallback(
-      (element: SVGTextElement) => {
+      (element: SVGTextElement | SVGImageElement) => {
         console.log({ id: element.id })
         if (!element) {
           console.error('element was falsy')
@@ -485,6 +549,10 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
       },
       [onSelectedElement, updateTexture]
     )
+
+    // Store makeInteractive in ref for use in handleLoadTexture
+    makeInteractiveRef.current = makeInteractive
+
     useEffect(() => {
       const svg = paintableUvSvgRef.current
       if (!svg) {

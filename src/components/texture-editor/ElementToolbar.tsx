@@ -11,18 +11,18 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({
 }) => {
   return (
     <>
-      <button 
+      <button
         onClick={onRotation}
         style={{
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         rotation
       </button>
-      <button 
+      <button
         onClick={onRemove}
         style={{
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         remove
