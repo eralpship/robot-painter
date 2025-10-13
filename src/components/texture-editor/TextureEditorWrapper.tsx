@@ -236,6 +236,9 @@ export const TextureEditorWrapper = forwardRef<
             <>
               <AddElementToolbar
                 onAddText={() => textureEditorRef.current?.addText?.()}
+                onAddImage={base64image =>
+                  textureEditorRef.current?.addImage?.(base64image)
+                }
               />
               {selectedElement && (
                 <ElementToolbar

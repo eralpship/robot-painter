@@ -61,6 +61,7 @@ export interface TextureEditorRef {
     properties: Partial<ElementProperties>
   ) => void
   addText: () => void
+  addImage: (base64image: string) => void
   removeElement: (identifier?: string) => void
 }
 
@@ -236,6 +237,10 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
       ((identifier?: string) => void) | null
     >(null)
 
+    const [addImageInternal, setAddImageInternal] = useState<
+      ((base64image?: string) => void) | null
+    >(null)
+
     useImperativeHandle(
       ref,
       () => ({
@@ -244,6 +249,8 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         updateElement,
         addText:
           addTextFunction || (() => console.log('addText not ready yet')),
+        addImage:
+          addImageInternal || (() => console.log('addImage not ready yet')),
         removeElement:
           removeElementFunction ||
           (() => console.log('removeElement not ready yet')),
@@ -753,6 +760,11 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
 
         // Update texture
         updateTexture()
+      })
+
+      setAddImageInternal(() => (base64image: string) => {
+        console.log('hello from texture editor', base64image)
+        // how to inject this base46 image into svgRef or even better paintableUvSvgRef
       })
     }, [])
 
