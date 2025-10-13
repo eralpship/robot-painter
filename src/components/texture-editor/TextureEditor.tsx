@@ -764,7 +764,44 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
 
       setAddImageInternal(() => (base64image: string) => {
         console.log('hello from texture editor', base64image)
-        // how to inject this base46 image into svgRef or even better paintableUvSvgRef
+
+        const svg = paintableUvSvgRef.current
+        if (!svg) {
+          console.error('SVG not available')
+          return
+        }
+
+        // Create unique ID for new image element
+        const timestamp = Date.now()
+        const newImageId = `image_custom_${timestamp}`
+
+        // Get SVG center coordinates
+        const centerX = CANVAS_SIZE / 2
+        const centerY = CANVAS_SIZE / 2
+
+        // Reasonable default size (can be adjusted)
+        const imageSize = 512
+
+        // Create new image element
+        const newImageElement = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'image'
+        )
+        newImageElement.setAttribute('href', base64image)
+        newImageElement.setAttribute('x', (centerX - imageSize / 2).toString())
+        newImageElement.setAttribute('y', (centerY - imageSize / 2).toString())
+        newImageElement.setAttribute('width', imageSize.toString())
+        newImageElement.setAttribute('height', imageSize.toString())
+        newImageElement.setAttribute('id', newImageId)
+        newImageElement.setAttribute('inkscape:label', newImageId)
+
+        svg.appendChild(newImageElement)
+
+        // Make the new element interactive
+        makeInteractive(newImageElement as any)
+
+        // Update texture
+        updateTexture()
       })
     }, [])
 
