@@ -2,19 +2,29 @@ import React, { useState } from 'react'
 import { Rnd } from 'react-rnd'
 import './FloatingCollapsibleWindow.css'
 
+const headerHeight = 40
+const minSize = 200
+
 export function FloatingCollapsibleWindow({
   title,
   children,
   x: defaultX,
   y: defaultY,
+  width: defaultWidth,
+  height: defaultHeight,
 }: {
   title: string
   children?: React.ReactNode
   x: number
   y: number
+  width: number
+  height: number
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [size, setSize] = useState({ width: 223, height: 300 })
+  const [size, setSize] = useState({
+    width: defaultWidth,
+    height: defaultHeight,
+  })
 
   const toggleCollapse = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent drag when clicking toggle button
@@ -24,16 +34,16 @@ export function FloatingCollapsibleWindow({
   return (
     <Rnd
       default={{ x: defaultX, y: defaultY, ...size }}
-      size={isCollapsed ? { width: size.width, height: 40 } : size}
+      size={isCollapsed ? { width: size.width, height: headerHeight } : size}
       onResize={(_e, _direction, ref, _delta, _position) => {
         setSize({
           width: parseInt(ref.style.width),
-          height: isCollapsed ? 40 : parseInt(ref.style.height),
+          height: isCollapsed ? headerHeight : parseInt(ref.style.height),
         })
       }}
-      minWidth={200}
-      minHeight={isCollapsed ? 40 : 200}
-      maxHeight={isCollapsed ? 40 : undefined}
+      minWidth={minSize}
+      minHeight={isCollapsed ? headerHeight : minSize}
+      maxHeight={isCollapsed ? headerHeight : undefined}
       bounds="window"
       dragHandleClassName="drag-handle"
       className={`overlay-texture-window ${isCollapsed ? 'collapsed' : ''}`}

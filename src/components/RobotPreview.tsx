@@ -1,24 +1,10 @@
 import { Canvas } from '@react-three/fiber'
 import { Model, type ModelRef } from './E-model'
 import { OrbitControls } from '@react-three/drei'
-import { useRef, forwardRef, useImperativeHandle } from 'react'
+import { useRef } from 'react'
 
-export interface RobotPreviewRef {
-  setBaseColor: (color: string) => void
-}
-
-export const RobotPreview = forwardRef<RobotPreviewRef>((_, ref) => {
+export function RobotPreview() {
   const modelRef = useRef<ModelRef>(null)
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      setBaseColor: (color: string) => {
-        modelRef.current?.updateBaseColor(color)
-      },
-    }),
-    []
-  )
 
   return (
     <Canvas
@@ -26,10 +12,10 @@ export const RobotPreview = forwardRef<RobotPreviewRef>((_, ref) => {
       orthographic
       camera={{ position: [10, 5, 10], zoom: 20 }}
     >
-      <ambientLight intensity={8} />
+      <ambientLight intensity={5} />
       <Model
         ref={modelRef}
-        position={[0, -3, -0.3]}
+        position={[0, -3.5, 0]}
         scale={1}
         onLidOpenChanged={() => {}}
         onTaillightIntensityChanged={() => {}}
@@ -38,9 +24,13 @@ export const RobotPreview = forwardRef<RobotPreviewRef>((_, ref) => {
         initialTailLightIntensity={0}
         onBogieAmountChanged={() => {}}
       />
-      <OrbitControls makeDefault enableZoom={true} enablePan={false} />
+      <OrbitControls
+        makeDefault
+        enableZoom={true}
+        enablePan={false}
+        minZoom={10}
+        maxZoom={80}
+      />
     </Canvas>
   )
-})
-
-RobotPreview.displayName = 'RobotPreview'
+}

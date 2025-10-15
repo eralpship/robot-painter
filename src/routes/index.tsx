@@ -402,7 +402,13 @@ function AppContent() {
           onStart={handleInteraction}
         />
       </Canvas>
-      <FloatingCollapsibleWindow title="Texture Editor" x={20} y={20}>
+      <FloatingCollapsibleWindow
+        title="Texture Editor"
+        x={10}
+        y={10}
+        width={306}
+        height={384}
+      >
         <TextureEditorWrapper mode="basic" />
       </FloatingCollapsibleWindow>
     </div>
