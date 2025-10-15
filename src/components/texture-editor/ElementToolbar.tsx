@@ -7,10 +7,7 @@ export function ElementToolbar() {
     <>
       <button
         onClick={() => {
-          if (!ctx.selectedElementId) {
-            return
-          }
-          const element = ctx.elements.get(ctx.selectedElementId)
+          const element = ctx.selectedElement
           if (!element) {
             return
           }
@@ -21,14 +18,11 @@ export function ElementToolbar() {
           if (!input) {
             return
           }
-          const newRotation = parseFloat(input)
-          if (isNaN(newRotation)) {
+          const rotation = parseFloat(input)
+          if (isNaN(rotation)) {
             return
           }
-          ctx.setElementRotation({
-            elementId: ctx.selectedElementId,
-            rotation: newRotation,
-          })
+          ctx.updateElement(element.uuid, { rotation })
         }}
         style={{
           cursor: 'pointer',
@@ -38,10 +32,11 @@ export function ElementToolbar() {
       </button>
       <button
         onClick={() => {
-          if (!ctx.selectedElementId) {
+          const element = ctx.selectedElement
+          if (!element) {
             return
           }
-          ctx.removeElement(ctx.selectedElementId)
+          ctx.removeElement(element.uuid)
         }}
         style={{
           cursor: 'pointer',

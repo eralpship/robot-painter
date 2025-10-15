@@ -6,10 +6,7 @@ import { useContext } from 'react'
 import { TextureEditorContext } from '@/contexts/texture-editor-context'
 
 export function Toolbar() {
-  const { mode, selectedElementId, elements } = useContext(TextureEditorContext)
-  const selectedElementType = selectedElementId
-    ? elements.get(selectedElementId)?.type
-    : undefined
+  const ctx = useContext(TextureEditorContext)
   return (
     <div
       style={{
@@ -37,11 +34,11 @@ export function Toolbar() {
         }}
       >
         <CommonToolbar />
-        {mode === 'full' ? (
+        {ctx.mode === 'full' ? (
           <>
             <AddElementToolbar />
-            {selectedElementId ? <ElementToolbar /> : null}
-            {selectedElementType === 'text' ? <TextToolbar /> : null}
+            {ctx.selectedElement ? <ElementToolbar /> : null}
+            {ctx.selectedElement?.type === 'text' ? <TextToolbar /> : null}
           </>
         ) : null}
       </div>

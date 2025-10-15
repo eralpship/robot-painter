@@ -10,10 +10,7 @@ export function TextToolbar() {
     <>
       <button
         onClick={() => {
-          if (!ctx.selectedElementId) {
-            return
-          }
-          const element = ctx.elements.get(ctx.selectedElementId)
+          const element = ctx.selectedElement
           if (!element || element.type !== 'text') {
             return
           }
@@ -21,7 +18,7 @@ export function TextToolbar() {
           if (!text || isEmpty(text)) {
             return
           }
-          ctx.setElementText({ elementId: element.uuid, text })
+          ctx.updateElement(element.uuid, { text })
         }}
         style={{
           cursor: 'pointer',
@@ -31,10 +28,7 @@ export function TextToolbar() {
       </button>
       <button
         onClick={() => {
-          if (!ctx.selectedElementId) {
-            return
-          }
-          const element = ctx.elements.get(ctx.selectedElementId)
+          const element = ctx.selectedElement
           if (!element || element.type !== 'text') {
             return
           }
@@ -49,10 +43,7 @@ export function TextToolbar() {
           if (isNaN(fontSize) || fontSize <= 0) {
             return
           }
-          ctx.setElementFontSize({
-            elementId: element.uuid,
-            fontSize,
-          })
+          ctx.updateElement(element.uuid, { fontSize })
         }}
         style={{
           cursor: 'pointer',
@@ -62,10 +53,7 @@ export function TextToolbar() {
       </button>
       <button
         onClick={() => {
-          if (!ctx.selectedElementId) {
-            return
-          }
-          const element = ctx.elements.get(ctx.selectedElementId)
+          const element = ctx.selectedElement
           if (!element || element.type !== 'text') {
             return
           }
@@ -79,7 +67,7 @@ export function TextToolbar() {
           if (!hexColorRegex.test(color)) {
             return
           }
-          ctx.setElementColor({ elementId: element.uuid, color })
+          ctx.updateElement(element.uuid, { color })
         }}
         style={{
           cursor: 'pointer',

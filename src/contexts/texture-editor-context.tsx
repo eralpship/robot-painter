@@ -1,4 +1,10 @@
-import React, { createContext, useCallback, useReducer, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
 export const CANVAS_SIZE = 4096
@@ -31,17 +37,14 @@ type TextureEditorElement = _BaseTextureEditorElement &
 type TextureEditorElementWithUuid = TextureEditorElement & { uuid: string }
 
 type TextureEditorContextType = {
-  selectedElementId: string | null
   mode: TexureEditorMode
   saveTexture: () => void
   loadTexture: () => void
   addElement: (element: TextureEditorElement) => void
-  setElementRotation: (args: { elementId: string; rotation: number }) => void
-  setElementFontSize: (args: { elementId: string; fontSize: number }) => void
-  setElementText: (args: { elementId: string; text: string }) => void
-  setElementColor: (args: { elementId: string; color: string }) => void
   removeElement: (elementId: string) => void
   setSelectedElementId: (elementId: string) => void
+  selectedElement: TextureEditorElementWithUuid | undefined
+  updateElement: (elementId: string, patch: TextureEditorElementPatch) => void
   elements: ElementMap
   center: { x: number; y: number }
   size: { width: number; height: number }
@@ -95,8 +98,9 @@ export function TextureEditorContextProvider({
     new Map<string, TextureEditorElementWithUuid>()
   )
 
-  const [selectedElementId, setSelectedElementId] =
-    useState<TextureEditorContextType['selectedElementId']>(null)
+  const [selectedElementId, setSelectedElementId] = useState<
+    string | undefined
+  >(undefined)
 
   const saveTexture = useCallback<
     TextureEditorContextType['saveTexture']
@@ -116,41 +120,21 @@ export function TextureEditorContextProvider({
     []
   )
 
-  const setElementRotation = useCallback<
-    TextureEditorContextType['setElementRotation']
-  >(({ elementId, rotation }) => {
-    dispatchElementsAction({
-      type: 'update',
-      uuid: elementId,
-      patch: { rotation },
-    })
-  }, [])
+  const updateElement = useCallback<TextureEditorContextType['updateElement']>(
+    (elementId, patch) => {
+      dispatchElementsAction({
+        type: 'update',
+        uuid: elementId,
+        patch: patch,
+      })
+    },
+    []
+  )
 
-  const setElementColor = useCallback<
-    TextureEditorContextType['setElementColor']
-  >(({ elementId, color }) => {
-    dispatchElementsAction({
-      type: 'update',
-      uuid: elementId,
-      patch: { color },
-    })
-  }, [])
-
-  const setElementFontSize = useCallback<
-    TextureEditorContextType['setElementFontSize']
-  >(({ elementId, fontSize }) => {
-    dispatchElementsAction({
-      type: 'update',
-      uuid: elementId,
-      patch: { fontSize },
-    })
-  }, [])
-
-  const setElementText = useCallback<
-    TextureEditorContextType['setElementText']
-  >(({ elementId, text }) => {
-    dispatchElementsAction({ type: 'update', uuid: elementId, patch: { text } })
-  }, [])
+  const selectedElement = useMemo(
+    () => (selectedElementId ? elements.get(selectedElementId) : undefined),
+    [selectedElementId, elements]
+  )
 
   return (
     <TextureEditorContext.Provider
@@ -161,14 +145,11 @@ export function TextureEditorContextProvider({
         loadTexture,
         addElement,
         removeElement,
-        setElementRotation,
-        setElementColor,
-        setElementFontSize,
-        setElementText,
-        selectedElementId,
-        setSelectedElementId,
+        selectedElement,
+        updateElement,
         center: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
         size: { width: CANVAS_SIZE, height: CANVAS_SIZE },
+        setSelectedElementId,
       }}
     >
       {children}
