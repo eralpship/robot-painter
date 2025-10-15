@@ -7,9 +7,9 @@ import React, {
 } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-export const CANVAS_SIZE = 4096
+export const CANVAS_SIZE = 4096 // if you change this also resize the paintable_uv.svg's root size and viewbox size
 
-type TexureEditorMode = 'full' | 'basic'
+export type TexureEditorMode = 'full' | 'basic'
 
 type _BaseTextureEditorElement = {
   rotation: number
@@ -46,6 +46,8 @@ type TextureEditorContextType = {
   selectedElement: TextureEditorElementWithUuid | undefined
   updateElement: (elementId: string, patch: TextureEditorElementPatch) => void
   elements: ElementMap
+  backgroundColor: string
+  setBackgroundColor: (color: string) => void
   center: { x: number; y: number }
   size: { width: number; height: number }
 }
@@ -93,6 +95,8 @@ export function TextureEditorContextProvider({
   mode: TexureEditorMode
   children: React.ReactNode
 }) {
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
+
   const [elements, dispatchElementsAction] = useReducer(
     elementReducer,
     new Map<string, TextureEditorElementWithUuid>()
@@ -150,6 +154,8 @@ export function TextureEditorContextProvider({
         center: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
         size: { width: CANVAS_SIZE, height: CANVAS_SIZE },
         setSelectedElementId,
+        backgroundColor,
+        setBackgroundColor,
       }}
     >
       {children}

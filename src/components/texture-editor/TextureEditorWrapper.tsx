@@ -1,32 +1,11 @@
-import { TextureEditor, type TextureEditorRef } from './TextureEditor'
-import { forwardRef, useImperativeHandle, useRef } from 'react'
+import { TextureEditor } from './TextureEditor'
 import { Toolbar } from './toolbar'
-import { TextureEditorContextProvider } from '@/contexts/texture-editor-context'
+import {
+  TextureEditorContextProvider,
+  type TexureEditorMode,
+} from '@/contexts/texture-editor-context'
 
-export type TextureEditorWrapperRef = {
-  setBaseColor: (color: string) => void
-}
-
-export type TexureEditorWrapperProps = {
-  mode: 'full' | 'basic'
-}
-
-export const TextureEditorWrapper = forwardRef<
-  TextureEditorWrapperRef,
-  TexureEditorWrapperProps
->(({ mode }, ref) => {
-  const textureEditorRef = useRef<TextureEditorRef>(null)
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      setBaseColor: (color: string) => {
-        textureEditorRef.current?.setBaseColor?.(color)
-      },
-    }),
-    []
-  )
-
+export function TextureEditorWrapper({ mode }: { mode: TexureEditorMode }) {
   return (
     <div
       style={{
@@ -49,7 +28,6 @@ export const TextureEditorWrapper = forwardRef<
           }}
         >
           <TextureEditor
-            ref={textureEditorRef}
             style={{
               width: 'min(100cqw, 100cqh)',
               height: 'min(100cqw, 100cqh)',
@@ -60,4 +38,4 @@ export const TextureEditorWrapper = forwardRef<
       </TextureEditorContextProvider>
     </div>
   )
-})
+}

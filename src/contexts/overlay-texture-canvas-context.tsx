@@ -1,5 +1,5 @@
-import { CANVAS_SIZE } from '@/components/texture-editor/TextureEditor'
 import React, { createContext, useState, useCallback } from 'react'
+import { CANVAS_SIZE } from './texture-editor-context'
 
 interface OverlayTextureContextType {
   image: HTMLImageElement
@@ -13,8 +13,6 @@ export const OverlayTextureContext =
 interface OverlayTextureProviderProps {
   children: React.ReactNode
 }
-
-export const OVERLAY_TEXTURE_SIZE = { width: 4096, height: 4096 }
 
 export function OverlayTextureCanvasProvider({
   children,

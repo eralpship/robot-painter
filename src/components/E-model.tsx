@@ -19,7 +19,6 @@ import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-contex
 export const HEADLIGHT_INTENSITY_DEFAULT = 12
 export const TAILLIGHT_INTENSITY_DEFAULT = 12
 export const TAILLIGHT_COLOR_DEFAULT = '#ff0000'
-export const BASE_COLOR_DEFAULT = '#ffffff'
 
 interface GLTFAction extends THREE.AnimationClip {
   name: 'open lid' | 'rocker'

@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import '../App.css'
 import { Canvas, useThree } from '@react-three/fiber'
 import {
-  BASE_COLOR_DEFAULT,
   HEADLIGHT_INTENSITY_DEFAULT,
   Model,
   TAILLIGHT_COLOR_DEFAULT,
@@ -23,10 +22,7 @@ import {
 import { TooltipProvider } from '../contexts/tooltip-context'
 import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
-import {
-  TextureEditorWrapper,
-  type TextureEditorWrapperRef,
-} from '../components/texture-editor/TextureEditorWrapper'
+import { TextureEditorWrapper } from '../components/texture-editor/TextureEditorWrapper'
 import { Leva, useControls, button } from 'leva'
 import { PerspectiveCamera } from 'three'
 
@@ -49,29 +45,16 @@ export const Route = createFileRoute('/')({
 function useModelControls({
   modelRef,
   cameraControlsRef,
-  textureEditorRef,
   cameraControllerRef,
   ambientLightRef,
   environmentWrapperRef,
 }: {
   modelRef: React.RefObject<ModelRef | null>
   cameraControlsRef: React.RefObject<OrbitControlsImpl | null>
-  textureEditorRef: React.RefObject<TextureEditorWrapperRef | null>
   cameraControllerRef: React.RefObject<CameraControllerRef | null>
   ambientLightRef: React.RefObject<any>
   environmentWrapperRef: React.RefObject<EnvironmentWrapperRef | null>
 }) {
-  useControls('Appearence', {
-    baseColor: {
-      value: BASE_COLOR_DEFAULT,
-      label: 'Base Color',
-      onChange: (value: string) => {
-        modelRef.current?.updateBaseColor(value)
-        textureEditorRef.current?.setBaseColor(value)
-      },
-    },
-  })
-
   const [_lighting, setLighting] = useControls('Lighting', () => ({
     headlightsIntensity: {
       value: HEADLIGHT_INTENSITY_DEFAULT,
@@ -301,7 +284,6 @@ function AppContent() {
   const hasInteractedRef = useRef(false)
   const lastInteractionTimeRef = useRef(Date.now())
   const cameraControlsRef = useRef<OrbitControlsImpl | null>(null)
-  const textureEditorRef = useRef<TextureEditorWrapperRef | null>(null)
   const cameraControllerRef = useRef<CameraControllerRef | null>(null)
   const ambientLightRef = useRef<any>(null)
   const environmentWrapperRef = useRef<EnvironmentWrapperRef | null>(null)
@@ -316,7 +298,6 @@ function AppContent() {
     modelRef,
     cameraControlsRef,
     cameraControllerRef,
-    textureEditorRef,
     ambientLightRef,
     environmentWrapperRef,
   })
@@ -422,7 +403,7 @@ function AppContent() {
         />
       </Canvas>
       <FloatingCollapsibleWindow title="Texture Editor" x={20} y={20}>
-        <TextureEditorWrapper ref={textureEditorRef} mode="basic" />
+        <TextureEditorWrapper mode="basic" />
       </FloatingCollapsibleWindow>
     </div>
   )

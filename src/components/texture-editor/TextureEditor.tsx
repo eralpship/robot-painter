@@ -10,8 +10,7 @@ import {
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
 import PaintableUvSvg from './paintable_uv.svg?react'
 import { useTexturePersistence } from '../../hooks/useTexturePersistence'
-
-export const CANVAS_SIZE = 4096
+import { CANVAS_SIZE } from '@/contexts/texture-editor-context'
 
 function serializeSvg(
   svgElement: SVGSVGElement,

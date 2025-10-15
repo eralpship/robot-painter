@@ -1,6 +1,7 @@
 import { TextureEditorContext } from '@/contexts/texture-editor-context'
 import { useNavigate } from '@tanstack/react-router'
 import { useContext } from 'react'
+import { hexColorRegex } from './utils/hexColorRegex'
 
 export function CommonToolbar() {
   const ctx = useContext(TextureEditorContext)
@@ -19,6 +20,26 @@ export function CommonToolbar() {
         }}
       >
         {ctx.mode === 'full' ? 'robot editor' : 'texture editor'}
+      </button>
+      <button
+        onClick={() => {
+          const color = window.prompt(
+            'Enter hex color (e.g., #ff0000, #000000):',
+            ctx.backgroundColor
+          )
+          if (!color) {
+            return
+          }
+          if (!hexColorRegex.test(color)) {
+            return
+          }
+          ctx.setBackgroundColor(color)
+        }}
+        style={{
+          cursor: 'pointer',
+        }}
+      >
+        background
       </button>
       <button
         onClick={ctx.saveTexture}

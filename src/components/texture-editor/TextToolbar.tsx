@@ -1,8 +1,7 @@
 import { TextureEditorContext } from '@/contexts/texture-editor-context'
 import isEmpty from 'lodash/isEmpty'
 import { useContext } from 'react'
-
-const hexColorRegex = /^#[0-9A-Fa-f]{6}$/
+import { hexColorRegex } from './utils/hexColorRegex'
 
 export function TextToolbar() {
   const ctx = useContext(TextureEditorContext)

@@ -27,7 +27,7 @@ function TextureEditor() {
       value: initialBaseColor,
       label: 'Base Color',
       onChange: color => {
-        textureEditorRef.current?.setBaseColor(color)
+        textureEditorRef.current?.setBackgroundColor(color)
         robotPreviewRef.current?.setBaseColor(color)
       },
     },
