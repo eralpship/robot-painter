@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 
 const TOOLTIP_OFFSET = {
   x: 10,
-  y: 16
+  y: 16,
 }
 
 interface TooltipContextType {
@@ -56,8 +56,10 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
         const windowHeight = window.innerHeight
 
         // Check if tooltip would go off the edges of the screen
-        const wouldOverflowRight = x + tooltipWidth + TOOLTIP_OFFSET.x > windowWidth
-        const wouldOverflowBottom = y + tooltipHeight + TOOLTIP_OFFSET.y > windowHeight
+        const wouldOverflowRight =
+          x + tooltipWidth + TOOLTIP_OFFSET.x > windowWidth
+        const wouldOverflowBottom =
+          y + tooltipHeight + TOOLTIP_OFFSET.y > windowHeight
 
         // Position vertically based on available space
         if (wouldOverflowBottom) {
@@ -67,7 +69,7 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
           // Position below the cursor
           tooltipRef.current.style.top = `${y + TOOLTIP_OFFSET.y}px`
         }
-        
+
         // Position horizontally based on available space
         if (wouldOverflowRight) {
           // Position to the left of the cursor
@@ -106,7 +108,7 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
           lineHeight: '1.4',
           visibility: 'hidden',
           opacity: 0,
-          transition: 'opacity 0.1s ease-in-out'
+          transition: 'opacity 0.1s ease-in-out',
         }}
       />
     </TooltipContext.Provider>
@@ -119,4 +121,4 @@ export function useTooltip() {
     return { setTooltip: () => {} }
   }
   return context
-} 
+}

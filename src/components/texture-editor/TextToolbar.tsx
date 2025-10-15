@@ -1,38 +1,88 @@
-import React from 'react'
+import { TextureEditorContext } from '@/contexts/texture-editor-context'
+import isEmpty from 'lodash/isEmpty'
+import { useContext } from 'react'
 
-interface TextToolbarProps {
-  onChangeText: () => void
-  onChangeFontSize: () => void
-  onChangeColor: () => void
-}
+const hexColorRegex = /^#[0-9A-Fa-f]{6}$/
 
-export const TextToolbar: React.FC<TextToolbarProps> = ({
-  onChangeText,
-  onChangeFontSize,
-  onChangeColor,
-}) => {
+export function TextToolbar() {
+  const ctx = useContext(TextureEditorContext)
   return (
     <>
-      <button 
-        onClick={onChangeText}
+      <button
+        onClick={() => {
+          if (!ctx.selectedElementId) {
+            return
+          }
+          const element = ctx.elements.get(ctx.selectedElementId)
+          if (!element || element.type !== 'text') {
+            return
+          }
+          const text = window.prompt('Enter new text:', element.text)
+          if (!text || isEmpty(text)) {
+            return
+          }
+          ctx.setElementText({ elementId: element.uuid, text })
+        }}
         style={{
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         change text
       </button>
-      <button 
-        onClick={onChangeFontSize}
+      <button
+        onClick={() => {
+          if (!ctx.selectedElementId) {
+            return
+          }
+          const element = ctx.elements.get(ctx.selectedElementId)
+          if (!element || element.type !== 'text') {
+            return
+          }
+          const input = window.prompt(
+            'Enter font size (number only):',
+            element.fontSize.toString()
+          )
+          if (!input) {
+            return
+          }
+          const fontSize = parseFloat(input)
+          if (isNaN(fontSize) || fontSize <= 0) {
+            return
+          }
+          ctx.setElementFontSize({
+            elementId: element.uuid,
+            fontSize,
+          })
+        }}
         style={{
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         font size
       </button>
-      <button 
-        onClick={onChangeColor}
+      <button
+        onClick={() => {
+          if (!ctx.selectedElementId) {
+            return
+          }
+          const element = ctx.elements.get(ctx.selectedElementId)
+          if (!element || element.type !== 'text') {
+            return
+          }
+          const color = window.prompt(
+            'Enter hex color (e.g., #ff0000, #000000):',
+            element.color
+          )
+          if (!color) {
+            return
+          }
+          if (!hexColorRegex.test(color)) {
+            return
+          }
+          ctx.setElementColor({ elementId: element.uuid, color })
+        }}
         style={{
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         change color

@@ -73,7 +73,9 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
     const svgRef = useRef<SVGSVGElement>(null)
     const selectionRectRef = useRef<SVGRectElement | null>(null)
     const paintableUvSvgRef = useRef<SVGSVGElement | null>(null)
-    const makeInteractiveRef = useRef<((element: SVGTextElement | SVGImageElement) => void) | null>(null)
+    const makeInteractiveRef = useRef<
+      ((element: SVGTextElement | SVGImageElement) => void) | null
+    >(null)
     const texture = useContext(OverlayTextureContext)
     const { saveTexture, loadTexture } = useTexturePersistence()
 
@@ -274,12 +276,16 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
         svgRef.current.innerHTML = savedSvgElement.innerHTML
 
         // Re-query and update refs to the newly loaded DOM elements
-        const newSelectionRect = svgRef.current.querySelector('#selection-rect') as SVGRectElement
+        const newSelectionRect = svgRef.current.querySelector(
+          '#selection-rect'
+        ) as SVGRectElement
         if (newSelectionRect) {
           selectionRectRef.current = newSelectionRect
         }
 
-        const newPaintableUvSvg = svgRef.current.querySelector('svg') as SVGSVGElement
+        const newPaintableUvSvg = svgRef.current.querySelector(
+          'svg'
+        ) as SVGSVGElement
         if (newPaintableUvSvg) {
           paintableUvSvgRef.current = newPaintableUvSvg
         }
@@ -290,8 +296,12 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           const textElements = svgRef.current.querySelectorAll('text')
           const imageElements = svgRef.current.querySelectorAll('image')
 
-          textElements.forEach(element => makeInteractiveRef.current?.(element as SVGTextElement))
-          imageElements.forEach(element => makeInteractiveRef.current?.(element as SVGImageElement))
+          textElements.forEach(element =>
+            makeInteractiveRef.current?.(element as SVGTextElement)
+          )
+          imageElements.forEach(element =>
+            makeInteractiveRef.current?.(element as SVGImageElement)
+          )
         }
 
         updateTexture()

@@ -1,38 +1,27 @@
-import React from 'react'
+import { TextureEditorContext } from '@/contexts/texture-editor-context'
+import { useNavigate } from '@tanstack/react-router'
+import { useContext } from 'react'
 
-interface CommonToolbarProps {
-  mode: 'full' | 'basic'
-  onSave: () => void
-  onLoad: () => void
-}
-
-export const CommonToolbar: React.FC<CommonToolbarProps> = ({
-  mode,
-  onSave,
-  onLoad,
-}) => {
-  const handleNavigation = () => {
-    if (mode === 'full') {
-      // Robot editor mode - go to main page
-      window.location.href = '/'
-    } else {
-      // Basic texture editor mode - go to texture editor page
-      window.location.href = '/texture-editor'
-    }
-  }
+export function CommonToolbar() {
+  const ctx = useContext(TextureEditorContext)
+  const navigate = useNavigate()
 
   return (
     <>
       <button
-        onClick={handleNavigation}
+        onClick={() => {
+          navigate({
+            to: ctx.mode === 'full' ? '/' : '/texture-editor',
+          })
+        }}
         style={{
           cursor: 'pointer',
         }}
       >
-        {mode === 'full' ? 'robot editor' : 'texture editor'}
+        {ctx.mode === 'full' ? 'robot editor' : 'texture editor'}
       </button>
       <button
-        onClick={onSave}
+        onClick={ctx.saveTexture}
         style={{
           cursor: 'pointer',
         }}
@@ -40,7 +29,7 @@ export const CommonToolbar: React.FC<CommonToolbarProps> = ({
         save
       </button>
       <button
-        onClick={onLoad}
+        onClick={ctx.loadTexture}
         style={{
           cursor: 'pointer',
         }}

@@ -1,16 +1,21 @@
-interface AddElementToolbarProps {
-  onAddText: () => void
-  onAddImage: (base64: string) => void
-}
+import { TextureEditorContext } from '@/contexts/texture-editor-context'
+import { useContext } from 'react'
 
-export const AddElementToolbar: React.FC<AddElementToolbarProps> = ({
-  onAddText,
-  onAddImage,
-}) => {
+export function AddElementToolbar() {
+  const ctx = useContext(TextureEditorContext)
   return (
     <>
       <button
-        onClick={onAddText}
+        onClick={() => {
+          ctx.addElement({
+            type: 'text',
+            text: 'Sample Text',
+            fontSize: 192,
+            rotation: 0,
+            color: '#000000',
+            position: ctx.center,
+          })
+        }}
         style={{
           cursor: 'pointer',
         }}
@@ -27,9 +32,12 @@ export const AddElementToolbar: React.FC<AddElementToolbarProps> = ({
             if (file) {
               const reader = new FileReader()
               reader.onload = () => {
-                const base64 = reader.result as string
-                console.log(base64)
-                onAddImage(base64)
+                ctx.addElement({
+                  type: 'image',
+                  position: ctx.center,
+                  base64data: reader.result as string,
+                  rotation: 0,
+                })
               }
               reader.readAsDataURL(file)
             }
