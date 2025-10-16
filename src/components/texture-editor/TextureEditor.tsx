@@ -14,6 +14,7 @@ import {
   CANVAS_SIZE,
   TextureEditorContext,
 } from '@/contexts/texture-editor-context'
+import Moveable from 'react-moveable'
 
 function serializeSvg(
   svgElement: SVGSVGElement,
@@ -982,58 +983,73 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
     updateTexture()
   }, [editorCtx.backgroundColor, editorCtx.elements])
 
+  const targetRef = useRef<SVGPathElement>(null)
+
   return (
-    <svg
-      ref={svgRef}
-      width={CANVAS_SIZE}
-      height={CANVAS_SIZE}
-      viewBox={`0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}`}
-      xmlns="http://www.w3.org/2000/svg"
-      style={style}
-    >
-      <rect
+    <>
+      <svg
+        ref={svgRef}
         width={CANVAS_SIZE}
         height={CANVAS_SIZE}
-        fill={editorCtx.backgroundColor}
-      />
-      <StencilUvSvg style={{ width: '100%', height: '100%' }} />
-      {Array.from(editorCtx.elements.entries()).map(([uuid, element]) => {
-        switch (element.type) {
-          case 'text':
-            return (
-              <text
-                id={uuid}
-                key={uuid}
-                xmlSpace="preserve"
-                style={{
-                  fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"',
-                  fontWeight: 'bold',
-                  fontSize: `${element.fontSize}px`,
-                  fill: element.color,
-                }}
-                x={element.position.x}
-                y={element.position.y}
-                transform={`rotate(${element.rotation})`}
-              >
-                <tspan
+        viewBox={`0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}`}
+        xmlns="http://www.w3.org/2000/svg"
+        style={style}
+      >
+        <rect
+          width={CANVAS_SIZE}
+          height={CANVAS_SIZE}
+          fill={editorCtx.backgroundColor}
+        />
+        <StencilUvSvg style={{ width: '100%', height: '100%' }} />
+        {Array.from(editorCtx.elements.entries()).map(([uuid, element], i) => {
+          switch (element.type) {
+            case 'text':
+              return (
+                <text
+                  ref={i === 0 ? targetRef : undefined}
+                  id={uuid}
+                  key={uuid}
+                  xmlSpace="preserve"
+                  style={{
+                    fontFamily:
+                      '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"',
+                    fontWeight: 'bold',
+                    fontSize: `${element.fontSize}px`,
+                    fill: element.color,
+                  }}
                   x={element.position.x}
                   y={element.position.y}
-                  style={{
-                    textAlign: 'center',
-                    textAnchor: 'middle',
-                  }}
+                  transform={`rotate(${element.rotation})`}
                 >
-                  {element.text}
-                </tspan>
-              </text>
-            )
-          case 'image':
-            return null
-          default:
-            return null
-        }
-      })}
-    </svg>
+                  <tspan
+                    x={element.position.x}
+                    y={element.position.y}
+                    style={{
+                      textAlign: 'center',
+                      textAnchor: 'middle',
+                    }}
+                  >
+                    {element.text}
+                  </tspan>
+                </text>
+              )
+            case 'image':
+              return null
+            default:
+              return null
+          }
+        })}
+      </svg>
+      <Moveable
+        target={targetRef}
+        svgOrigin="50% 50%"
+        scalable
+        draggable
+        rotatable
+        onRender={e => {
+          e.target.style.cssText += e.cssText
+        }}
+      />
+    </>
   )
 }
