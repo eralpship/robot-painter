@@ -46,40 +46,15 @@
      inkscape:zoom="0.10918592"
      inkscape:cx="2701.8136"
      inkscape:cy="3077.3199"
-     inkscape:window-width="1728"
+     inkscape:window-width="1680"
      inkscape:window-height="1051"
-     inkscape:window-x="0"
+     inkscape:window-x="50"
      inkscape:window-y="38"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg279"
      showguides="false" />
   <desc
      id="desc1">e-model.blend, (Blender 4.4.3)</desc>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="-2058.9219"
-     y="-306.37775"
-     id="text280"
-     inkscape:label="text_front"
-     transform="scale(-1)"><tspan
-       sodipodi:role="line"
-       id="tspan280"
-       x="-2058.9219"
-       y="-306.37775"
-       style="text-align:center;text-anchor:middle">BACK</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="2039.0469"
-     y="3725.9714"
-     id="text1"
-     inkscape:label="text_back"><tspan
-       sodipodi:role="line"
-       id="tspan1"
-       x="2039.0469"
-       y="3725.9714"
-       style="text-align:center;text-anchor:middle">FRONT</tspan></text>
   <path
      style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
      d="m 1348.8049,843.30111 v 0 l 59.4258,-62.2793 34.8554,-10.873 182.5372,-4.0274 82.8671,0.3633 h 680.4766 l 82.8633,-0.3633 182.539,4.0274 34.8536,10.873 59.4257,62.2793 93.7207,-0.2168 v 0 l 39.9141,-1.7539 24.6758,-57.5469 -2.2949,-699.179699 -0.1035,-1.4414 -46.6661,0.068 -146.1777,0.2129 v 0 l -321.5019,0.4668 -682.9727,0.9941 -321.502,-2.6133 -146.1796,-3.4512 -43.7227,-1.9472 -0.5352,7.791 -3.4804,699.144499 24.5,57.5528 38.7617,1.7031 z"
@@ -105,54 +80,4 @@
      d="m 1292.6507,3334.5629 -74.2363,0.1875 -11.961,52.8457 23.0176,393.1661 -0.1953,7.0019 57.7109,1.3789 6.3399,4.834 9.9258,4.7559 94.2676,128.75 18.5527,30.4687 4.3437,6.6856 13.9786,11.4003 74.2851,36.4004 33.4883,11.4024 25.2558,1.3261 43.0079,0.8653 439.6992,0.416 482.7949,-0.4668 28.2754,-0.9316 42.9141,-15.375 74.8906,-38.668 7.6387,-12.7031 21.0585,-37.5977 40.2481,-73.6328 25.1855,-33.0801 21.6739,-12.2558 10.8359,-2.543 9.8594,-3.8399 11.3027,-2.3261 44.375,0.5898 -0.3926,-12.8574 23.0196,-393.1641 -11.9629,-52.8457 -74.2344,-0.1875 H 2661.2855 2521.6234 2050.1312 1578.639 1438.9769 Z"
      id="path559"
      inkscape:label="stencil_front" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="2041.0156"
-     y="-3423.8533"
-     id="text281"
-     transform="rotate(90)"
-     inkscape:label="text_right"><tspan
-       sodipodi:role="line"
-       id="tspan281"
-       x="2041.0156"
-       y="-3423.8533"
-       style="text-align:center;text-anchor:middle">RIGHT</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="-2054.9844"
-     y="668.39893"
-     id="text282"
-     transform="rotate(-90)"
-     inkscape:label="text_left"><tspan
-       sodipodi:role="line"
-       id="tspan282"
-       x="-2054.9844"
-       y="668.39893"
-       style="text-align:center;text-anchor:middle">LEFT</tspan></text>
-  <path
-     style="display:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:100;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-     id="rect559"
-     height="4066"
-     x="43.107677"
-     y="43.107677"
-     width="4066"
-     inkscape:path-effect="#path-effect559"
-     sodipodi:type="rect"
-     d="M 43.107677,43.107677 H 4109.1077 V 4109.1077 H 43.107677 Z"
-     transform="translate(-28.107677,-28.107677)"
-     inkscape:label="frame" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:192px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     x="2043.9219"
-     y="2117.7969"
-     id="text2"
-     inkscape:label="text_lid"><tspan
-       sodipodi:role="line"
-       id="tspan2"
-       x="2043.9219"
-       y="2117.7969"
-       style="text-align:center;text-anchor:middle">LID</tspan></text>
 </svg>

@@ -88,6 +88,58 @@ const elementReducer = (
   }
 }
 
+function createDefaultElements() {
+  return new Map<string, TextureEditorElementWithUuid>(
+    (
+      [
+        {
+          type: 'text',
+          text: 'LEFT',
+          fontSize: 192,
+          position: { x: -2054.9844, y: 668.39893 },
+          rotation: -90,
+          color: '#000000',
+        },
+        {
+          type: 'text',
+          text: 'RIGHT',
+          fontSize: 192,
+          position: { x: 2041.0156, y: -3423.8533 },
+          rotation: 90,
+          color: '#000000',
+        },
+        {
+          type: 'text',
+          text: 'FRONT',
+          fontSize: 192,
+          position: { x: 2039.0469, y: 3725.9714 },
+          rotation: 0,
+          color: '#000000',
+        },
+        {
+          type: 'text',
+          text: 'BACK',
+          fontSize: 192,
+          position: { x: -2058.9219, y: -306.37775 },
+          rotation: 180,
+          color: '#000000',
+        },
+        {
+          type: 'text',
+          text: 'LID',
+          fontSize: 192,
+          position: { x: 2043.9219, y: 2117.7969 },
+          rotation: 0,
+          color: '#000000',
+        },
+      ] as const
+    ).map(e => {
+      const uuid = uuidv4()
+      return [uuid, { uuid, ...e }]
+    })
+  )
+}
+
 export function TextureEditorContextProvider({
   mode,
   children,
@@ -99,7 +151,7 @@ export function TextureEditorContextProvider({
 
   const [elements, dispatchElementsAction] = useReducer(
     elementReducer,
-    new Map<string, TextureEditorElementWithUuid>()
+    createDefaultElements()
   )
 
   const [selectedElementId, setSelectedElementId] = useState<

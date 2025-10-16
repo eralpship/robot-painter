@@ -8,9 +8,12 @@ import {
   useState,
 } from 'react'
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
-import PaintableUvSvg from './paintable_uv.svg?react'
+import StencilUvSvg from './paintable_uv.svg?react'
 import { useTexturePersistence } from '../../hooks/useTexturePersistence'
-import { CANVAS_SIZE } from '@/contexts/texture-editor-context'
+import {
+  CANVAS_SIZE,
+  TextureEditorContext,
+} from '@/contexts/texture-editor-context'
 
 function serializeSvg(
   svgElement: SVGSVGElement,
@@ -67,7 +70,7 @@ export interface TextureEditorRef {
   loadTexture: () => void
 }
 
-export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
+export const _TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
   ({ style, onSelectedElement }, ref) => {
     const svgRef = useRef<SVGSVGElement>(null)
     const selectionRectRef = useRef<SVGRectElement | null>(null)
@@ -920,7 +923,7 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
           stroke="none"
           style={{ pointerEvents: 'all' }}
         />
-        <PaintableUvSvg
+        <StencilUvSvg
           ref={paintableUvSvgRef}
           style={{
             userSelect: 'none',
@@ -947,4 +950,75 @@ export const TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
   }
 )
 
-TextureEditor.displayName = 'TextureEditor'
+_TextureEditor.displayName = '_TextureEditor'
+
+export function TextureEditor({ style }: { style?: React.CSSProperties }) {
+  const ctx = useContext(TextureEditorContext)
+  return (
+    <svg
+      width={CANVAS_SIZE}
+      height={CANVAS_SIZE}
+      viewBox={`0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}`}
+      style={{
+        backgroundColor: ctx.backgroundColor,
+        ...style,
+      }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <StencilUvSvg style={{ width: '100%', height: '100%' }} />
+      {Array.from(ctx.elements.entries()).map(([uuid, element]) => {
+        switch (element.type) {
+          case 'text':
+            return (
+              <text
+                id={uuid}
+                key={uuid}
+                xmlSpace="preserve"
+                style={{
+                  fontStyle: 'normal',
+                  fontVariant: 'normal',
+                  fontWeight: 'bold',
+                  fontStretch: 'normal',
+                  fontSize: `${element.fontSize}px`,
+                  fontVariantLigatures: 'normal',
+                  fontVariantCaps: 'normal',
+                  fontVariantNumeric: 'normal',
+                  fontVariantEastAsian: 'normal',
+                  textAlign: 'start',
+                  direction: 'ltr',
+                  textAnchor: 'start',
+                  fill: element.color,
+                  fillOpacity: 1,
+                  stroke: 'none',
+                  strokeWidth: 30,
+                  strokeLinecap: 'round',
+                  strokeLinejoin: 'round',
+                  strokeDasharray: 'none',
+                  strokeOpacity: 1,
+                  paintOrder: 'normal',
+                }}
+                x={element.position.x}
+                y={element.position.y}
+                transform={`rotate(${element.rotation})`}
+              >
+                <tspan
+                  x={element.position.x}
+                  y={element.position.y}
+                  style={{
+                    textAlign: 'center',
+                    textAnchor: 'middle',
+                  }}
+                >
+                  {element.text}
+                </tspan>
+              </text>
+            )
+          case 'image':
+            return null
+          default:
+            return null
+        }
+      })}
+    </svg>
+  )
+}
