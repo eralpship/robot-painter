@@ -953,20 +953,51 @@ export const _TextureEditor = forwardRef<TextureEditorRef, TextureEditorProps>(
 _TextureEditor.displayName = '_TextureEditor'
 
 export function TextureEditor({ style }: { style?: React.CSSProperties }) {
-  const ctx = useContext(TextureEditorContext)
+  const editorCtx = useContext(TextureEditorContext)
+  const textureCtx = useContext(OverlayTextureContext)
+
+  const svgRef = useRef<SVGSVGElement>(null)
+
+  const updateTexture = useCallback(() => {
+    if (!textureCtx || !svgRef.current) return
+    const serializedSvg = serializeSvg(svgRef.current, [
+      'stencil_left',
+      'stencil_right',
+      'stencil_front',
+      'stencil_back',
+      'stencil_lid',
+    ])
+    textureCtx.image.onload = () => {
+      textureCtx.triggerTextureUpdate()
+    }
+    textureCtx.image.onerror = error => {
+      console.error('Failed to load SVG as image:', error)
+    }
+    const encodedSvg = encodeURIComponent(serializedSvg)
+    textureCtx.image.src = `data:image/svg+xml,${encodedSvg}`
+  }, [])
+
+  // This re-renders every time anyways, fix that?
+  useEffect(() => {
+    updateTexture()
+  }, [editorCtx.backgroundColor, editorCtx.elements])
+
   return (
     <svg
+      ref={svgRef}
       width={CANVAS_SIZE}
       height={CANVAS_SIZE}
       viewBox={`0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}`}
-      style={{
-        backgroundColor: ctx.backgroundColor,
-        ...style,
-      }}
       xmlns="http://www.w3.org/2000/svg"
+      style={style}
     >
+      <rect
+        width={CANVAS_SIZE}
+        height={CANVAS_SIZE}
+        fill={editorCtx.backgroundColor}
+      />
       <StencilUvSvg style={{ width: '100%', height: '100%' }} />
-      {Array.from(ctx.elements.entries()).map(([uuid, element]) => {
+      {Array.from(editorCtx.elements.entries()).map(([uuid, element]) => {
         switch (element.type) {
           case 'text':
             return (
@@ -975,6 +1006,8 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                 key={uuid}
                 xmlSpace="preserve"
                 style={{
+                  fontFamily:
+                    '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"',
                   fontStyle: 'normal',
                   fontVariant: 'normal',
                   fontWeight: 'bold',
