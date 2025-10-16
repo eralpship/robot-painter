@@ -1008,27 +1008,9 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                 style={{
                   fontFamily:
                     '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"',
-                  fontStyle: 'normal',
-                  fontVariant: 'normal',
                   fontWeight: 'bold',
-                  fontStretch: 'normal',
                   fontSize: `${element.fontSize}px`,
-                  fontVariantLigatures: 'normal',
-                  fontVariantCaps: 'normal',
-                  fontVariantNumeric: 'normal',
-                  fontVariantEastAsian: 'normal',
-                  textAlign: 'start',
-                  direction: 'ltr',
-                  textAnchor: 'start',
                   fill: element.color,
-                  fillOpacity: 1,
-                  stroke: 'none',
-                  strokeWidth: 30,
-                  strokeLinecap: 'round',
-                  strokeLinejoin: 'round',
-                  strokeDasharray: 'none',
-                  strokeOpacity: 1,
-                  paintOrder: 'normal',
                 }}
                 x={element.position.x}
                 y={element.position.y}
