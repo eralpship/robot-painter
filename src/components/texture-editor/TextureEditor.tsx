@@ -983,7 +983,7 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
     updateTexture()
   }, [editorCtx.backgroundColor, editorCtx.elements])
 
-  const targetRef = useRef<SVGPathElement>(null)
+  const targetRef = useRef<SVGTextElement>(null)
 
   return (
     <>
