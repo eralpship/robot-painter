@@ -14,12 +14,6 @@ function serializeSvg(
 ): string {
   let svgString = new XMLSerializer().serializeToString(svgElement)
 
-  // Remove background-color from root SVG element only (first occurrence)
-  svgString = svgString.replace(
-    /(<svg[^>]*style="[^"]*?)background-color:[^;"]*;?([^"]*")/,
-    '$1$2'
-  )
-
   // Filter out specific labeled elements
   if (filterElements.length > 0) {
     const labelPattern = filterElements.join('|')
@@ -93,7 +87,7 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
           y: scale?.y ? (scale.y as CSSUnitValue).value : 1,
         },
         // assuming values are deg
-        rotation: rotate ? (rotate.angle as CSSUnitValue).value : 0,
+        rotation: rotate?.angle ? (rotate.angle as CSSUnitValue).value : 0,
       }
 
       editorCtx.updateElement(id, patch)
@@ -116,13 +110,12 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
         height={CANVAS_SIZE}
         viewBox={`0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}`}
         xmlns="http://www.w3.org/2000/svg"
-        style={style}
+        style={{
+          ...style,
+          userSelect: 'none',
+          backgroundColor: editorCtx.backgroundColor,
+        }}
       >
-        <rect
-          width={CANVAS_SIZE}
-          height={CANVAS_SIZE}
-          fill={editorCtx.backgroundColor}
-        />
         <StencilUvSvg style={{ width: '100%', height: '100%' }} />
         {Array.from(editorCtx.elements.entries()).map(([uuid, element]) => {
           switch (element.type) {
@@ -148,9 +141,11 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                     cursor: 'pointer',
                     textAlign: 'center',
                     textAnchor: 'middle',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
                   }}
                   transform={`rotate(${element.rotation}) translate(${element.position.x}, ${element.position.y}) scale(${element.scale.x}, ${element.scale.y})`}
-                  onClick={() => editorCtx.setSelectedElementId(uuid)}
+                  onMouseDown={() => editorCtx.setSelectedElementId(uuid)}
                 >
                   {element.text}
                 </text>
@@ -177,7 +172,7 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                   style={{
                     cursor: 'pointer',
                   }}
-                  onClick={() => editorCtx.setSelectedElementId(uuid)}
+                  onMouseDown={() => editorCtx.setSelectedElementId(uuid)}
                 />
               )
             default:
@@ -186,6 +181,7 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
         })}
       </svg>
       <Moveable
+        key={`moveable-${editorCtx.selectedElement?.uuid ?? 'nothing-selected'}`}
         target={
           editorCtx.selectedElement?.uuid
             ? elementRefs.current.get(editorCtx.selectedElement.uuid) || null
@@ -195,6 +191,13 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
         scalable
         draggable
         rotatable
+        keepRatio
+        onDragStart={e => {
+          const id = e.target.getAttribute('id')
+          if (id && id !== editorCtx.selectedElement?.uuid) {
+            editorCtx.setSelectedElementId(id)
+          }
+        }}
         onScale={e => (e.target.style.cssText += e.cssText)}
         onDrag={e => (e.target.style.cssText += e.cssText)}
         onRotate={e => (e.target.style.cssText += e.cssText)}
