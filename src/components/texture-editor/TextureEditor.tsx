@@ -1,4 +1,11 @@
-import { useCallback, useContext, useEffect, useRef } from 'react'
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEventHandler,
+} from 'react'
 import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
 import StencilUvSvg from './paintable_uv.svg?react'
 import {
@@ -32,6 +39,7 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
   const textureCtx = useContext(OverlayTextureContext)
 
   const svgRef = useRef<SVGSVGElement>(null)
+  const moveableRef = useRef<Moveable>(null)
 
   const updateTexture = useCallback(() => {
     if (!textureCtx || !svgRef.current) return
@@ -55,51 +63,83 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
   // This re-renders every time anyways, fix that?
   useEffect(() => {
     updateTexture()
-  }, [editorCtx.backgroundColor, editorCtx.elements])
+  }, [editorCtx.backgroundColor, editorCtx.elements.size])
 
   const elementRefs = useRef<Map<string, SVGTextElement | SVGImageElement>>(
     new Map()
   )
 
-  const handleOnMoveableActionEnd = useCallback(
-    (target: SVGElement | HTMLElement) => {
-      const id = target.getAttribute('id')
-      if (!id) {
+  const [moveableKey, setMoveableKey] = useState('not-selected')
+
+  const handleOnElementMouseDown = useCallback<MouseEventHandler<SVGElement>>(
+    e => {
+      const uuid = e.currentTarget.getAttribute('id')
+      if (!uuid || editorCtx.selectedElement?.uuid === uuid) {
         return
       }
-      const transform = target
-        .computedStyleMap()
-        .get('transform') as CSSTransformValue
-      const translate = transform[0] as CSSTranslate
-      const rotate = transform[2] as CSSRotate | undefined
-      const scale = transform[3] as CSSScale | undefined
-
-      const patch: Required<
-        Pick<TextureEditorElementPatch, 'position' | 'scale' | 'rotation'>
-      > = {
-        position: {
-          // assuming values are px
-          x: (translate.x as CSSUnitValue).value,
-          y: (translate.y as CSSUnitValue).value,
-        },
-        scale: {
-          x: scale?.x ? (scale.x as CSSUnitValue).value : 1,
-          y: scale?.y ? (scale.y as CSSUnitValue).value : 1,
-        },
-        // assuming values are deg
-        rotation: rotate?.angle ? (rotate.angle as CSSUnitValue).value : 0,
-      }
-
-      editorCtx.updateElement(id, patch)
-
-      target.setAttribute(
-        'transform',
-        `translate(${patch.position.x}, ${patch.position.y}) rotate(${patch.rotation}) scale(${patch.scale.x}, ${patch.scale.y})`
-      )
-
-      updateTexture()
+      editorCtx.setSelectedElementId(uuid)
+      moveableRef.current?.waitToChangeTarget().then(() => {
+        moveableRef.current?.dragStart(e.nativeEvent as MouseEvent)
+      })
     },
     []
+  )
+
+  const handleOnMoveableActionEnd = useCallback(
+    (target: SVGElement | HTMLElement) => {
+      const uuid = target.getAttribute('id')
+      if (!uuid) {
+        return
+      }
+      const computedStyle = target.computedStyleMap()
+      const transform = computedStyle?.get('transform')
+
+      const patch: Pick<
+        TextureEditorElementPatch,
+        'position' | 'scale' | 'rotation'
+      > = {}
+
+      // Iterate through transforms and identify by type
+      const transforms: string[] = []
+
+      // Check if transform exists and is iterable
+      if (transform && transform instanceof CSSTransformValue) {
+        for (const component of transform) {
+          if (component instanceof CSSTranslate) {
+            patch.position = {
+              x: component.x.to('px').value,
+              y: component.y.to('px').value,
+            }
+            transforms.push(
+              `translate(${patch.position.x}, ${patch.position.y})`
+            )
+          } else if (component instanceof CSSRotate) {
+            patch.rotation = component.angle.to('deg').value
+            transforms.push(`rotate(${patch.rotation})`)
+          } else if (component instanceof CSSScale) {
+            patch.scale = {
+              x:
+                typeof component.x === 'number'
+                  ? component.x
+                  : (component.x as CSSUnitValue).value,
+              y:
+                typeof component.y === 'number'
+                  ? component.y
+                  : (component.y as CSSUnitValue).value,
+            }
+            transforms.push(`scale(${patch.scale.x}, ${patch.scale.y})`)
+          }
+        }
+
+        editorCtx.updateElement(uuid, patch)
+
+        target.setAttribute('transform', transforms.join(', '))
+
+        updateTexture()
+        setMoveableKey(uuid)
+      }
+    },
+    [editorCtx, updateTexture]
   )
 
   return (
@@ -145,7 +185,7 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                     WebkitUserSelect: 'none',
                   }}
                   transform={`rotate(${element.rotation}) translate(${element.position.x}, ${element.position.y}) scale(${element.scale.x}, ${element.scale.y})`}
-                  onMouseDown={() => editorCtx.setSelectedElementId(uuid)}
+                  onMouseDown={handleOnElementMouseDown}
                 >
                   {element.text}
                 </text>
@@ -172,7 +212,7 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                   style={{
                     cursor: 'pointer',
                   }}
-                  onMouseDown={() => editorCtx.setSelectedElementId(uuid)}
+                  onMouseDown={handleOnElementMouseDown}
                 />
               )
             default:
@@ -181,7 +221,8 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
         })}
       </svg>
       <Moveable
-        key={`moveable-${editorCtx.selectedElement?.uuid ?? 'nothing-selected'}`}
+        key={moveableKey}
+        ref={moveableRef}
         target={
           editorCtx.selectedElement?.uuid
             ? elementRefs.current.get(editorCtx.selectedElement.uuid) || null
@@ -192,12 +233,6 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
         draggable
         rotatable
         keepRatio
-        onDragStart={e => {
-          const id = e.target.getAttribute('id')
-          if (id && id !== editorCtx.selectedElement?.uuid) {
-            editorCtx.setSelectedElementId(id)
-          }
-        }}
         onScale={e => (e.target.style.cssText += e.cssText)}
         onDrag={e => (e.target.style.cssText += e.cssText)}
         onRotate={e => (e.target.style.cssText += e.cssText)}
