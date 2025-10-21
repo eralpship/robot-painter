@@ -983,7 +983,9 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
     updateTexture()
   }, [editorCtx.backgroundColor, editorCtx.elements])
 
-  const elementRefs = useRef<Map<string, SVGTextElement>>(new Map())
+  const elementRefs = useRef<Map<string, SVGTextElement | SVGImageElement>>(
+    new Map()
+  )
 
   const handleOnMoveableActionEnd = useCallback(() => {
     updateTexture()
@@ -1046,7 +1048,27 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                 </text>
               )
             case 'image':
-              return null
+              return (
+                <image
+                  ref={el => {
+                    if (el) {
+                      elementRefs.current.set(uuid, el)
+                    } else {
+                      elementRefs.current.delete(uuid)
+                    }
+                  }}
+                  id={uuid}
+                  key={uuid}
+                  href={element.base64data}
+                  x={element.position.x}
+                  y={element.position.y}
+                  transform={`rotate(${element.rotation})`}
+                  style={{
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => editorCtx.setSelectedElementId(uuid)}
+                />
+              )
             default:
               return null
           }
