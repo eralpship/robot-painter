@@ -4,7 +4,7 @@ import { CANVAS_SIZE } from './texture-editor-context'
 interface OverlayTextureContextType {
   image: HTMLImageElement
   triggerTextureUpdate: () => void
-  updateTrigger: number
+  updateTrigger: number // TODO: remove this?
 }
 
 export const OverlayTextureContext =

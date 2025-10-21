@@ -983,7 +983,11 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
     updateTexture()
   }, [editorCtx.backgroundColor, editorCtx.elements])
 
-  const targetRef = useRef<SVGTextElement>(null)
+  const elementRefs = useRef<Map<string, SVGTextElement>>(new Map())
+
+  const handleOnMoveableActionEnd = useCallback(() => {
+    updateTexture()
+  }, [])
 
   return (
     <>
@@ -1001,12 +1005,18 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
           fill={editorCtx.backgroundColor}
         />
         <StencilUvSvg style={{ width: '100%', height: '100%' }} />
-        {Array.from(editorCtx.elements.entries()).map(([uuid, element], i) => {
+        {Array.from(editorCtx.elements.entries()).map(([uuid, element]) => {
           switch (element.type) {
             case 'text':
               return (
                 <text
-                  ref={i === 0 ? targetRef : undefined}
+                  ref={el => {
+                    if (el) {
+                      elementRefs.current.set(uuid, el)
+                    } else {
+                      elementRefs.current.delete(uuid)
+                    }
+                  }}
                   id={uuid}
                   key={uuid}
                   xmlSpace="preserve"
@@ -1016,10 +1026,12 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                     fontWeight: 'bold',
                     fontSize: `${element.fontSize}px`,
                     fill: element.color,
+                    cursor: 'pointer',
                   }}
                   x={element.position.x}
                   y={element.position.y}
                   transform={`rotate(${element.rotation})`}
+                  onClick={() => editorCtx.setSelectedElementId(uuid)}
                 >
                   <tspan
                     x={element.position.x}
@@ -1041,14 +1053,21 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
         })}
       </svg>
       <Moveable
-        target={targetRef}
+        target={
+          editorCtx.selectedElement?.uuid
+            ? elementRefs.current.get(editorCtx.selectedElement.uuid) || null
+            : null
+        }
         svgOrigin="50% 50%"
         scalable
         draggable
         rotatable
-        onRender={e => {
-          e.target.style.cssText += e.cssText
-        }}
+        onScale={e => (e.target.style.cssText += e.cssText)}
+        onDrag={e => (e.target.style.cssText += e.cssText)}
+        onRotate={e => (e.target.style.cssText += e.cssText)}
+        onDragEnd={handleOnMoveableActionEnd}
+        onScaleEnd={handleOnMoveableActionEnd}
+        onRotateEnd={handleOnMoveableActionEnd}
       />
     </>
   )
