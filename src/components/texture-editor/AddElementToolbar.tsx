@@ -14,6 +14,7 @@ export function AddElementToolbar() {
             rotation: 0,
             color: '#000000',
             position: ctx.center,
+            scale: { x: 1, y: 1 },
           })
         }}
         style={{
@@ -37,6 +38,7 @@ export function AddElementToolbar() {
                   position: ctx.center,
                   base64data: reader.result as string,
                   rotation: 0,
+                  scale: { x: 1, y: 1 },
                 })
               }
               reader.readAsDataURL(file)

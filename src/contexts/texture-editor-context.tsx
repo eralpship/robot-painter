@@ -14,6 +14,7 @@ export type TexureEditorMode = 'full' | 'basic'
 type _BaseTextureEditorElement = {
   rotation: number
   position: { x: number; y: number }
+  scale: { x: number; y: number }
 }
 
 type _TextureEditorImageElement = {
@@ -97,6 +98,7 @@ function createDefaultElements() {
           text: 'LEFT',
           fontSize: 192,
           position: { x: -2054.9844, y: 668.39893 },
+          scale: { x: 1, y: 1 },
           rotation: -90,
           color: '#000000',
         },
@@ -105,6 +107,7 @@ function createDefaultElements() {
           text: 'RIGHT',
           fontSize: 192,
           position: { x: 2041.0156, y: -3423.8533 },
+          scale: { x: 1, y: 1 },
           rotation: 90,
           color: '#000000',
         },
@@ -113,6 +116,7 @@ function createDefaultElements() {
           text: 'FRONT',
           fontSize: 192,
           position: { x: 2039.0469, y: 3725.9714 },
+          scale: { x: 1, y: 1 },
           rotation: 0,
           color: '#000000',
         },
@@ -121,6 +125,7 @@ function createDefaultElements() {
           text: 'BACK',
           fontSize: 192,
           position: { x: -2058.9219, y: -306.37775 },
+          scale: { x: 1, y: 1 },
           rotation: 180,
           color: '#000000',
         },
@@ -129,6 +134,7 @@ function createDefaultElements() {
           text: 'LID',
           fontSize: 192,
           position: { x: 2043.9219, y: 2117.7969 },
+          scale: { x: 1, y: 1 },
           rotation: 0,
           color: '#000000',
         },
