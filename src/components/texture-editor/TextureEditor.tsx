@@ -159,6 +159,10 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
                   key={uuid}
                   xmlSpace="preserve"
                   href={element.base64data}
+                  x={-element.width / 2}
+                  y={-element.height / 2}
+                  width={element.width}
+                  height={element.height}
                   transform={`rotate(${element.rotation}) translate(${element.position.x}, ${element.position.y}) scale(${element.scale.x}, ${element.scale.y})`}
                   style={{
                     cursor: 'pointer',

@@ -33,13 +33,19 @@ export function AddElementToolbar() {
             if (file) {
               const reader = new FileReader()
               reader.onload = () => {
-                ctx.addElement({
-                  type: 'image',
-                  position: ctx.center,
-                  base64data: reader.result as string,
-                  rotation: 0,
-                  scale: { x: 1, y: 1 },
-                })
+                const img = new Image()
+                img.onload = () => {
+                  ctx.addElement({
+                    type: 'image',
+                    position: ctx.center,
+                    base64data: reader.result as string,
+                    rotation: 0,
+                    scale: { x: 1, y: 1 },
+                    width: img.width,
+                    height: img.height,
+                  })
+                }
+                img.src = reader.result as string
               }
               reader.readAsDataURL(file)
             }

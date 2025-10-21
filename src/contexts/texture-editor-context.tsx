@@ -20,6 +20,8 @@ type _BaseTextureEditorElement = {
 type _TextureEditorImageElement = {
   type: 'image'
   base64data: string
+  width: number
+  height: number
 }
 type _TextureEditorTextElement = {
   type: 'text'
