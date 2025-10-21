@@ -29,7 +29,7 @@ type _TextureEditorTextElement = {
   color: string
   fontSize: number
 }
-type TextureEditorElementPatch = Partial<
+export type TextureEditorElementPatch = Partial<
   _BaseTextureEditorElement &
     Omit<_TextureEditorImageElement, 'type'> &
     Omit<_TextureEditorTextElement, 'type'>

@@ -4,6 +4,7 @@ import StencilUvSvg from './paintable_uv.svg?react'
 import {
   CANVAS_SIZE,
   TextureEditorContext,
+  type TextureEditorElementPatch,
 } from '@/contexts/texture-editor-context'
 import Moveable from 'react-moveable'
 
@@ -76,22 +77,31 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
         .computedStyleMap()
         .get('transform') as CSSTransformValue
       const translate = transform[0] as CSSTranslate
-      const rotate = transform[2] as CSSRotate
-      const scale = transform[3] as CSSScale
+      const rotate = transform[2] as CSSRotate | undefined
+      const scale = transform[3] as CSSScale | undefined
 
-      editorCtx.updateElement(id, {
+      const patch: Required<
+        Pick<TextureEditorElementPatch, 'position' | 'scale' | 'rotation'>
+      > = {
         position: {
           // assuming values are px
           x: (translate.x as CSSUnitValue).value,
-          y: (translate.x as CSSUnitValue).value,
+          y: (translate.y as CSSUnitValue).value,
         },
         scale: {
-          x: (scale.x as CSSUnitValue).value,
-          y: (scale.x as CSSUnitValue).value,
+          x: scale?.x ? (scale.x as CSSUnitValue).value : 1,
+          y: scale?.y ? (scale.y as CSSUnitValue).value : 1,
         },
         // assuming values are deg
-        rotation: (rotate.angle as CSSUnitValue).value,
-      })
+        rotation: rotate ? (rotate.angle as CSSUnitValue).value : 0,
+      }
+
+      editorCtx.updateElement(id, patch)
+
+      target.setAttribute(
+        'transform',
+        `translate(${patch.position.x}, ${patch.position.y}) rotate(${patch.rotation}) scale(${patch.scale.x}, ${patch.scale.y})`
+      )
 
       updateTexture()
     },
