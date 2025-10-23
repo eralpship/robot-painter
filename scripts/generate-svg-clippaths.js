@@ -69,10 +69,16 @@ function generateClipPaths() {
 
   // Remove existing clipPath elements from defs
   let defsContent = defsMatch[2]
-  defsContent = defsContent.replace(/<clipPath[^>]*>[\s\S]*?<\/clipPath>\n?/g, '')
+  defsContent = defsContent.replace(/<clipPath[^>]*>[\s\S]*?<\/clipPath>/g, '')
+
+  // Clean up excessive whitespace and blank lines
+  defsContent = defsContent.replace(/\n\s*\n\s*\n+/g, '\n')
+  defsContent = defsContent.trim()
 
   // Add new clipPaths
-  const updatedDefs = `${defsMatch[1]}${defsContent}\n${clipPathsXml}\n  ${defsMatch[3]}`
+  const updatedDefs = defsContent
+    ? `${defsMatch[1]}${defsContent}\n${clipPathsXml}\n  ${defsMatch[3]}`
+    : `${defsMatch[1]}\n${clipPathsXml}\n  ${defsMatch[3]}`
 
   const updatedSvg = svgContent.replace(defsRegex, updatedDefs)
 
