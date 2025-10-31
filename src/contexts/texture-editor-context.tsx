@@ -223,14 +223,12 @@ export function TextureEditorContextProvider({
     front: '#ffffff',
     back: '#ffffff',
   })
-  const backgroundColor = useMemo(
-    () => backgroundColorCollection[side],
-    [side, backgroundColorCollection]
-  )
   const setBackgroundColor = useCallback(
-    (color: string) =>
-      setBackgroundColorCollection(prev => ({ ...prev, [side]: color })),
-    []
+    (color: string) => {
+      console.log(side, color)
+      setBackgroundColorCollection(prev => ({ ...prev, [side]: color }))
+    },
+    [side]
   )
 
   return (
@@ -249,7 +247,7 @@ export function TextureEditorContextProvider({
         center: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
         size: { width: CANVAS_SIZE, height: CANVAS_SIZE },
         setSelectedElementId,
-        backgroundColor,
+        backgroundColor: backgroundColorCollection[side],
         setBackgroundColor,
       }}
     >
