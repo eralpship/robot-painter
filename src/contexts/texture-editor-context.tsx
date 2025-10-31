@@ -16,6 +16,7 @@ type _BaseTextureEditorElement = {
   rotation: number
   position: { x: number; y: number }
   scale: { x: number; y: number }
+  side: keyof OverlayTextureSides
 }
 
 type _TextureEditorImageElement = {
@@ -38,7 +39,9 @@ export type TextureEditorElementPatch = Partial<
 
 type TextureEditorElement = _BaseTextureEditorElement &
   (_TextureEditorImageElement | _TextureEditorTextElement)
-type TextureEditorElementWithUuid = TextureEditorElement & { uuid: string }
+type TextureEditorElementWithUuid = TextureEditorElement & {
+  uuid: string
+}
 
 type TextureEditorContextType = {
   mode: TexureEditorMode
@@ -102,46 +105,51 @@ function createDefaultElements() {
           type: 'text',
           text: 'LEFT',
           fontSize: 192,
-          position: { x: -2054.9844, y: 668.39893 },
+          position: { x: 500, y: 500 },
           scale: { x: 1, y: 1 },
-          rotation: -90,
+          rotation: 0,
           color: '#000000',
+          side: 'left',
         },
         {
           type: 'text',
           text: 'RIGHT',
           fontSize: 192,
-          position: { x: 2041.0156, y: -3423.8533 },
+          position: { x: 500, y: 500 },
           scale: { x: 1, y: 1 },
-          rotation: 90,
+          rotation: 0,
           color: '#000000',
+          side: 'right',
         },
         {
           type: 'text',
           text: 'FRONT',
           fontSize: 192,
-          position: { x: 2039.0469, y: 3725.9714 },
+          position: { x: 500, y: 500 },
           scale: { x: 1, y: 1 },
           rotation: 0,
           color: '#000000',
+          side: 'front',
         },
         {
           type: 'text',
           text: 'BACK',
           fontSize: 192,
-          position: { x: -2058.9219, y: -306.37775 },
+          position: { x: 500, y: 500 },
           scale: { x: 1, y: 1 },
-          rotation: 180,
+          rotation: 0,
           color: '#000000',
+          side: 'back',
         },
         {
           type: 'text',
           text: 'LID',
           fontSize: 192,
-          position: { x: 2043.9219, y: 2117.7969 },
+          position: { x: 500, y: 500 },
           scale: { x: 1, y: 1 },
           rotation: 0,
           color: '#000000',
+          side: 'lid',
         },
       ] as const
     ).map(e => {
@@ -201,7 +209,11 @@ export function TextureEditorContextProvider({
     [selectedElementId, elements]
   )
 
-  const [side, setSide] = useState<keyof OverlayTextureSides>('front')
+  const [side, internalSetSide] = useState<keyof OverlayTextureSides>('front')
+  const setSide = useCallback<typeof internalSetSide>(side => {
+    internalSetSide(side)
+    setSelectedElementId(undefined)
+  }, [])
   const [backgroundColorCollection, setBackgroundColorCollection] = useState<
     Record<keyof OverlayTextureSides, string>
   >({

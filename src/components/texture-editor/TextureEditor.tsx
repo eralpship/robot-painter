@@ -2,12 +2,32 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type MouseEventHandler,
 } from 'react'
-import { OverlayTextureContext } from '../../contexts/overlay-texture-canvas-context'
-import StencilUvSvg from './paintable_uv.svg?react'
+import {
+  OverlayTextureContext,
+  type OverlayTextureSides,
+} from '../../contexts/overlay-texture-canvas-context'
+import StencilUvSvgLid from './lid.svg?react'
+import StencilUvSvgFront from './front.svg?react'
+import StencilUvSvgBack from './back.svg?react'
+import StencilUvSvgLeft from './left.svg?react'
+import StencilUvSvgRight from './right.svg?react'
+
+const stencilSideMap: Record<
+  keyof OverlayTextureSides,
+  typeof StencilUvSvgLid
+> = {
+  lid: StencilUvSvgLid,
+  front: StencilUvSvgFront,
+  back: StencilUvSvgBack,
+  left: StencilUvSvgLeft,
+  right: StencilUvSvgRight,
+}
+
 import {
   CANVAS_SIZE,
   TextureEditorContext,
@@ -145,6 +165,16 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
 
   console.log({ side: editorCtx.side, color: editorCtx.backgroundColor })
 
+  const StencilSvg = stencilSideMap[editorCtx.side]
+
+  const elements = useMemo(
+    () =>
+      Array.from(editorCtx.elements.entries()).filter(
+        ([, i]) => i.side === editorCtx.side
+      ),
+    [editorCtx.elements, editorCtx.side]
+  )
+
   return (
     <>
       <svg
@@ -159,8 +189,8 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
           backgroundColor: editorCtx.backgroundColor,
         }}
       >
-        <StencilUvSvg style={{ width: '100%', height: '100%' }} />
-        {Array.from(editorCtx.elements.entries()).map(([uuid, element]) => {
+        <StencilSvg style={{ width: '100%', height: '100%' }} />
+        {elements.map(([uuid, element]) => {
           switch (element.type) {
             case 'text':
               return (

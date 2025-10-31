@@ -35,12 +35,12 @@ export function Toolbar() {
         }}
       >
         <CommonToolbar />
+        <SideSelector />
         {ctx.mode === 'full' ? (
           <>
             <AddElementToolbar />
             {ctx.selectedElement ? <ElementToolbar /> : null}
             {ctx.selectedElement?.type === 'text' ? <TextToolbar /> : null}
-            <SideSelector />
           </>
         ) : null}
       </div>

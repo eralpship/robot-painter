@@ -15,6 +15,7 @@ export function AddElementToolbar() {
             color: '#000000',
             position: ctx.center,
             scale: { x: 1, y: 1 },
+            side: ctx.side,
           })
         }}
         style={{
@@ -43,6 +44,7 @@ export function AddElementToolbar() {
                     scale: { x: 1, y: 1 },
                     width: img.width,
                     height: img.height,
+                    side: ctx.side,
                   })
                 }
                 img.src = reader.result as string

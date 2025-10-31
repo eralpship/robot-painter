@@ -17,7 +17,6 @@ export function SideSelector() {
 
   return (
     <div className="side-selector">
-      <label htmlFor="side-select">Side:</label>
       <select
         id="side-select"
         value={side}
