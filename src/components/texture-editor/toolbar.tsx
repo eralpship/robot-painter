@@ -2,6 +2,7 @@ import { CommonToolbar } from './CommonToolbar'
 import { AddElementToolbar } from './AddElementToolbar'
 import { ElementToolbar } from './ElementToolbar'
 import { TextToolbar } from './TextToolbar'
+import { SideSelector } from './SideSelector'
 import { useContext } from 'react'
 import { TextureEditorContext } from '@/contexts/texture-editor-context'
 
@@ -39,6 +40,7 @@ export function Toolbar() {
             <AddElementToolbar />
             {ctx.selectedElement ? <ElementToolbar /> : null}
             {ctx.selectedElement?.type === 'text' ? <TextToolbar /> : null}
+            <SideSelector />
           </>
         ) : null}
       </div>

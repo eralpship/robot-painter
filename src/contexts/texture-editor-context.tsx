@@ -6,8 +6,9 @@ import React, {
   useState,
 } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+import type { OverlayTextureSides } from './overlay-texture-canvas-context'
 
-export const CANVAS_SIZE = 4096 // if you change this also resize the paintable_uv.svg's root size and viewbox size
+export const CANVAS_SIZE = 1024 // if you change this also resize the paintable_uv.svg's root size and viewbox size
 
 export type TexureEditorMode = 'full' | 'basic'
 
@@ -41,6 +42,8 @@ type TextureEditorElementWithUuid = TextureEditorElement & { uuid: string }
 
 type TextureEditorContextType = {
   mode: TexureEditorMode
+  side: keyof OverlayTextureSides
+  setSide: (side: keyof OverlayTextureSides) => void
   saveTexture: () => void
   loadTexture: () => void
   addElement: (element: TextureEditorElement) => void
@@ -155,8 +158,6 @@ export function TextureEditorContextProvider({
   mode: TexureEditorMode
   children: React.ReactNode
 }) {
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
-
   const [elements, dispatchElementsAction] = useReducer(
     elementReducer,
     createDefaultElements()
@@ -200,9 +201,31 @@ export function TextureEditorContextProvider({
     [selectedElementId, elements]
   )
 
+  const [side, setSide] = useState<keyof OverlayTextureSides>('front')
+  const [backgroundColorCollection, setBackgroundColorCollection] = useState<
+    Record<keyof OverlayTextureSides, string>
+  >({
+    left: '#ffffff',
+    right: '#ffffff',
+    lid: '#ffffff',
+    front: '#ffffff',
+    back: '#ffffff',
+  })
+  const backgroundColor = useMemo(
+    () => backgroundColorCollection[side],
+    [side, backgroundColorCollection]
+  )
+  const setBackgroundColor = useCallback(
+    (color: string) =>
+      setBackgroundColorCollection(prev => ({ ...prev, [side]: color })),
+    []
+  )
+
   return (
     <TextureEditorContext.Provider
       value={{
+        side,
+        setSide,
         mode,
         elements,
         saveTexture,

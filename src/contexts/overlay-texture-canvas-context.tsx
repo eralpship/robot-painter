@@ -1,10 +1,16 @@
 import React, { createContext, useState, useCallback } from 'react'
 import { CANVAS_SIZE } from './texture-editor-context'
 
-interface OverlayTextureContextType {
-  image: HTMLImageElement
-  triggerTextureUpdate: () => void
-  updateTrigger: number // TODO: remove this?
+export type OverlayTextureSides = {
+  lid: HTMLImageElement
+  left: HTMLImageElement
+  right: HTMLImageElement
+  front: HTMLImageElement
+  back: HTMLImageElement
+}
+
+type OverlayTextureContextType = OverlayTextureSides & {
+  setSide: (side: keyof OverlayTextureSides, image: HTMLImageElement) => void
 }
 
 export const OverlayTextureContext =
@@ -14,31 +20,52 @@ interface OverlayTextureProviderProps {
   children: React.ReactNode
 }
 
+export function createBlankTexture(color: string) {
+  const canvas = document.createElement('canvas')
+  canvas.width = CANVAS_SIZE
+  canvas.height = CANVAS_SIZE
+  const ctx = canvas.getContext('2d')!
+  ctx.fillStyle = color
+  ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+  const img = new Image()
+  img.src = canvas.toDataURL()
+  return img
+}
+
 export function OverlayTextureCanvasProvider({
   children,
 }: OverlayTextureProviderProps) {
-  const [image] = useState(() => {
-    const img = new Image()
-    img.width = CANVAS_SIZE
-    img.height = CANVAS_SIZE
-    // 1x1 transparent pixel
-    img.src =
-      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77mgAAAABJRU5ErkJggg=='
-    return img
-  })
+  const lidState = useState(createBlankTexture('white'))
+  const leftState = useState(createBlankTexture('white'))
+  const rightState = useState(createBlankTexture('white'))
+  const frontState = useState(createBlankTexture('white'))
+  const backState = useState(createBlankTexture('white'))
 
-  const [updateTrigger, setUpdateTrigger] = useState(0)
+  const setterMap: Record<
+    keyof OverlayTextureSides,
+    React.Dispatch<React.SetStateAction<HTMLImageElement>>
+  > = {
+    lid: lidState[1],
+    left: leftState[1],
+    right: rightState[1],
+    front: frontState[1],
+    back: backState[1],
+  }
 
-  const triggerTextureUpdate = useCallback(() => {
-    setUpdateTrigger(prev => prev + 1)
-  }, [])
+  const setSide = useCallback<OverlayTextureContextType['setSide']>(
+    (side, image) => setterMap[side](image),
+    []
+  )
 
   return (
     <OverlayTextureContext.Provider
       value={{
-        image,
-        triggerTextureUpdate,
-        updateTrigger,
+        lid: lidState[0],
+        left: leftState[0],
+        right: rightState[0],
+        front: frontState[0],
+        back: backState[0],
+        setSide,
       }}
     >
       {children}

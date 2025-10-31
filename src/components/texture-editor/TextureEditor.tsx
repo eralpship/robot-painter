@@ -50,15 +50,16 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
       'stencil_back',
       'stencil_lid',
     ])
-    textureCtx.image.onload = () => {
-      textureCtx.triggerTextureUpdate()
+    const img = new Image()
+    img.onload = () => {
+      textureCtx.setSide(editorCtx.side, img)
     }
-    textureCtx.image.onerror = error => {
+    img.onerror = error => {
       console.error('Failed to load SVG as image:', error)
     }
     const encodedSvg = encodeURIComponent(serializedSvg)
-    textureCtx.image.src = `data:image/svg+xml,${encodedSvg}`
-  }, [])
+    img.src = `data:image/svg+xml,${encodedSvg}`
+  }, [editorCtx.side])
 
   // This re-renders every time anyways, fix that?
   useEffect(() => {
@@ -141,6 +142,8 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
     },
     [editorCtx, updateTexture]
   )
+
+  console.log({ side: editorCtx.side, color: editorCtx.backgroundColor })
 
   return (
     <>

@@ -14,7 +14,10 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { useThree, useFrame, useLoader } from '@react-three/fiber'
 import { useSpring, animated, easings } from '@react-spring/three'
 import { useTooltip } from '../contexts/tooltip-context'
-import { OverlayTextureContext } from '../contexts/overlay-texture-canvas-context'
+import {
+  createBlankTexture,
+  OverlayTextureContext,
+} from '../contexts/overlay-texture-canvas-context'
 
 export const HEADLIGHT_INTENSITY_DEFAULT = 12
 export const TAILLIGHT_INTENSITY_DEFAULT = 12
@@ -26,25 +29,33 @@ interface GLTFAction extends THREE.AnimationClip {
 
 type GLTFResult = GLTF & {
   nodes: {
-    robot_new: THREE.Mesh
-    lid_new: THREE.Mesh
-    body_inside_new: THREE.Mesh
-    robot_flag_new: THREE.Mesh
-    robot_paintable_body_new: THREE.Mesh
+    robot: THREE.Mesh
+    lid: THREE.Mesh
+    lid_inside: THREE.Mesh
+    ['rocker-bogie']: THREE.Mesh
     wheel_back_left: THREE.Mesh
     wheel_back_right: THREE.Mesh
-    wheel_front_left: THREE.Mesh
-    wheel_front_right: THREE.Mesh
     wheel_middle_left: THREE.Mesh
     wheel_middle_right: THREE.Mesh
-    ['rocker-bogie']: THREE.Mesh
+    wheel_front_left: THREE.Mesh
+    wheel_front_right: THREE.Mesh
+    body_back: THREE.Mesh
+    body_front: THREE.Mesh
+    body_inside: THREE.Mesh
+    body_left: THREE.Mesh
+    body_right: THREE.Mesh
+    robot_flag_new: THREE.Mesh
   }
   materials: {
-    ['body new']: THREE.MeshStandardMaterial
-    ['body paintable new']: THREE.MeshStandardMaterial
-    ['body inside new']: THREE.MeshStandardMaterial
+    body: THREE.MeshStandardMaterial
+    Lid: THREE.MeshStandardMaterial
+    ['body inside light']: THREE.MeshStandardMaterial
     wheel: THREE.MeshPhysicalMaterial
-    baseColor?: THREE.MeshStandardMaterial
+    Back: THREE.MeshStandardMaterial
+    Front: THREE.MeshStandardMaterial
+    ['body inside dark']: THREE.MeshStandardMaterial
+    Left: THREE.MeshStandardMaterial
+    Right: THREE.MeshStandardMaterial
   }
   animations: GLTFAction[]
 }
@@ -59,7 +70,6 @@ interface ModelProps extends React.ComponentProps<'group'> {
 }
 
 export interface ModelRef {
-  updateBaseColor: (color: string) => void
   touchFlag: () => void
   setBogieAmount: (amount: number) => void
   setTailLightColor: (color: string) => void
@@ -69,17 +79,15 @@ export interface ModelRef {
   updateLevaLidState?: (open: boolean) => void
 }
 
-function createPixeImageUrl() {
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')!
-  ctx.fillRect(0, 0, 1, 1)
-  return canvas.toDataURL('image/png')
-}
-
 const loadingManager = new THREE.LoadingManager()
 loadingManager.setURLModifier(url => {
-  if (url.includes('paintable_uv.png')) {
-    return createPixeImageUrl()
+  if (
+    ['/front.png', '/back.png', '/left.png', '/right.png', '/lid.png'].includes(
+      url
+    )
+  ) {
+    const img = createBlankTexture('transparent')
+    return img.src
   }
   return url
 })
@@ -122,12 +130,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
     const { camera, mouse, raycaster } = useThree()
     const { setTooltip } = useTooltip()
     const currentTooltip = useRef<string | null>(null)
-    const texture = useContext(OverlayTextureContext)
-    if (!texture) {
-      console.error('no texture')
-      return
-    }
-    const { image: overlayImage, updateTrigger } = texture
+    const textures = useContext(OverlayTextureContext)
 
     const [rockerSpring, rockerApi] = useSpring(() => ({
       progress: 0.5,
@@ -151,12 +154,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
     useImperativeHandle(
       ref,
       () => ({
-        updateBaseColor: (color: string) => {
-          if (materials.baseColor) {
-            materials.baseColor.color.set(color)
-            materials.baseColor.needsUpdate = true
-          }
-        },
         touchFlag: () => {
           handleFlagClick()
         },
@@ -348,93 +345,75 @@ export const Model = forwardRef<ModelRef, ModelProps>(
       materials.wheel.sheenColor = new THREE.Color(0x2a2a2a)
       materials.wheel.normalScale = new THREE.Vector2(2.5, 2.5)
 
-      materials['body paintable new'].transparent = true
-      materials['body paintable new'].opacity = 1
-      materials['body paintable new'].metalness = 0.3
-      materials['body paintable new'].roughness = 0.35
-      materials['body paintable new'].alphaTest = 0.01
+      materials.Back.transparent = true
+      materials.Back.opacity = 1
+      materials.Back.metalness = 0.3
+      materials.Back.roughness = 0.35
+      materials.Back.alphaTest = 0.01
 
-      materials['body new'].metalness = 0.3
-      materials['body new'].roughness = 0.35
+      materials.Front.transparent = true
+      materials.Front.opacity = 1
+      materials.Front.metalness = 0.3
+      materials.Front.roughness = 0.35
+      materials.Front.alphaTest = 0.01
 
-      const baseColorMaterial = materials['body paintable new'].clone()
-      baseColorMaterial.map = null
-      baseColorMaterial.transparent = false
-      baseColorMaterial.opacity = 1
-      baseColorMaterial.needsUpdate = true
-      baseColorMaterial.side = THREE.FrontSide
-      materials.baseColor = baseColorMaterial
-      materials.baseColor.color.set('#ffffff') // TODO: refactor this is hardcoded in many places
+      materials.Left.transparent = true
+      materials.Left.opacity = 1
+      materials.Left.metalness = 0.3
+      materials.Left.roughness = 0.35
+      materials.Left.alphaTest = 0.01
 
-      // swap out the texture for the overlay image
-      const originalTexture = materials['body paintable new'].map
-      if (!originalTexture) {
-        console.error('no texture')
-        return
-      }
-      if (!originalTexture.image) {
-        console.error('no image')
-        return
-      }
-      if (!overlayImage) {
-        console.error('no overlay image')
-        return
-      }
-      const imageTexture = originalTexture.clone()
-      imageTexture.image = overlayImage
-      imageTexture.needsUpdate = true
-      materials['body paintable new'].map?.dispose()
-      materials['body paintable new'].map = imageTexture
-      materials['body paintable new'].map.needsUpdate = true
-      materials['body paintable new'].needsUpdate = true
+      materials.Right.transparent = true
+      materials.Right.opacity = 1
+      materials.Right.metalness = 0.3
+      materials.Right.roughness = 0.35
+      materials.Right.alphaTest = 0.01
+
+      materials.Lid.transparent = true
+      materials.Lid.opacity = 1
+      materials.Lid.metalness = 0.3
+      materials.Lid.roughness = 0.35
+      materials.Lid.alphaTest = 0.01
+
+      materials.body.metalness = 0.3
+      materials.body.roughness = 0.35
     }, [])
 
-    // Update texture when image changes
-    const updateOverlayTexture = useCallback(() => {
-      if (!overlayImage || !materials['body paintable new']?.map) return
-
-      console.log('E-model: Updating texture with new image')
-      // Update the texture image reference and mark as needing update
-      materials['body paintable new'].map.image = overlayImage
-      materials['body paintable new'].map.needsUpdate = true
-      materials['body paintable new'].needsUpdate = true
-    }, [overlayImage, materials])
-
-    // Listen for image updates
     useEffect(() => {
-      if (updateTrigger > 0) {
-        updateOverlayTexture()
+      if (textures?.lid && materials.Lid.map) {
+        materials.Lid.map.image = textures.lid
+        materials.Lid.map.needsUpdate = true
+        materials.Lid.needsUpdate = true
       }
-    }, [updateTrigger, updateOverlayTexture])
-
-    const PaintableMesh = useCallback<
-      React.FC<Omit<React.ComponentProps<'mesh'>, 'material'>>
-    >(({ onClick, name, geometry, position, rotation, scale, ...props }) => {
-      return (
-        <group
-          name={name}
-          onClick={onClick}
-          position={position}
-          rotation={rotation}
-          scale={scale}
-        >
-          {materials.baseColor ? (
-            <mesh
-              {...props}
-              geometry={geometry}
-              material={materials.baseColor}
-              name={name + '_base'}
-            />
-          ) : null}
-          <mesh
-            {...props}
-            geometry={geometry}
-            material={materials['body paintable new']}
-            name={name + '_overlay'}
-          />
-        </group>
-      )
-    }, [])
+    }, [textures?.lid])
+    useEffect(() => {
+      if (textures?.front && materials.Front.map) {
+        materials.Front.map.image = textures.front
+        materials.Front.map.needsUpdate = true
+        materials.Front.needsUpdate = true
+      }
+    }, [textures?.front])
+    useEffect(() => {
+      if (textures?.back && materials.Back.map) {
+        materials.Back.map.image = textures.back
+        materials.Back.map.needsUpdate = true
+        materials.Back.needsUpdate = true
+      }
+    }, [textures?.back])
+    useEffect(() => {
+      if (textures?.left && materials.Left.map) {
+        materials.Left.map.image = textures.left
+        materials.Left.map.needsUpdate = true
+        materials.Left.needsUpdate = true
+      }
+    }, [textures?.left])
+    useEffect(() => {
+      if (textures?.right && materials.Right.map) {
+        materials.Right.map.image = textures.right
+        materials.Right.map.needsUpdate = true
+        materials.Right.needsUpdate = true
+      }
+    }, [textures?.right])
 
     const currentLidStateOpen = useCallback(() => {
       const lidAction = actions['open lid']
@@ -538,9 +517,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(
     return (
       <group ref={group} {...props} dispose={null}>
         <mesh
-          name="robot_new"
-          geometry={nodes.robot_new.geometry}
-          material={materials['body new']}
+          name="robot"
+          geometry={nodes.robot.geometry}
+          material={materials.body}
           rotation={[Math.PI / 2, 0, 0]}
           scale={0.01}
         >
@@ -548,12 +527,19 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           {hitboxes}
 
           {/* Lid */}
-          <PaintableMesh
-            name="lid_new"
-            geometry={nodes.lid_new.geometry}
+          <mesh
+            name="lid"
+            geometry={nodes.lid.geometry}
+            material={materials.Lid}
             position={[0, 447.187, -637.429]}
             onClick={handleLidClick}
-          />
+          >
+            <mesh
+              name="lid_inside"
+              geometry={nodes.lid_inside.geometry}
+              material={materials['body inside dark']} // light
+            />
+          </mesh>
 
           {/* Headlights */}
           <pointLight
@@ -631,24 +617,44 @@ export const Model = forwardRef<ModelRef, ModelProps>(
             scale={25}
           />
 
-          <mesh
-            name="body_inside_new"
-            geometry={nodes.body_inside_new.geometry}
-            material={materials['body inside new']}
-            position={[0, 0, -1.723]}
-          />
           <animated.mesh
             ref={flagRef}
             name="robot_flag_new"
             geometry={nodes.robot_flag_new.geometry}
-            material={materials['body new']}
+            material={materials.body}
             position={[-301.249, 198.68, -535.916]}
             rotation-x={interpolatedRotation}
             onClick={handleFlagClick}
           />
-          <PaintableMesh
-            name="robot_paintable_body_new"
-            geometry={nodes.robot_paintable_body_new.geometry}
+
+          {/* Body sides */}
+          <mesh
+            name="body_back"
+            geometry={nodes.body_back.geometry}
+            material={materials.Back}
+          />
+          <mesh
+            name="body_front"
+            geometry={nodes.body_front.geometry}
+            material={materials.Front}
+          />
+          <mesh
+            name="body_left"
+            geometry={nodes.body_left.geometry}
+            material={materials.Left}
+          />
+          <mesh
+            name="body_right"
+            geometry={nodes.body_right.geometry}
+            material={materials.Right}
+          />
+
+          {/* Body inside */}
+          <mesh
+            name="body_inside"
+            geometry={nodes.body_inside.geometry}
+            material={materials['body inside dark']}
+            position={[0, 0, -1.723]}
           />
 
           {/* Wheels */}
@@ -670,7 +676,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
           <mesh
             name="rocker-bogie"
             geometry={nodes['rocker-bogie'].geometry}
-            material={materials['body new']}
+            material={materials.body}
             position={[0.008, -89.078, -141.649]}
           >
             <mesh
