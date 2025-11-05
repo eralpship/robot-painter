@@ -1,33 +1,41 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
-  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="1024" height="1024" viewBox="0 0 1024 1024"
-     xmlns="http://www.w3.org/2000/svg" version="1.1">
-<desc>e-model.blend, (Blender 4.4.3)</desc>
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="885.576,312.004 896.091,346.375 931.361,311.181 920.168,275.750 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="885.576,312.004 865.286,318.333 759.029,320.677 710.791,320.466 711.517,346.132 896.091,346.375 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="313.951,346.132 711.517,346.132 710.791,320.466 314.677,320.466 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="314.677,320.466 266.440,320.678 160.183,318.333 139.895,312.004 129.378,346.375 313.951,346.132 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="139.895,312.004 105.301,275.749 94.109,311.180 129.378,346.375 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="313.951,346.132 129.378,346.375 126.800,713.099 313.951,712.855 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="129.378,346.375 94.109,311.180 41.707,716.544 126.800,713.099 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="105.301,275.749 50.745,275.876 38.485,309.553 94.109,311.180 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="94.109,311.180 38.485,309.553 41.707,716.544 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="126.800,713.099 41.707,716.544 41.707,718.197 126.800,718.073 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="38.485,309.553 13.146,310.396 14.482,717.398 41.707,716.544 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="41.707,716.544 14.482,717.398 14.543,718.236 41.707,718.197 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="50.745,275.876 27.511,276.898 13.146,310.396 38.485,309.553 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="983.761,716.544 983.761,720.753 1009.213,721.887 1009.524,717.352 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="986.984,309.553 983.761,716.544 1009.524,717.352 1011.550,310.371 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="974.724,275.877 986.984,309.553 1011.550,310.371 997.288,276.868 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="920.168,275.750 931.361,311.181 986.984,309.553 974.724,275.877 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="931.361,311.181 983.761,716.544 986.984,309.553 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="896.091,346.375 898.669,713.099 983.761,716.544 931.361,311.181 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="898.669,713.099 898.669,718.745 983.761,720.753 983.761,716.544 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="711.518,712.855 711.518,717.224 898.669,718.745 898.669,713.099 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="711.517,346.132 711.518,712.855 898.669,713.099 896.091,346.375 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="313.951,717.801 711.518,717.224 711.518,712.855 313.951,712.855 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="313.951,712.855 126.800,713.099 126.800,718.073 313.951,717.801 " />
-<polygon stroke="black" stroke-width="1" fill="rgb(204, 204, 204)" fill-opacity="0" points="313.951,712.855 711.518,712.855 711.517,346.132 313.951,346.132 " />
-
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1024"
+   height="1024"
+   viewBox="0 0 1024 1024"
+   version="1.1"
+   id="svg25"
+   sodipodi:docname="back.svg"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs25" />
+  <sodipodi:namedview
+     id="namedview25"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="0.9296875"
+     inkscape:cx="512"
+     inkscape:cy="512"
+     inkscape:window-width="2512"
+     inkscape:window-height="1387"
+     inkscape:window-x="52"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg25" />
+  <desc
+     id="desc1">e-model.blend, (Blender 4.4.3)</desc>
+  <path
+     id="polygon1"
+     d="M 105.30078 275.74805 L 50.744141 275.87695 L 27.511719 276.89844 L 13.146484 310.39648 L 14.482422 717.39844 L 14.542969 718.23633 L 41.707031 718.19727 L 126.80078 718.07227 L 313.95117 717.80078 L 711.51758 717.22461 L 898.66992 718.74414 L 983.76172 720.75391 L 1009.2129 721.88672 L 1009.5234 717.35156 L 1011.5508 310.37109 L 997.28711 276.86719 L 974.72461 275.87695 L 920.16797 275.75 L 885.57617 312.00391 L 865.28516 318.33203 L 759.0293 320.67773 L 710.79102 320.4668 L 314.67773 320.4668 L 266.43945 320.67773 L 160.18359 318.33203 L 139.89453 312.00391 L 105.30078 275.74805 z "
+     style="stroke:#000000;stroke-opacity:1;fill:none;stroke-width:3;stroke-dasharray:none"
+     inkscape:label="stencil" />
 </svg>

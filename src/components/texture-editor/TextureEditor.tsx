@@ -63,13 +63,7 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
 
   const updateTexture = useCallback(() => {
     if (!textureCtx || !svgRef.current) return
-    const serializedSvg = serializeSvg(svgRef.current, [
-      'stencil_left',
-      'stencil_right',
-      'stencil_front',
-      'stencil_back',
-      'stencil_lid',
-    ])
+    const serializedSvg = serializeSvg(svgRef.current, ['stencil'])
     const img = new Image()
     img.onload = () => {
       textureCtx.setSide(editorCtx.side, img)
