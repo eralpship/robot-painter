@@ -5,6 +5,12 @@ import {
   type TexureEditorMode,
 } from '@/contexts/texture-editor-context'
 
+const editorStyle = {
+  width: 'min(100cqw, 100cqh)',
+  height: 'min(100cqw, 100cqh)',
+  aspectRatio: '1',
+}
+
 export function TextureEditorWrapper({ mode }: { mode: TexureEditorMode }) {
   return (
     <div
@@ -27,13 +33,11 @@ export function TextureEditorWrapper({ mode }: { mode: TexureEditorMode }) {
             justifyContent: 'center',
           }}
         >
-          <TextureEditor
-            style={{
-              width: 'min(100cqw, 100cqh)',
-              height: 'min(100cqw, 100cqh)',
-              aspectRatio: '1',
-            }}
-          />
+          <TextureEditor side="front" style={editorStyle} />
+          <TextureEditor side="back" style={editorStyle} />
+          <TextureEditor side="left" style={editorStyle} />
+          <TextureEditor side="right" style={editorStyle} />
+          <TextureEditor side="lid" style={editorStyle} />
         </div>
       </TextureEditorContextProvider>
     </div>

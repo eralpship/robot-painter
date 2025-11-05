@@ -54,26 +54,38 @@ function serializeSvg(
   return svgString
 }
 
-export function TextureEditor({ style }: { style?: React.CSSProperties }) {
+export function TextureEditor({
+  style,
+  side,
+}: {
+  style?: React.CSSProperties
+  side: keyof OverlayTextureSides
+}) {
   const editorCtx = useContext(TextureEditorContext)
   const textureCtx = useContext(OverlayTextureContext)
 
   const svgRef = useRef<SVGSVGElement>(null)
   const moveableRef = useRef<Moveable>(null)
 
+  const hidden = editorCtx.side !== side
+
   const updateTexture = useCallback(() => {
-    if (!textureCtx || !svgRef.current) return
-    const serializedSvg = serializeSvg(svgRef.current, ['stencil'])
+    if (!textureCtx || !svgRef.current) {
+      return
+    }
+    const serializedSvg = serializeSvg(svgRef.current, [
+      'stencil', // root element in the svg needs to have name "stencil" in inkscape
+    ])
     const img = new Image()
     img.onload = () => {
-      textureCtx.setSide(editorCtx.side, img)
+      textureCtx.setSide(side, img)
     }
     img.onerror = error => {
       console.error('Failed to load SVG as image:', error)
     }
     const encodedSvg = encodeURIComponent(serializedSvg)
     img.src = `data:image/svg+xml,${encodedSvg}`
-  }, [editorCtx.side])
+  }, [side])
 
   // This re-renders every time anyways, fix that?
   useEffect(() => {
@@ -157,21 +169,20 @@ export function TextureEditor({ style }: { style?: React.CSSProperties }) {
     [editorCtx, updateTexture]
   )
 
-  console.log({ side: editorCtx.side, color: editorCtx.backgroundColor })
-
-  const StencilSvg = stencilSideMap[editorCtx.side]
+  const StencilSvg = stencilSideMap[side]
 
   const elements = useMemo(
     () =>
       Array.from(editorCtx.elements.entries()).filter(
-        ([, i]) => i.side === editorCtx.side
+        ([, i]) => i.side === side
       ),
-    [editorCtx.elements, editorCtx.side]
+    [editorCtx.elements, side]
   )
 
   return (
     <>
       <svg
+        display={hidden ? 'none' : undefined}
         ref={svgRef}
         width={CANVAS_SIZE}
         height={CANVAS_SIZE}
