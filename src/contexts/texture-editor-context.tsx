@@ -214,22 +214,7 @@ export function TextureEditorContextProvider({
     internalSetSide(side)
     setSelectedElementId(undefined)
   }, [])
-  const [backgroundColorCollection, setBackgroundColorCollection] = useState<
-    Record<keyof OverlayTextureSides, string>
-  >({
-    left: '#ffffff',
-    right: '#ffffff',
-    lid: '#ffffff',
-    front: '#ffffff',
-    back: '#ffffff',
-  })
-  const setBackgroundColor = useCallback(
-    (color: string) => {
-      console.log(side, color)
-      setBackgroundColorCollection(prev => ({ ...prev, [side]: color }))
-    },
-    [side]
-  )
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
 
   return (
     <TextureEditorContext.Provider
@@ -247,7 +232,7 @@ export function TextureEditorContextProvider({
         center: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
         size: { width: CANVAS_SIZE, height: CANVAS_SIZE },
         setSelectedElementId,
-        backgroundColor: backgroundColorCollection[side],
+        backgroundColor,
         setBackgroundColor,
       }}
     >
