@@ -537,7 +537,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
             <mesh
               name="lid_inside"
               geometry={nodes.lid_inside.geometry}
-              material={materials['body inside dark']} // light
+              material={materials['body inside light']}
             />
           </mesh>
 
