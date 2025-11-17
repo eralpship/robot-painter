@@ -242,6 +242,7 @@ export function TextureEditor({
                   key={uuid}
                   xmlSpace="preserve"
                   href={element.base64data}
+                  xlinkHref={element.base64data} // Safari compatibility
                   x={-element.width / 2}
                   y={-element.height / 2}
                   width={element.width}
@@ -251,6 +252,9 @@ export function TextureEditor({
                     cursor: 'pointer',
                   }}
                   onMouseDown={handleOnElementMouseDown}
+                  onError={(e) => {
+                    console.error('SVG image failed to render:', uuid, e)
+                  }}
                 />
               )
             default:
