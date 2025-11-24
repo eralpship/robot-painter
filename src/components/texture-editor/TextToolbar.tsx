@@ -10,7 +10,12 @@ export function TextToolbar() {
       <button
         onClick={() => {
           const element = ctx.selectedElement
-          if (!element || element.type !== 'text') {
+          if (!element) {
+            alert('Please select a text element first by clicking on it in the editor.')
+            return
+          }
+          if (element.type !== 'text') {
+            alert('The selected element is not a text element. Please select a text element.')
             return
           }
           const text = window.prompt('Enter new text:', element.text)
@@ -28,7 +33,12 @@ export function TextToolbar() {
       <button
         onClick={() => {
           const element = ctx.selectedElement
-          if (!element || element.type !== 'text') {
+          if (!element) {
+            alert('Please select a text element first by clicking on it in the editor.')
+            return
+          }
+          if (element.type !== 'text') {
+            alert('The selected element is not a text element. Please select a text element.')
             return
           }
           const input = window.prompt(
@@ -40,6 +50,7 @@ export function TextToolbar() {
           }
           const fontSize = parseFloat(input)
           if (isNaN(fontSize) || fontSize <= 0) {
+            alert('Please enter a valid positive number for font size.')
             return
           }
           ctx.updateElement(element.uuid, { fontSize })
@@ -53,7 +64,12 @@ export function TextToolbar() {
       <button
         onClick={() => {
           const element = ctx.selectedElement
-          if (!element || element.type !== 'text') {
+          if (!element) {
+            alert('Please select a text element first by clicking on it in the editor.')
+            return
+          }
+          if (element.type !== 'text') {
+            alert('The selected element is not a text element. Please select a text element.')
             return
           }
           const color = window.prompt(
@@ -64,6 +80,7 @@ export function TextToolbar() {
             return
           }
           if (!hexColorRegex.test(color)) {
+            alert('Please enter a valid hex color (e.g., #ff0000, #000000).')
             return
           }
           ctx.updateElement(element.uuid, { color })

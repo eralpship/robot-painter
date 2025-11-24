@@ -64,20 +64,16 @@ export function CommonToolbar() {
         />
       </label>
       <button
-        onClick={ctx.saveTexture}
+        onClick={() => {
+          if (confirm('Reset to defaults? This will clear all elements and restore LEFT/RIGHT/FRONT/BACK/LID text.')) {
+            ctx.resetToDefaults()
+          }
+        }}
         style={{
           cursor: 'pointer',
         }}
       >
-        save
-      </button>
-      <button
-        onClick={ctx.loadTexture}
-        style={{
-          cursor: 'pointer',
-        }}
-      >
-        load
+        reset
       </button>
     </>
   )

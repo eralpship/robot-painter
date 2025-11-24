@@ -1,12 +1,15 @@
 import React, {
   createContext,
   useCallback,
+  useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
 } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import type { OverlayTextureSides } from './overlay-texture-canvas-context'
+import { useTextureEditorPersistence } from '@/hooks/useTextureEditorPersistence'
 
 export const CANVAS_SIZE = 1024 // if you change this also resize the paintable_uv.svg's root size and viewbox size
 
@@ -39,7 +42,7 @@ export type TextureEditorElementPatch = Partial<
 
 type TextureEditorElement = _BaseTextureEditorElement &
   (_TextureEditorImageElement | _TextureEditorTextElement)
-type TextureEditorElementWithUuid = TextureEditorElement & {
+export type TextureEditorElementWithUuid = TextureEditorElement & {
   uuid: string
 }
 
@@ -47,8 +50,7 @@ type TextureEditorContextType = {
   mode: TexureEditorMode
   side: keyof OverlayTextureSides
   setSide: (side: keyof OverlayTextureSides) => void
-  saveTexture: () => void
-  loadTexture: () => void
+  resetToDefaults: () => void
   addElement: (element: TextureEditorElement) => void
   removeElement: (elementId: string) => void
   setSelectedElementId: (elementId: string) => void
@@ -69,6 +71,8 @@ type ElementAction =
   | { type: 'add'; value: TextureEditorElement }
   | { type: 'remove'; uuid: string }
   | { type: 'update'; uuid: string; patch: TextureEditorElementPatch }
+  | { type: 'reset' }
+  | { type: 'load'; elements: Map<string, TextureEditorElementWithUuid> }
 
 type ElementMap = Map<string, TextureEditorElementWithUuid>
 
@@ -92,6 +96,10 @@ const elementReducer = (
       }
       newMap.set(action.uuid, { ...existing, ...action.patch })
       return newMap
+    case 'reset':
+      return createDefaultElements()
+    case 'load':
+      return action.elements
     default:
       return state
   }
@@ -166,22 +174,40 @@ export function TextureEditorContextProvider({
   mode: TexureEditorMode
   children: React.ReactNode
 }) {
+  const { saveState, loadState, clearState } = useTextureEditorPersistence()
+
+  // Try to load saved state on mount, otherwise use defaults
+  const initialState = React.useMemo(() => {
+    const loaded = loadState()
+    if (loaded) {
+      console.log('[TextureEditor] Initializing with saved state from localStorage')
+      return loaded
+    }
+    console.log('[TextureEditor] Initializing with default state')
+    return {
+      elements: createDefaultElements(),
+      backgroundColor: '#ffffff'
+    }
+  }, [loadState])
+
   const [elements, dispatchElementsAction] = useReducer(
     elementReducer,
-    createDefaultElements()
+    initialState.elements
   )
 
   const [selectedElementId, setSelectedElementId] = useState<
     string | undefined
   >(undefined)
 
-  const saveTexture = useCallback<
-    TextureEditorContextType['saveTexture']
-  >(() => {}, [])
+  const [backgroundColor, setBackgroundColor] = useState(initialState.backgroundColor)
 
-  const loadTexture = useCallback<
-    TextureEditorContextType['loadTexture']
-  >(() => {}, [])
+  const resetToDefaults = useCallback(() => {
+    console.log('[TextureEditor] Resetting to defaults')
+    clearState()
+    dispatchElementsAction({ type: 'reset' })
+    setBackgroundColor('#ffffff')
+    setSelectedElementId(undefined)
+  }, [clearState])
 
   const addElement = useCallback<TextureEditorContextType['addElement']>(
     element => dispatchElementsAction({ type: 'add', value: element }),
@@ -214,7 +240,41 @@ export function TextureEditorContextProvider({
     internalSetSide(side)
     setSelectedElementId(undefined)
   }, [])
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
+
+  // Track if user has made any changes to enable auto-save
+  const hasUserMadeChanges = useRef(false)
+  const mountTimeRef = useRef(Date.now())
+
+  // Auto-sync to localStorage when state changes (only after user interaction)
+  useEffect(() => {
+    const timeSinceMount = Date.now() - mountTimeRef.current
+
+    // Skip auto-save for the first 2 seconds after mount to avoid saving initial state
+    if (timeSinceMount < 2000) {
+      console.log('[TextureEditor] Skipping auto-save - within initial mount period', {
+        timeSinceMount
+      })
+      return
+    }
+
+    // Enable auto-save after first 2 seconds (user has had time to interact)
+    hasUserMadeChanges.current = true
+
+    console.log('[TextureEditor] State changed, scheduling auto-save in 300ms', {
+      backgroundColor,
+      elementCount: elements.size
+    })
+
+    const timeoutId = setTimeout(() => {
+      console.log('[TextureEditor] Auto-saving to localStorage', {
+        backgroundColor,
+        elementCount: elements.size
+      })
+      saveState(backgroundColor, elements)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [backgroundColor, elements, saveState])
 
   return (
     <TextureEditorContext.Provider
@@ -223,8 +283,7 @@ export function TextureEditorContextProvider({
         setSide,
         mode,
         elements,
-        saveTexture,
-        loadTexture,
+        resetToDefaults,
         addElement,
         removeElement,
         selectedElement,

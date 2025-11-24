@@ -87,10 +87,10 @@ export function TextureEditor({
     img.src = `data:image/svg+xml,${encodedSvg}`
   }, [side])
 
-  // This re-renders every time anyways, fix that?
+  // Update texture when backgroundColor or elements change
   useEffect(() => {
     updateTexture()
-  }, [editorCtx.backgroundColor, editorCtx.elements.size])
+  }, [editorCtx.backgroundColor, editorCtx.elements, updateTexture])
 
   const elementRefs = useRef<Map<string, SVGTextElement | SVGImageElement>>(
     new Map()
