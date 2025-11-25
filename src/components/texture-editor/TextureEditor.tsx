@@ -108,6 +108,7 @@ export function TextureEditor({
 
   const handleOnElementMouseDown = useCallback<MouseEventHandler<SVGElement>>(
     e => {
+      e.stopPropagation() // Prevent SVG background click from firing
       const uuid = e.currentTarget.getAttribute('id')
       if (!uuid || editorCtx.selectedElement?.uuid === uuid) {
         return
@@ -117,7 +118,18 @@ export function TextureEditor({
         moveableRef.current?.dragStart(e.nativeEvent as MouseEvent)
       })
     },
-    []
+    [editorCtx]
+  )
+
+  const handleSvgBackgroundClick = useCallback<MouseEventHandler<SVGSVGElement>>(
+    e => {
+      // Only deselect if clicking directly on SVG background, not bubbled from child elements
+      if (e.target === e.currentTarget) {
+        console.log('[TextureEditor] Clicking SVG background, deselecting element')
+        editorCtx.setSelectedElementId(undefined)
+      }
+    },
+    [editorCtx]
   )
 
   const handleOnMoveableActionEnd = useCallback(
@@ -194,6 +206,7 @@ export function TextureEditor({
           userSelect: 'none',
           backgroundColor: editorCtx.backgroundColor,
         }}
+        onClick={handleSvgBackgroundClick}
       >
         <StencilSvg style={{ width: '100%', height: '100%' }} />
         {elements.map(([uuid, element]) => {

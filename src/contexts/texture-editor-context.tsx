@@ -56,7 +56,7 @@ type TextureEditorContextType = {
   resetToDefaults: () => void
   addElement: (element: TextureEditorElement) => void
   removeElement: (elementId: string) => void
-  setSelectedElementId: (elementId: string) => void
+  setSelectedElementId: (elementId: string | undefined) => void
   selectedElement: TextureEditorElementWithUuid | undefined
   updateElement: (elementId: string, patch: TextureEditorElementPatch) => void
   elements: ElementMap
