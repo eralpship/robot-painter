@@ -89,7 +89,20 @@ export function TextureEditor({
 
   // Update texture when backgroundColor or elements change
   useEffect(() => {
-    updateTexture()
+    // Use requestAnimationFrame to ensure SVG has rendered before serializing
+    // This is more reliable than setTimeout(0) and avoids race conditions
+    let rafId: number | null = null
+
+    rafId = requestAnimationFrame(() => {
+      console.log('[TextureEditor] Updating texture after state change')
+      updateTexture()
+    })
+
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
+    }
   }, [editorCtx.backgroundColor, editorCtx.elements, updateTexture])
 
   // Notify context when editor is ready (SVG is mounted)
