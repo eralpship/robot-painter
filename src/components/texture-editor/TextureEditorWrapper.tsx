@@ -31,6 +31,16 @@ export function TextureEditorWrapper({ mode }: { mode: TexureEditorMode }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            // Checkered transparency pattern
+            backgroundColor: '#2a2a2a',
+            backgroundImage: `
+              linear-gradient(45deg, #3a3a3a 25%, transparent 25%),
+              linear-gradient(-45deg, #3a3a3a 25%, transparent 25%),
+              linear-gradient(45deg, transparent 75%, #3a3a3a 75%),
+              linear-gradient(-45deg, transparent 75%, #3a3a3a 75%)
+            `,
+            backgroundSize: '20px 20px',
+            backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
           }}
         >
           <TextureEditor side="front" style={editorStyle} />
