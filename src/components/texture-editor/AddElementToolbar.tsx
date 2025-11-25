@@ -11,10 +11,14 @@ export function AddElementToolbar() {
             type: 'text',
             text: 'Sample Text',
             fontSize: 192,
-            rotation: 0,
             color: '#000000',
-            position: ctx.center,
-            scale: { x: 1, y: 1 },
+            transform: {
+              centerX: ctx.center.x,
+              centerY: ctx.center.y,
+              rotation: 0,
+              scaleX: 1,
+              scaleY: 1,
+            },
             side: ctx.side,
           })
         }}
@@ -75,10 +79,14 @@ export function AddElementToolbar() {
                   try {
                     ctx.addElement({
                       type: 'image',
-                      position: ctx.center,
                       base64data: result,
-                      rotation: 0,
-                      scale: { x: 1, y: 1 },
+                      transform: {
+                        centerX: ctx.center.x,
+                        centerY: ctx.center.y,
+                        rotation: 0,
+                        scaleX: 1,
+                        scaleY: 1,
+                      },
                       width: img.width,
                       height: img.height,
                       side: ctx.side,

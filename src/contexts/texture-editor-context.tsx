@@ -10,15 +10,14 @@ import React, {
 import { v4 as uuidv4 } from 'uuid'
 import type { OverlayTextureSides } from './overlay-texture-canvas-context'
 import { useTextureEditorPersistence } from '@/hooks/useTextureEditorPersistence'
+import type { CanonicalTransform } from '@/utils/transforms'
 
 export const CANVAS_SIZE = 1024 // if you change this also resize the paintable_uv.svg's root size and viewbox size
 
 export type TexureEditorMode = 'full' | 'basic'
 
 type _BaseTextureEditorElement = {
-  rotation: number
-  position: { x: number; y: number }
-  scale: { x: number; y: number }
+  transform: CanonicalTransform
   side: keyof OverlayTextureSides
 }
 
@@ -35,9 +34,13 @@ type _TextureEditorTextElement = {
   fontSize: number
 }
 export type TextureEditorElementPatch = Partial<
-  _BaseTextureEditorElement &
-    Omit<_TextureEditorImageElement, 'type'> &
-    Omit<_TextureEditorTextElement, 'type'>
+  {
+    transform: CanonicalTransform
+    side: keyof OverlayTextureSides
+  } & (
+    | Omit<_TextureEditorImageElement, 'type'>
+    | Omit<_TextureEditorTextElement, 'type'>
+  )
 >
 
 type TextureEditorElement = _BaseTextureEditorElement &
@@ -61,6 +64,7 @@ type TextureEditorContextType = {
   setBackgroundColor: (color: string) => void
   center: { x: number; y: number }
   size: { width: number; height: number }
+  notifyEditorReady: () => void
 }
 
 export const TextureEditorContext = createContext<TextureEditorContextType>(
@@ -106,63 +110,83 @@ const elementReducer = (
 }
 
 function createDefaultElements() {
+  const defaultElements: TextureEditorElement[] = [
+    {
+      type: 'text' as const,
+      text: 'LEFT',
+      fontSize: 192,
+      transform: {
+        centerX: 500,
+        centerY: 500,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+      color: '#000000',
+      side: 'left',
+    },
+    {
+      type: 'text' as const,
+      text: 'RIGHT',
+      fontSize: 192,
+      transform: {
+        centerX: 500,
+        centerY: 500,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+      color: '#000000',
+      side: 'right',
+    },
+    {
+      type: 'text' as const,
+      text: 'FRONT',
+      fontSize: 192,
+      transform: {
+        centerX: 500,
+        centerY: 500,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+      color: '#000000',
+      side: 'front',
+    },
+    {
+      type: 'text' as const,
+      text: 'BACK',
+      fontSize: 192,
+      transform: {
+        centerX: 500,
+        centerY: 500,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+      color: '#000000',
+      side: 'back',
+    },
+    {
+      type: 'text' as const,
+      text: 'LID',
+      fontSize: 192,
+      transform: {
+        centerX: 500,
+        centerY: 500,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+      color: '#000000',
+      side: 'lid',
+    },
+  ]
+
   return new Map<string, TextureEditorElementWithUuid>(
-    (
-      [
-        {
-          type: 'text',
-          text: 'LEFT',
-          fontSize: 192,
-          position: { x: 500, y: 500 },
-          scale: { x: 1, y: 1 },
-          rotation: 0,
-          color: '#000000',
-          side: 'left',
-        },
-        {
-          type: 'text',
-          text: 'RIGHT',
-          fontSize: 192,
-          position: { x: 500, y: 500 },
-          scale: { x: 1, y: 1 },
-          rotation: 0,
-          color: '#000000',
-          side: 'right',
-        },
-        {
-          type: 'text',
-          text: 'FRONT',
-          fontSize: 192,
-          position: { x: 500, y: 500 },
-          scale: { x: 1, y: 1 },
-          rotation: 0,
-          color: '#000000',
-          side: 'front',
-        },
-        {
-          type: 'text',
-          text: 'BACK',
-          fontSize: 192,
-          position: { x: 500, y: 500 },
-          scale: { x: 1, y: 1 },
-          rotation: 0,
-          color: '#000000',
-          side: 'back',
-        },
-        {
-          type: 'text',
-          text: 'LID',
-          fontSize: 192,
-          position: { x: 500, y: 500 },
-          scale: { x: 1, y: 1 },
-          rotation: 0,
-          color: '#000000',
-          side: 'lid',
-        },
-      ] as const
-    ).map(e => {
+    defaultElements.map(e => {
       const uuid = uuidv4()
-      return [uuid, { uuid, ...e }]
+      return [uuid, { ...e, uuid }] as const
     })
   )
 }
@@ -176,30 +200,40 @@ export function TextureEditorContextProvider({
 }) {
   const { saveState, loadState, clearState } = useTextureEditorPersistence()
 
-  // Try to load saved state on mount, otherwise use defaults
-  const initialState = React.useMemo(() => {
-    const loaded = loadState()
-    if (loaded) {
-      console.log('[TextureEditor] Initializing with saved state from localStorage')
-      return loaded
-    }
-    console.log('[TextureEditor] Initializing with default state')
-    return {
-      elements: createDefaultElements(),
-      backgroundColor: '#ffffff'
-    }
-  }, [loadState])
-
+  // Always start with defaults - we'll load saved state after render
   const [elements, dispatchElementsAction] = useReducer(
     elementReducer,
-    initialState.elements
+    createDefaultElements()
   )
 
   const [selectedElementId, setSelectedElementId] = useState<
     string | undefined
   >(undefined)
 
-  const [backgroundColor, setBackgroundColor] = useState(initialState.backgroundColor)
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
+
+  // Load saved state only after TextureEditor signals it's ready
+  const hasLoadedFromStorage = useRef(false)
+  const notifyEditorReady = useCallback(() => {
+    if (hasLoadedFromStorage.current) {
+      return
+    }
+
+    console.log('[TextureEditor] Editor is ready, loading saved state')
+    const loaded = loadState()
+    if (loaded) {
+      console.log('[TextureEditor] Loading saved state from localStorage', {
+        backgroundColor: loaded.backgroundColor,
+        elementCount: loaded.elements.size
+      })
+      dispatchElementsAction({ type: 'load', elements: loaded.elements })
+      setBackgroundColor(loaded.backgroundColor)
+      hasLoadedFromStorage.current = true
+    } else {
+      console.log('[TextureEditor] No saved state found, using defaults')
+      hasLoadedFromStorage.current = true
+    }
+  }, [loadState])
 
   const resetToDefaults = useCallback(() => {
     console.log('[TextureEditor] Resetting to defaults')
@@ -207,6 +241,8 @@ export function TextureEditorContextProvider({
     dispatchElementsAction({ type: 'reset' })
     setBackgroundColor('#ffffff')
     setSelectedElementId(undefined)
+    // Don't reload from storage after reset
+    hasLoadedFromStorage.current = true
   }, [clearState])
 
   const addElement = useCallback<TextureEditorContextType['addElement']>(
@@ -293,6 +329,7 @@ export function TextureEditorContextProvider({
         setSelectedElementId,
         backgroundColor,
         setBackgroundColor,
+        notifyEditorReady,
       }}
     >
       {children}

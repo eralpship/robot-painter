@@ -31,8 +31,8 @@ const stencilSideMap: Record<
 import {
   CANVAS_SIZE,
   TextureEditorContext,
-  type TextureEditorElementPatch,
 } from '@/contexts/texture-editor-context'
+import { toSVGTransform, extractCanonicalTransform } from '@/utils/transforms'
 import Moveable from 'react-moveable'
 
 function serializeSvg(
@@ -92,6 +92,14 @@ export function TextureEditor({
     updateTexture()
   }, [editorCtx.backgroundColor, editorCtx.elements, updateTexture])
 
+  // Notify context when editor is ready (SVG is mounted)
+  useEffect(() => {
+    if (svgRef.current && !hidden) {
+      console.log('[TextureEditor] SVG mounted and visible for side:', side)
+      editorCtx.notifyEditorReady()
+    }
+  }, [hidden, side, editorCtx])
+
   const elementRefs = useRef<Map<string, SVGTextElement | SVGImageElement>>(
     new Map()
   )
@@ -114,57 +122,50 @@ export function TextureEditor({
 
   const handleOnMoveableActionEnd = useCallback(
     (target: SVGElement | HTMLElement) => {
+      console.log('[TextureEditor] handleOnMoveableActionEnd called')
       const uuid = target.getAttribute('id')
       if (!uuid) {
+        console.warn('[TextureEditor] No UUID found on target element')
         return
       }
-      const computedStyle = target.computedStyleMap()
-      const transform = computedStyle?.get('transform')
 
-      const patch: Pick<
-        TextureEditorElementPatch,
-        'position' | 'scale' | 'rotation'
-      > = {}
+      console.log('[TextureEditor] Processing element:', uuid)
+      console.log('[TextureEditor] Target element:', target)
+      console.log('[TextureEditor] Current transform attribute:', target.getAttribute('transform'))
+      console.log('[TextureEditor] Current style.transform:', (target as HTMLElement).style.transform)
 
-      // Iterate through transforms and identify by type
-      const transforms: string[] = []
-
-      // Check if transform exists and is iterable
-      if (transform && transform instanceof CSSTransformValue) {
-        for (const component of transform) {
-          if (component instanceof CSSTranslate) {
-            patch.position = {
-              x: component.x.to('px').value,
-              y: component.y.to('px').value,
-            }
-            transforms.push(
-              `translate(${patch.position.x}, ${patch.position.y})`
-            )
-          } else if (component instanceof CSSRotate) {
-            patch.rotation = component.angle.to('deg').value
-            transforms.push(`rotate(${patch.rotation})`)
-          } else if (component instanceof CSSScale) {
-            patch.scale = {
-              x:
-                typeof component.x === 'number'
-                  ? component.x
-                  : (component.x as CSSUnitValue).value,
-              y:
-                typeof component.y === 'number'
-                  ? component.y
-                  : (component.y as CSSUnitValue).value,
-            }
-            transforms.push(`scale(${patch.scale.x}, ${patch.scale.y})`)
-          }
-        }
-
-        editorCtx.updateElement(uuid, patch)
-
-        target.setAttribute('transform', transforms.join(', '))
-
-        updateTexture()
-        setMoveableKey(uuid)
+      // Check if Moveable actually applied any CSS transforms
+      const cssTransform = (target as HTMLElement).style.transform
+      if (!cssTransform || cssTransform.trim() === '') {
+        console.log('[TextureEditor] No CSS transform applied, skipping update (likely just a selection)')
+        return
       }
+
+      // Extract canonical transform from the element
+      const transform = extractCanonicalTransform(target as SVGElement)
+      if (!transform) {
+        console.error('[TextureEditor] Failed to extract transform!')
+        return
+      }
+
+      console.log('[TextureEditor] Extracted transform:', transform)
+
+      // Update element with canonical format
+      console.log('[TextureEditor] Updating element in context...')
+      editorCtx.updateElement(uuid, { transform })
+
+      // Update SVG attribute for immediate visual feedback
+      const svgTransform = toSVGTransform(transform)
+      console.log('[TextureEditor] Setting SVG transform attribute to:', svgTransform)
+      target.setAttribute('transform', svgTransform)
+
+      // Clear CSS transform now that we've saved it to SVG attribute
+      ;(target as HTMLElement).style.transform = ''
+
+      console.log('[TextureEditor] Updating texture...')
+      updateTexture()
+      setMoveableKey(uuid)
+      console.log('[TextureEditor] handleOnMoveableActionEnd complete')
     },
     [editorCtx, updateTexture]
   )
@@ -198,11 +199,19 @@ export function TextureEditor({
         {elements.map(([uuid, element]) => {
           switch (element.type) {
             case 'text':
+              const textTransform = toSVGTransform(element.transform)
+              console.log('[TextureEditor] Rendering text element:', {
+                uuid,
+                text: element.text,
+                transform: element.transform,
+                svgTransform: textTransform
+              })
               return (
                 <text
                   ref={el => {
                     if (el) {
                       elementRefs.current.set(uuid, el)
+                      console.log('[TextureEditor] Text element ref set:', uuid)
                     } else {
                       elementRefs.current.delete(uuid)
                     }
@@ -219,10 +228,11 @@ export function TextureEditor({
                     cursor: 'pointer',
                     textAlign: 'center',
                     textAnchor: 'middle',
+                    dominantBaseline: 'middle',
                     userSelect: 'none',
                     WebkitUserSelect: 'none',
                   }}
-                  transform={`rotate(${element.rotation}) translate(${element.position.x}, ${element.position.y}) scale(${element.scale.x}, ${element.scale.y})`}
+                  transform={textTransform}
                   onMouseDown={handleOnElementMouseDown}
                 >
                   {element.text}
@@ -247,7 +257,7 @@ export function TextureEditor({
                   y={-element.height / 2}
                   width={element.width}
                   height={element.height}
-                  transform={`rotate(${element.rotation}) translate(${element.position.x}, ${element.position.y}) scale(${element.scale.x}, ${element.scale.y})`}
+                  transform={toSVGTransform(element.transform)}
                   style={{
                     cursor: 'pointer',
                   }}
