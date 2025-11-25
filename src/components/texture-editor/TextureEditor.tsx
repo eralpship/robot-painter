@@ -75,6 +75,7 @@ export function TextureEditor({
     }
     const serializedSvg = serializeSvg(svgRef.current, [
       'stencil', // root element in the svg needs to have name "stencil" in inkscape
+      'stencil-backdrop',
       'render',
     ])
     const img = new Image()
@@ -237,6 +238,14 @@ export function TextureEditor({
         }}
         onClick={handleSvgBackgroundClick}
       >
+        <style>
+          {`
+            [inkscape\\:label="stencil"], #stencil {
+              fill: ${editorCtx.backgroundColor || '#ffffff'} !important;
+            }
+          `}
+        </style>
+        <rect id="stencil-backdrop" width="100%" height="100%" fill="#000000" />
         <StencilSvg style={{ width: '100%', height: '100%' }} />
         {elements.map(([uuid, element]) => {
           switch (element.type) {
