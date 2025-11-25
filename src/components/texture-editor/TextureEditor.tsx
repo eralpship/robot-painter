@@ -75,6 +75,7 @@ export function TextureEditor({
     }
     const serializedSvg = serializeSvg(svgRef.current, [
       'stencil', // root element in the svg needs to have name "stencil" in inkscape
+      'render',
     ])
     const img = new Image()
     img.onload = () => {
@@ -134,11 +135,15 @@ export function TextureEditor({
     [editorCtx]
   )
 
-  const handleSvgBackgroundClick = useCallback<MouseEventHandler<SVGSVGElement>>(
+  const handleSvgBackgroundClick = useCallback<
+    MouseEventHandler<SVGSVGElement>
+  >(
     e => {
       // Only deselect if clicking directly on SVG background, not bubbled from child elements
       if (e.target === e.currentTarget) {
-        console.log('[TextureEditor] Clicking SVG background, deselecting element')
+        console.log(
+          '[TextureEditor] Clicking SVG background, deselecting element'
+        )
         editorCtx.setSelectedElementId(undefined)
       }
     },
@@ -156,13 +161,21 @@ export function TextureEditor({
 
       console.log('[TextureEditor] Processing element:', uuid)
       console.log('[TextureEditor] Target element:', target)
-      console.log('[TextureEditor] Current transform attribute:', target.getAttribute('transform'))
-      console.log('[TextureEditor] Current style.transform:', (target as HTMLElement).style.transform)
+      console.log(
+        '[TextureEditor] Current transform attribute:',
+        target.getAttribute('transform')
+      )
+      console.log(
+        '[TextureEditor] Current style.transform:',
+        (target as HTMLElement).style.transform
+      )
 
       // Check if Moveable actually applied any CSS transforms
       const cssTransform = (target as HTMLElement).style.transform
       if (!cssTransform || cssTransform.trim() === '') {
-        console.log('[TextureEditor] No CSS transform applied, skipping update (likely just a selection)')
+        console.log(
+          '[TextureEditor] No CSS transform applied, skipping update (likely just a selection)'
+        )
         return
       }
 
@@ -181,7 +194,10 @@ export function TextureEditor({
 
       // Update SVG attribute for immediate visual feedback
       const svgTransform = toSVGTransform(transform)
-      console.log('[TextureEditor] Setting SVG transform attribute to:', svgTransform)
+      console.log(
+        '[TextureEditor] Setting SVG transform attribute to:',
+        svgTransform
+      )
       target.setAttribute('transform', svgTransform)
 
       // Clear CSS transform now that we've saved it to SVG attribute
@@ -230,7 +246,7 @@ export function TextureEditor({
                 uuid,
                 text: element.text,
                 transform: element.transform,
-                svgTransform: textTransform
+                svgTransform: textTransform,
               })
               return (
                 <text
@@ -288,7 +304,7 @@ export function TextureEditor({
                     cursor: 'pointer',
                   }}
                   onMouseDown={handleOnElementMouseDown}
-                  onError={(e) => {
+                  onError={e => {
                     console.error('SVG image failed to render:', uuid, e)
                   }}
                 />
