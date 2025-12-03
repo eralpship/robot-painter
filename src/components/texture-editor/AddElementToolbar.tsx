@@ -77,6 +77,10 @@ export function AddElementToolbar() {
                   console.log('Image loaded successfully:', img.width, 'x', img.height)
 
                   try {
+                    // Calculate scale to fit image within 60% of container width
+                    const maxWidth = ctx.size.width * 0.6
+                    const scaleFactor = img.width > maxWidth ? maxWidth / img.width : 1
+
                     ctx.addElement({
                       type: 'image',
                       base64data: result,
@@ -84,8 +88,8 @@ export function AddElementToolbar() {
                         centerX: ctx.center.x,
                         centerY: ctx.center.y,
                         rotation: 0,
-                        scaleX: 1,
-                        scaleY: 1,
+                        scaleX: scaleFactor,
+                        scaleY: scaleFactor,
                       },
                       width: img.width,
                       height: img.height,
