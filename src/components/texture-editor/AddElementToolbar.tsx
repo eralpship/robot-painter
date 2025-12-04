@@ -1,6 +1,12 @@
-import { TextureEditorContext } from '@/contexts/texture-editor-context'
+import { TextureEditorContext, CANVAS_SIZE } from '@/contexts/texture-editor-context'
 import { useContext } from 'react'
-import { compressImage, checkLocalStorageQuota, formatBytes } from '@/utils/image-compression'
+import {
+  compressImage,
+  checkLocalStorageQuota,
+  formatBytes,
+  DEFAULT_MAX_IMAGE_WIDTH,
+  DEFAULT_MAX_IMAGE_HEIGHT,
+} from '@/utils/image-compression'
 
 export function AddElementToolbar() {
   const ctx = useContext(TextureEditorContext)
@@ -57,8 +63,8 @@ export function AddElementToolbar() {
               try {
                 // Compress the image using ImageMagick WASM (converts all formats to PNG)
                 const compressed = await compressImage(file, {
-                  maxWidth: 2048,
-                  maxHeight: 2048,
+                  maxWidth: DEFAULT_MAX_IMAGE_WIDTH,
+                  maxHeight: DEFAULT_MAX_IMAGE_HEIGHT,
                 })
 
                 // Check localStorage quota
@@ -73,9 +79,9 @@ export function AddElementToolbar() {
                   return
                 }
 
-                // Calculate scale to fit image within 60% of container width
-                const maxWidth = ctx.size.width * 0.6
-                const scaleFactor = compressed.width > maxWidth ? maxWidth / compressed.width : 1
+                // Calculate scale to fit image within 60% of canvas width
+                const maxDisplayWidth = CANVAS_SIZE * 0.6
+                const scaleFactor = compressed.width > maxDisplayWidth ? maxDisplayWidth / compressed.width : 1
 
                 ctx.addElement({
                   type: 'image',

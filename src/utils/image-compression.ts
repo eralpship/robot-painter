@@ -3,6 +3,20 @@ import { ImageMagick, initializeImageMagick } from '@imagemagick/magick-wasm'
 let isInitialized = false
 
 /**
+ * Default maximum dimensions for image compression
+ * Images larger than these dimensions will be resized while maintaining aspect ratio
+ */
+export const DEFAULT_MAX_IMAGE_WIDTH = 512
+export const DEFAULT_MAX_IMAGE_HEIGHT = DEFAULT_MAX_IMAGE_WIDTH
+
+/**
+ * Default PNG compression quality (0-100)
+ * Higher = better quality but larger file size
+ * 70 provides good balance between quality and file size
+ */
+export const DEFAULT_PNG_QUALITY = 70
+
+/**
  * Initialize ImageMagick WASM (call once at app startup)
  */
 export async function initImageMagick() {
@@ -21,6 +35,7 @@ export async function initImageMagick() {
 export type CompressionOptions = {
   maxWidth?: number
   maxHeight?: number
+  quality?: number // 0-100, for PNG compression
 }
 
 export type CompressionResult = {
@@ -43,8 +58,9 @@ export async function compressImage(
   options: CompressionOptions = {}
 ): Promise<CompressionResult> {
   const {
-    maxWidth = 2048,
-    maxHeight = 2048,
+    maxWidth = DEFAULT_MAX_IMAGE_WIDTH,
+    maxHeight = DEFAULT_MAX_IMAGE_HEIGHT,
+    quality = DEFAULT_PNG_QUALITY,
   } = options
 
   // Ensure ImageMagick is initialized
@@ -63,69 +79,88 @@ export async function compressImage(
 
           const { width, height } = img
 
-      // Calculate new dimensions while maintaining aspect ratio
-      let newWidth = width
-      let newHeight = height
+          // Calculate new dimensions while maintaining aspect ratio
+          let newWidth = width
+          let newHeight = height
 
-      if (width > maxWidth || height > maxHeight) {
-        const aspectRatio = width / height
+          if (width > maxWidth || height > maxHeight) {
+            const aspectRatio = width / height
 
-        if (width > height) {
-          newWidth = Math.min(width, maxWidth)
-          newHeight = Math.round(newWidth / aspectRatio)
-        } else {
-          newHeight = Math.min(height, maxHeight)
-          newWidth = Math.round(newHeight * aspectRatio)
-        }
+            if (width > height) {
+              newWidth = Math.min(width, maxWidth)
+              newHeight = Math.round(newWidth / aspectRatio)
+            } else {
+              newHeight = Math.min(height, maxHeight)
+              newWidth = Math.round(newHeight * aspectRatio)
+            }
 
-        // Resize the image
-        img.resize(newWidth, newHeight)
-      }
+            // Resize the image
+            img.resize(newWidth, newHeight)
+          }
 
-      // Always output as PNG for universal compatibility and transparency support
-      // Note: For GIFs, ImageMagick.read() automatically reads only the first frame
-      let outputData: Uint8Array | undefined
-      img.write('PNG', (data: Uint8Array) => {
-        console.log('[ImageMagick] PNG write callback - data length:', data.length)
-        console.log('[ImageMagick] PNG write callback - first 16 bytes:', Array.from(data.slice(0, 16)))
-        // IMPORTANT: Copy the data! ImageMagick may reuse the buffer
-        outputData = new Uint8Array(data)
-      })
+          // Set compression quality (0-100)
+          img.quality = quality
 
-      if (!outputData || outputData.length === 0) {
-        throw new Error('Failed to generate PNG output - data is empty')
-      }
+          // Always output as PNG for universal compatibility and transparency support
+          // Note: For GIFs, ImageMagick.read() automatically reads only the first frame
+          let outputData: Uint8Array | undefined
+          img.write('PNG', (data: Uint8Array) => {
+            console.log(
+              '[ImageMagick] PNG write callback - data length:',
+              data.length
+            )
+            console.log(
+              '[ImageMagick] PNG write callback - first 16 bytes:',
+              Array.from(data.slice(0, 16))
+            )
+            // IMPORTANT: Copy the data! ImageMagick may reuse the buffer
+            outputData = new Uint8Array(data)
+          })
 
-      console.log('[ImageMagick] Total output data length:', outputData.length)
-      console.log('[ImageMagick] PNG signature check (should be [137, 80, 78, 71]):', Array.from(outputData.slice(0, 4)))
+          if (!outputData || outputData.length === 0) {
+            throw new Error('Failed to generate PNG output - data is empty')
+          }
 
-      const mimeType = 'image/png'
+          console.log(
+            '[ImageMagick] Total output data length:',
+            outputData.length
+          )
+          console.log(
+            '[ImageMagick] PNG signature check (should be [137, 80, 78, 71]):',
+            Array.from(outputData.slice(0, 4))
+          )
 
-      // Convert to base64
-      const base64 = arrayBufferToBase64(outputData)
-      console.log('[ImageMagick] Base64 length:', base64.length)
-      console.log('[ImageMagick] Base64 first 50 chars:', base64.substring(0, 50))
+          const mimeType = 'image/png'
 
-      const base64data = `data:${mimeType};base64,${base64}`
+          // Convert to base64
+          const base64 = arrayBufferToBase64(outputData)
+          console.log('[ImageMagick] Base64 length:', base64.length)
+          console.log(
+            '[ImageMagick] Base64 first 50 chars:',
+            base64.substring(0, 50)
+          )
 
-      // Validate base64 data
-      if (!base64data || base64data.length < 100) {
-        throw new Error('Invalid base64 data generated')
-      }
+          const base64data = `data:${mimeType};base64,${base64}`
 
-      const originalSize = file.size
-      const compressedSize = outputData.length
+          // Validate base64 data
+          if (!base64data || base64data.length < 100) {
+            throw new Error('Invalid base64 data generated')
+          }
 
-      console.log('[Image Compression]', {
-        originalSize: formatBytes(originalSize),
-        compressedSize: formatBytes(compressedSize),
-        compressionRatio: `${Math.round((compressedSize / originalSize) * 100)}%`,
-        format: 'PNG',
-        dimensions: `${newWidth}x${newHeight}`,
-        originalDimensions: `${width}x${height}`,
-        hasTransparency: img.hasAlpha,
-        wasResized: newWidth !== width || newHeight !== height,
-      })
+          const originalSize = file.size
+          const compressedSize = outputData.length
+
+          console.log('[Image Compression]', {
+            originalSize: formatBytes(originalSize),
+            compressedSize: formatBytes(compressedSize),
+            compressionRatio: `${Math.round((compressedSize / originalSize) * 100)}%`,
+            format: 'PNG',
+            quality: quality,
+            dimensions: `${newWidth}x${newHeight}`,
+            originalDimensions: `${width}x${height}`,
+            hasTransparency: img.hasAlpha,
+            wasResized: newWidth !== width || newHeight !== height,
+          })
 
           resolve({
             base64data,
