@@ -8,6 +8,10 @@ import {
   DEFAULT_MAX_IMAGE_HEIGHT,
 } from '@/utils/image-compression'
 
+// File size limits
+const MAX_INPUT_FILE_SIZE = 50 * 1024 * 1024 // 50MB - pre-compression limit
+const MAX_COMPRESSED_SIZE = 2 * 1024 * 1024 // 2MB - post-compression limit
+
 export function AddElementToolbar() {
   const ctx = useContext(TextureEditorContext)
   return (
@@ -49,11 +53,10 @@ export function AddElementToolbar() {
             const file = (e.target as HTMLInputElement).files?.[0]
 
             if (file) {
-              // Add file size validation for Safari memory limits
-              const maxSize = 10 * 1024 * 1024 // 10MB limit
-              if (file.size > maxSize) {
+              // Pre-compression file size check to avoid processing extremely large files
+              if (file.size > MAX_INPUT_FILE_SIZE) {
                 console.error('File too large:', file.size, 'bytes')
-                alert(`Image file is too large. Please use an image smaller than ${maxSize / 1024 / 1024}MB`)
+                alert(`Image file is too large. Please use an image smaller than ${formatBytes(MAX_INPUT_FILE_SIZE)}`)
                 document.body.removeChild(input)
                 return
               }
@@ -66,6 +69,17 @@ export function AddElementToolbar() {
                   maxWidth: DEFAULT_MAX_IMAGE_WIDTH,
                   maxHeight: DEFAULT_MAX_IMAGE_HEIGHT,
                 })
+
+                // Check compressed size limit (what actually gets stored)
+                if (compressed.compressedSize > MAX_COMPRESSED_SIZE) {
+                  alert(
+                    `Compressed image is too large (${formatBytes(compressed.compressedSize)}). ` +
+                    `Maximum allowed is ${formatBytes(MAX_COMPRESSED_SIZE)}. ` +
+                    `Try using a simpler image with fewer colors or details.`
+                  )
+                  document.body.removeChild(input)
+                  return
+                }
 
                 // Check localStorage quota
                 const quota = checkLocalStorageQuota(compressed.base64data.length)
