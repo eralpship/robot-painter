@@ -54,9 +54,14 @@ export async function compressImage(
   const arrayBuffer = await file.arrayBuffer()
   const inputData = new Uint8Array(arrayBuffer)
 
-  return new Promise((resolve) => {
-    ImageMagick.read(inputData, img => {
-      const { width, height } = img
+  return new Promise((resolve, reject) => {
+    try {
+      ImageMagick.read(inputData, img => {
+        try {
+          // For GIFs and multi-frame images, only the first frame is processed
+          // This converts animated GIFs to static PNG
+
+          const { width, height } = img
 
       // Calculate new dimensions while maintaining aspect ratio
       let newWidth = width
@@ -78,16 +83,38 @@ export async function compressImage(
       }
 
       // Always output as PNG for universal compatibility and transparency support
-      let outputData: Uint8Array
-      img.write('PNG', (data: Uint8Array) => (outputData = data))
+      // Note: For GIFs, ImageMagick.read() automatically reads only the first frame
+      let outputData: Uint8Array | undefined
+      img.write('PNG', (data: Uint8Array) => {
+        console.log('[ImageMagick] PNG write callback - data length:', data.length)
+        console.log('[ImageMagick] PNG write callback - first 16 bytes:', Array.from(data.slice(0, 16)))
+        // IMPORTANT: Copy the data! ImageMagick may reuse the buffer
+        outputData = new Uint8Array(data)
+      })
+
+      if (!outputData || outputData.length === 0) {
+        throw new Error('Failed to generate PNG output - data is empty')
+      }
+
+      console.log('[ImageMagick] Total output data length:', outputData.length)
+      console.log('[ImageMagick] PNG signature check (should be [137, 80, 78, 71]):', Array.from(outputData.slice(0, 4)))
+
       const mimeType = 'image/png'
 
       // Convert to base64
-      const base64 = arrayBufferToBase64(outputData!)
+      const base64 = arrayBufferToBase64(outputData)
+      console.log('[ImageMagick] Base64 length:', base64.length)
+      console.log('[ImageMagick] Base64 first 50 chars:', base64.substring(0, 50))
+
       const base64data = `data:${mimeType};base64,${base64}`
 
+      // Validate base64 data
+      if (!base64data || base64data.length < 100) {
+        throw new Error('Invalid base64 data generated')
+      }
+
       const originalSize = file.size
-      const compressedSize = outputData!.length
+      const compressedSize = outputData.length
 
       console.log('[Image Compression]', {
         originalSize: formatBytes(originalSize),
@@ -100,26 +127,48 @@ export async function compressImage(
         wasResized: newWidth !== width || newHeight !== height,
       })
 
-      resolve({
-        base64data,
-        width: newWidth,
-        height: newHeight,
-        originalSize,
-        compressedSize,
-        compressionRatio: compressedSize / originalSize,
-        format: mimeType,
+          resolve({
+            base64data,
+            width: newWidth,
+            height: newHeight,
+            originalSize,
+            compressedSize,
+            compressionRatio: compressedSize / originalSize,
+            format: mimeType,
+          })
+        } catch (error) {
+          console.error('[ImageMagick] Error processing image:', error)
+          reject(error)
+        }
       })
-    })
+    } catch (error) {
+      console.error('[ImageMagick] Error reading image:', error)
+      reject(error)
+    }
   })
 }
 
 /**
  * Converts Uint8Array to base64 string
+ * Uses chunked approach to handle large arrays without stack overflow
  */
 function arrayBufferToBase64(buffer: Uint8Array): string {
+  // For smaller buffers, use the simple approach
+  if (buffer.length < 1024 * 1024) {
+    // Convert to binary string using reduce to avoid stack overflow
+    let binary = ''
+    const chunkSize = 8192
+    for (let i = 0; i < buffer.length; i += chunkSize) {
+      const chunk = buffer.subarray(i, Math.min(i + chunkSize, buffer.length))
+      // Use Array.from to properly handle the bytes
+      binary += String.fromCharCode(...Array.from(chunk))
+    }
+    return btoa(binary)
+  }
+
+  // For very large buffers, use a different approach
   let binary = ''
-  const len = buffer.byteLength
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < buffer.length; i++) {
     binary += String.fromCharCode(buffer[i])
   }
   return btoa(binary)
