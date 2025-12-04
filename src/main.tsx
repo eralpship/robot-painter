@@ -7,6 +7,12 @@ import { routeTree } from './routeTree.gen'
 
 import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
+import { initImageMagick } from './utils/image-compression'
+
+// Initialize ImageMagick WASM early
+initImageMagick().catch(err => {
+  console.error('[ImageMagick] Failed to initialize:', err)
+})
 
 // Create a new router instance
 const router = createRouter({

@@ -1,5 +1,6 @@
 import { TextureEditorContext } from '@/contexts/texture-editor-context'
 import { useContext } from 'react'
+import { compressImage, checkLocalStorageQuota, formatBytes } from '@/utils/image-compression'
 
 export function AddElementToolbar() {
   const ctx = useContext(TextureEditorContext)
@@ -38,7 +39,7 @@ export function AddElementToolbar() {
           // Append to DOM for Safari compatibility
           document.body.appendChild(input)
 
-          input.onchange = e => {
+          input.onchange = async e => {
             const file = (e.target as HTMLInputElement).files?.[0]
 
             if (file) {
@@ -51,64 +52,52 @@ export function AddElementToolbar() {
                 return
               }
 
-              console.log('Loading image:', file.name, 'Size:', file.size, 'Type:', file.type)
+              console.log('Loading image:', file.name, 'Size:', formatBytes(file.size), 'Type:', file.type)
 
-              const reader = new FileReader()
+              try {
+                // Compress the image using ImageMagick WASM (converts all formats to PNG)
+                const compressed = await compressImage(file, {
+                  maxWidth: 2048,
+                  maxHeight: 2048,
+                })
 
-              reader.onerror = (error) => {
-                console.error('FileReader error:', error)
-                alert('Failed to read the image file. Please try again.')
+                // Check localStorage quota
+                const quota = checkLocalStorageQuota(compressed.base64data.length)
+                if (!quota.hasSpace) {
+                  alert(
+                    `Not enough space in localStorage. Current usage: ${formatBytes(quota.estimatedUsage)}. ` +
+                    `This image would add ${formatBytes(compressed.compressedSize)}. ` +
+                    `Please remove some elements or use a smaller image.`
+                  )
+                  document.body.removeChild(input)
+                  return
+                }
+
+                // Calculate scale to fit image within 60% of container width
+                const maxWidth = ctx.size.width * 0.6
+                const scaleFactor = compressed.width > maxWidth ? maxWidth / compressed.width : 1
+
+                ctx.addElement({
+                  type: 'image',
+                  base64data: compressed.base64data,
+                  transform: {
+                    centerX: ctx.center.x,
+                    centerY: ctx.center.y,
+                    rotation: 0,
+                    scaleX: scaleFactor,
+                    scaleY: scaleFactor,
+                  },
+                  width: compressed.width,
+                  height: compressed.height,
+                  side: ctx.side,
+                })
+                console.log('Image element added to context')
+              } catch (error) {
+                console.error('Failed to process image:', error)
+                alert('Failed to load the image. The file might be corrupted or in an unsupported format.')
+              } finally {
                 document.body.removeChild(input)
               }
-
-              reader.onload = () => {
-                const result = reader.result as string
-                console.log('FileReader completed, data URL length:', result?.length)
-
-                const img = new Image()
-
-                img.onerror = (error) => {
-                  console.error('Image load error:', error)
-                  alert('Failed to load the image. The file might be corrupted or in an unsupported format.')
-                  document.body.removeChild(input)
-                }
-
-                img.onload = () => {
-                  console.log('Image loaded successfully:', img.width, 'x', img.height)
-
-                  try {
-                    // Calculate scale to fit image within 60% of container width
-                    const maxWidth = ctx.size.width * 0.6
-                    const scaleFactor = img.width > maxWidth ? maxWidth / img.width : 1
-
-                    ctx.addElement({
-                      type: 'image',
-                      base64data: result,
-                      transform: {
-                        centerX: ctx.center.x,
-                        centerY: ctx.center.y,
-                        rotation: 0,
-                        scaleX: scaleFactor,
-                        scaleY: scaleFactor,
-                      },
-                      width: img.width,
-                      height: img.height,
-                      side: ctx.side,
-                    })
-                    console.log('Image element added to context')
-                  } catch (error) {
-                    console.error('Failed to add image element:', error)
-                    alert('Failed to add the image to the editor.')
-                  }
-
-                  document.body.removeChild(input)
-                }
-
-                // Set source after all handlers are attached
-                img.src = result
-              }
-
-              reader.readAsDataURL(file)
             } else {
               // Clean up if no file selected
               document.body.removeChild(input)
