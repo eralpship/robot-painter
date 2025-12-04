@@ -14,6 +14,7 @@
     "svg:clippaths": "node scripts/generate-svg-clippaths.js"
   },
   "dependencies": {
+    "@imagemagick/magick-wasm": "^0.0.37",
     "@react-spring/three": "^10.0.1",
     "@react-three/drei": "^10.0.6",
     "@react-three/fiber": "^9.1.2",
