@@ -12,9 +12,9 @@ export const DEFAULT_MAX_IMAGE_HEIGHT = DEFAULT_MAX_IMAGE_WIDTH
 /**
  * Default PNG compression quality (0-100)
  * Higher = better quality but larger file size
- * 70 provides good balance between quality and file size
+ * 50 provides good balance for 512x512 max size (targets ~20-50KB)
  */
-export const DEFAULT_PNG_QUALITY = 70
+export const DEFAULT_PNG_QUALITY = 50
 
 /**
  * Initialize ImageMagick WASM (call once at app startup)
@@ -49,8 +49,116 @@ export type CompressionResult = {
 }
 
 /**
+ * Process SVG files by rasterizing them to PNG
+ */
+async function processSVG(
+  file: File,
+  options: { maxWidth: number; maxHeight: number; quality: number }
+): Promise<CompressionResult> {
+  const { maxWidth, maxHeight } = options
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = async e => {
+      try {
+        const svgText = e.target?.result as string
+
+        // Create an image element to load the SVG
+        const img = new Image()
+
+        img.onerror = () => reject(new Error('Failed to load SVG'))
+
+        img.onload = () => {
+          // Calculate dimensions while maintaining aspect ratio
+          let width = img.width || maxWidth
+          let height = img.height || maxHeight
+
+          if (width > maxWidth || height > maxHeight) {
+            const aspectRatio = width / height
+            if (width > height) {
+              width = Math.min(width, maxWidth)
+              height = Math.round(width / aspectRatio)
+            } else {
+              height = Math.min(height, maxHeight)
+              width = Math.round(height * aspectRatio)
+            }
+          }
+
+          // Create canvas to rasterize SVG
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'))
+            return
+          }
+
+          // Draw SVG onto canvas
+          ctx.drawImage(img, 0, 0, width, height)
+
+          // Convert to PNG blob with aggressive compression
+          // Quality 0.6 provides good balance for 512x512 max size
+          canvas.toBlob(
+            blob => {
+              if (!blob) {
+                reject(new Error('Failed to convert SVG to PNG'))
+                return
+              }
+
+              const reader2 = new FileReader()
+              reader2.onloadend = () => {
+                const base64data = reader2.result as string
+                const compressedSize = blob.size
+
+                console.log('[SVG Processing]', {
+                  originalSize: formatBytes(file.size),
+                  compressedSize: formatBytes(compressedSize),
+                  compressionRatio: `${Math.round((compressedSize / file.size) * 100)}%`,
+                  format: 'PNG',
+                  dimensions: `${width}x${height}`,
+                  targetMaxSize: '~50KB for 512x512',
+                })
+
+                resolve({
+                  base64data,
+                  width,
+                  height,
+                  originalSize: file.size,
+                  compressedSize,
+                  compressionRatio: compressedSize / file.size,
+                  format: 'image/png',
+                })
+              }
+              reader2.onerror = () => reject(new Error('Failed to read PNG blob'))
+              reader2.readAsDataURL(blob)
+            },
+            'image/png',
+            0.6 // Lower quality for smaller file size
+          )
+        }
+
+        // Create blob URL from SVG text
+        const svgBlob = new Blob([svgText], { type: 'image/svg+xml' })
+        const url = URL.createObjectURL(svgBlob)
+        img.src = url
+
+        // Note: We don't revoke the URL here because img.onload needs it
+        // It will be revoked automatically when the page unloads
+      } catch (error) {
+        reject(error)
+      }
+    }
+
+    reader.onerror = () => reject(new Error('Failed to read SVG file'))
+    reader.readAsText(file)
+  })
+}
+
+/**
  * Compresses an image using ImageMagick WASM
- * Supports all input formats (HEIC, GIF, PNG, JPEG, WebP, etc.)
+ * Supports all input formats (HEIC, GIF, PNG, JPEG, WebP, SVG, etc.)
  * Always outputs PNG for universal compatibility and transparency support
  */
 export async function compressImage(
@@ -62,6 +170,11 @@ export async function compressImage(
     maxHeight = DEFAULT_MAX_IMAGE_HEIGHT,
     quality = DEFAULT_PNG_QUALITY,
   } = options
+
+  // Handle SVG files specially - rasterize them to PNG
+  if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+    return await processSVG(file, { maxWidth, maxHeight, quality })
+  }
 
   // Ensure ImageMagick is initialized
   await initImageMagick()
@@ -99,7 +212,11 @@ export async function compressImage(
           }
 
           // Set compression quality (0-100)
+          // Lower quality significantly reduces file size for 512x512 images
           img.quality = quality
+
+          // Strip metadata to reduce file size
+          img.strip()
 
           // Always output as PNG for universal compatibility and transparency support
           // Note: For GIFs, ImageMagick.read() automatically reads only the first frame

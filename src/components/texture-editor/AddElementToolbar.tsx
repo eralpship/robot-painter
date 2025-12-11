@@ -43,7 +43,7 @@ export function AddElementToolbar() {
         onClick={() => {
           const input = document.createElement('input')
           input.type = 'file'
-          input.accept = 'image/*'
+          input.accept = 'image/*,.svg'
           input.style.display = 'none'
 
           // Append to DOM for Safari compatibility
