@@ -13,10 +13,7 @@ export function RobotPreview() {
       camera={{ position: [10, 5, 10], zoom: 20 }}
       gl={{ toneMapping: 0 }} // Disable tone mapping for flat colors
     >
-      {/* Hemisphere light provides even illumination from all directions - no shadows */}
-      <hemisphereLight intensity={2} groundColor="#444444" color="#ffffff" />
-      {/* Ambient light ensures visibility from all angles */}
-      <ambientLight intensity={2} />
+      <ambientLight intensity={6} />
       <Model
         ref={modelRef}
         position={[0, -3.5, 0]}
