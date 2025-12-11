@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Rnd } from 'react-rnd'
 import './FloatingCollapsibleWindow.css'
+import '@/styles/checkered-background.css'
 
 const headerHeight = 40
 const minSize = 200
@@ -72,7 +73,7 @@ export function FloatingCollapsibleWindow({
             {title}
           </span>
         </div>
-        <div className="overlay-texture-window-content">{children}</div>
+        <div className="overlay-texture-window-content checkered-background">{children}</div>
       </div>
     </Rnd>
   )
