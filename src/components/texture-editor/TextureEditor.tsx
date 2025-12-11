@@ -136,17 +136,26 @@ export function TextureEditor({
     [editorCtx]
   )
 
-  const handleSvgBackgroundClick = useCallback<
-    MouseEventHandler<SVGSVGElement>
-  >(
+  const handleSvgClick = useCallback<MouseEventHandler<SVGSVGElement>>(
     e => {
-      // Only deselect if clicking directly on SVG background, not bubbled from child elements
-      if (e.target === e.currentTarget) {
-        console.log(
-          '[TextureEditor] Clicking SVG background, deselecting element'
-        )
-        editorCtx.setSelectedElementId(undefined)
+      // Check if the clicked element has an ID that matches one of our elements
+      const target = e.target as SVGElement
+      const clickedId = target.getAttribute?.('id')
+
+      // If we clicked on an element with an ID that exists in our elements map, don't deselect
+      if (clickedId && elementRefs.current.has(clickedId)) {
+        return
       }
+
+      // Check if we're clicking on a Moveable control element
+      const moveableControl = (target as Element).closest('.moveable-control')
+      if (moveableControl) {
+        return
+      }
+
+      // Otherwise, deselect
+      console.log('[TextureEditor] Clicking non-element area, deselecting')
+      editorCtx.setSelectedElementId(undefined)
     },
     [editorCtx]
   )
@@ -222,6 +231,61 @@ export function TextureEditor({
     [editorCtx.elements, side]
   )
 
+  // Add document-level click listener to handle deselection
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      console.log('[TextureEditor] Document mousedown event captured', {
+        hasSelection: !!editorCtx.selectedElement,
+        hidden,
+        target: (e.target as HTMLElement).tagName
+      })
+
+      if (!editorCtx.selectedElement || hidden) {
+        return
+      }
+
+      const target = e.target as HTMLElement
+
+      // Don't deselect if clicking on one of our managed elements (text/image)
+      const targetId = target.getAttribute?.('id')
+      if (targetId && elementRefs.current.has(targetId)) {
+        console.log('[TextureEditor] Clicked on element, not deselecting')
+        return
+      }
+
+      // Don't deselect if clicking on Moveable controls
+      if (target.closest('.moveable-control-box, .moveable-line, .moveable-control, .moveable-direction')) {
+        console.log('[TextureEditor] Clicked on Moveable control, not deselecting')
+        return
+      }
+
+      // Don't deselect if clicking on toolbar buttons
+      if (target.closest('button, input')) {
+        console.log('[TextureEditor] Clicked on button/input, not deselecting')
+        return
+      }
+
+      // Check if the click is within the SVG bounds
+      if (svgRef.current) {
+        const svgRect = svgRef.current.getBoundingClientRect()
+        if (
+          e.clientX >= svgRect.left &&
+          e.clientX <= svgRect.right &&
+          e.clientY >= svgRect.top &&
+          e.clientY <= svgRect.bottom
+        ) {
+          console.log('[TextureEditor] Document click outside element, deselecting')
+          editorCtx.setSelectedElementId(undefined)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleDocumentClick, true) // Use capture phase
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick, true)
+    }
+  }, [editorCtx, hidden])
+
   return (
     <>
       <svg
@@ -235,8 +299,9 @@ export function TextureEditor({
           ...style,
           userSelect: 'none',
           backgroundColor: editorCtx.backgroundColor,
+          cursor: 'default',
         }}
-        onClick={handleSvgBackgroundClick}
+        onMouseDown={handleSvgClick}
       >
         <style>
           {`
