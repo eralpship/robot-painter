@@ -11,8 +11,12 @@ export function RobotPreview() {
       style={{ height: '100%', width: '100%', background: 'transparent' }}
       orthographic
       camera={{ position: [10, 5, 10], zoom: 20 }}
+      gl={{ toneMapping: 0 }} // Disable tone mapping for flat colors
     >
-      <ambientLight intensity={5} />
+      {/* Hemisphere light provides even illumination from all directions - no shadows */}
+      <hemisphereLight intensity={2} groundColor="#444444" color="#ffffff" />
+      {/* Ambient light ensures visibility from all angles */}
+      <ambientLight intensity={2} />
       <Model
         ref={modelRef}
         position={[0, -3.5, 0]}
