@@ -4,15 +4,27 @@ import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas
 import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
 import { RobotPreview } from '../components/RobotPreview'
 
+type SearchParams = {
+  'project-id'?: number
+}
+
 export const Route = createFileRoute('/texture-editor')({
+  validateSearch: (search: Record<string, unknown>): SearchParams => {
+    return {
+      'project-id': search['project-id'] ? Number(search['project-id']) : undefined,
+    }
+  },
   component: TextureEditor,
 })
 
 function TextureEditor() {
+  const search = Route.useSearch()
+  const projectId = search['project-id']
+
   return (
     <OverlayTextureCanvasProvider>
       <div style={{ height: '100vh', width: '100vw' }}>
-        <TextureEditorWrapper mode="full" />
+        <TextureEditorWrapper mode="full" projectId={projectId} />
         <FloatingCollapsibleWindow
           title="preview"
           x={12}

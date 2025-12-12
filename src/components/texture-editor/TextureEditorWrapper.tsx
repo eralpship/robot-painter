@@ -43,7 +43,13 @@ function BackdropWithDeselect({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function TextureEditorWrapper({ mode }: { mode: TexureEditorMode }) {
+export function TextureEditorWrapper({
+  mode,
+  projectId,
+}: {
+  mode: TexureEditorMode
+  projectId?: number
+}) {
   return (
     <div
       style={{
@@ -54,7 +60,7 @@ export function TextureEditorWrapper({ mode }: { mode: TexureEditorMode }) {
         gridTemplateColumns: '1fr',
       }}
     >
-      <TextureEditorContextProvider mode={mode}>
+      <TextureEditorContextProvider mode={mode} projectId={projectId}>
         <Toolbar />
         <BackdropWithDeselect>
           <TextureEditor side="front" style={editorStyle} />

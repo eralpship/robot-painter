@@ -2,11 +2,13 @@ import { TextureEditorContext } from '@/contexts/texture-editor-context'
 import { useNavigate } from '@tanstack/react-router'
 import { debounce } from 'lodash'
 import { useCallback, useContext, useEffect, useState } from 'react'
+import { validateProjectName, sanitizeProjectName } from '@/utils/projectValidation'
 
 export function CommonToolbar() {
   const ctx = useContext(TextureEditorContext)
   const navigate = useNavigate()
   const [localColor, setLocalColor] = useState(ctx.backgroundColor)
+  const [isCreatingProject, setIsCreatingProject] = useState(false)
 
   // Debounced function to update context
   const debouncedSetColor = useCallback(
@@ -74,6 +76,55 @@ export function CommonToolbar() {
         }}
       >
         reset
+      </button>
+      <button
+        onClick={async () => {
+          if (isCreatingProject) return
+
+          const name = window.prompt('Enter project name:')
+
+          if (name === null) {
+            // User cancelled
+            return
+          }
+
+          const validation = validateProjectName(name)
+
+          if (!validation.valid) {
+            alert(validation.error)
+            return
+          }
+
+          const sanitizedName = sanitizeProjectName(name)
+
+          setIsCreatingProject(true)
+          try {
+            // Create project and get the new ID
+            await ctx.createNewProject(sanitizedName)
+
+            // Navigate to the current route with the new project-id
+            // Use full page reload to ensure context reinitializes with new projectId
+            const currentPath = ctx.mode === 'full' ? '/texture-editor' : '/'
+
+            // Get the newly created project ID from localStorage
+            const newProjectId = localStorage.getItem('current-project-id')
+
+            if (newProjectId) {
+              // Force full page reload with new URL
+              window.location.href = `${currentPath}?project-id=${newProjectId}`
+            }
+          } catch (error) {
+            console.error('[CommonToolbar] Failed to create new project:', error)
+            setIsCreatingProject(false)
+          }
+        }}
+        style={{
+          cursor: 'pointer',
+          opacity: isCreatingProject ? 0.5 : 1,
+        }}
+        disabled={isCreatingProject}
+      >
+        {isCreatingProject ? 'creating...' : 'new project'}
       </button>
     </>
   )

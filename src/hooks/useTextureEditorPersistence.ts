@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import type { TextureEditorElementWithUuid } from '@/contexts/texture-editor-context'
+import { createDefaultElements } from '@/contexts/texture-editor-context'
 import { db } from '@/db/db'
 
 const CURRENT_PROJECT_ID_KEY = 'current-project-id'
@@ -61,22 +62,48 @@ export function useTextureEditorPersistence() {
     []
   )
 
-  const loadState = useCallback(async (): Promise<{
-    backgroundColor: string
-    elements: Map<string, TextureEditorElementWithUuid>
-  } | null> => {
+  const getMostRecentProjectId = useCallback(async (): Promise<number | null> => {
     try {
-      console.log('[Persistence] Attempting to load from IndexedDB')
-
-      // Get most recently modified project
       const project = await db.textureProjects
         .orderBy('dateModified')
         .reverse()
         .first()
 
-      if (!project) {
-        console.log('[Persistence] No projects found in IndexedDB')
-        return null
+      return project?.id ? (project.id as number) : null
+    } catch (error) {
+      console.error('[Persistence] Failed to get most recent project ID:', error)
+      return null
+    }
+  }, [])
+
+  const loadState = useCallback(async (projectId?: number): Promise<{
+    backgroundColor: string
+    elements: Map<string, TextureEditorElementWithUuid>
+  } | null> => {
+    try {
+      console.log('[Persistence] Attempting to load from IndexedDB', { projectId })
+
+      let project
+
+      if (projectId !== undefined) {
+        // Load specific project by ID
+        project = await db.textureProjects.get(projectId)
+
+        if (!project) {
+          console.log('[Persistence] Project not found', { projectId })
+          return null
+        }
+      } else {
+        // Get most recently modified project
+        project = await db.textureProjects
+          .orderBy('dateModified')
+          .reverse()
+          .first()
+
+        if (!project) {
+          console.log('[Persistence] No projects found in IndexedDB')
+          return null
+        }
       }
 
       const parsed: PersistedState = JSON.parse(project.json)
@@ -122,6 +149,42 @@ export function useTextureEditorPersistence() {
     }
   }, [])
 
+  const createProject = useCallback(async (name: string): Promise<number> => {
+    try {
+      // Create default elements
+      const defaultElements = createDefaultElements()
+
+      const state: PersistedState = {
+        version: CURRENT_VERSION,
+        backgroundColor: '#ffffff',
+        elements: Array.from(defaultElements.values()),
+      }
+
+      const json = JSON.stringify(state)
+
+      const id = await db.textureProjects.add({
+        name,
+        json,
+        dateCreated: new Date(),
+        dateModified: new Date(),
+      })
+
+      localStorage.setItem(CURRENT_PROJECT_ID_KEY, id.toString())
+
+      console.log('[Persistence] Created new project', {
+        id,
+        name,
+        version: CURRENT_VERSION,
+        elementCount: defaultElements.size,
+      })
+
+      return id as number
+    } catch (error) {
+      console.error('[Persistence] Failed to create project:', error)
+      throw error
+    }
+  }, [])
+
   const clearState = useCallback(async () => {
     try {
       const currentIdStr = localStorage.getItem(CURRENT_PROJECT_ID_KEY)
@@ -139,6 +202,8 @@ export function useTextureEditorPersistence() {
   return {
     saveState,
     loadState,
+    getMostRecentProjectId,
+    createProject,
     clearState,
   }
 }

@@ -89,8 +89,14 @@ export function TextureEditor({
     img.src = `data:image/svg+xml,${encodedSvg}`
   }, [side])
 
-  // Update texture when backgroundColor or elements change
+  // Update texture when backgroundColor or elements change (but only after initial load)
   useEffect(() => {
+    // Don't update texture until initial load is complete
+    if (!editorCtx.isLoaded) {
+      console.log('[TextureEditor] Skipping texture update - not yet loaded')
+      return
+    }
+
     // Use requestAnimationFrame to ensure SVG has rendered before serializing
     // This is more reliable than setTimeout(0) and avoids race conditions
     let rafId: number | null = null
@@ -105,7 +111,7 @@ export function TextureEditor({
         cancelAnimationFrame(rafId)
       }
     }
-  }, [editorCtx.backgroundColor, editorCtx.elements, updateTexture])
+  }, [editorCtx.backgroundColor, editorCtx.elements, editorCtx.isLoaded, updateTexture])
 
   // Notify context when editor is ready (SVG is mounted)
   useEffect(() => {

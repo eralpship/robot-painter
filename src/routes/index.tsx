@@ -38,7 +38,16 @@ const customLevaTheme = {
   },
 }
 
+type SearchParams = {
+  'project-id'?: number
+}
+
 export const Route = createFileRoute('/')({
+  validateSearch: (search: Record<string, unknown>): SearchParams => {
+    return {
+      'project-id': search['project-id'] ? Number(search['project-id']) : undefined,
+    }
+  },
   component: App,
 })
 
@@ -279,7 +288,7 @@ const EnvironmentWrapper = forwardRef<EnvironmentWrapperRef>((_, ref) => {
   )
 })
 
-function AppContent() {
+function AppContent({ projectId }: { projectId?: number }) {
   const inactivityTimeout = 5_000
   const hasInteractedRef = useRef(false)
   const lastInteractionTimeRef = useRef(Date.now())
@@ -409,17 +418,20 @@ function AppContent() {
         width={306}
         height={384}
       >
-        <TextureEditorWrapper mode="basic" />
+        <TextureEditorWrapper mode="basic" projectId={projectId} />
       </FloatingCollapsibleWindow>
     </div>
   )
 }
 
 function App() {
+  const search = Route.useSearch()
+  const projectId = search['project-id']
+
   return (
     <OverlayTextureCanvasProvider>
       <TooltipProvider>
-        <AppContent />
+        <AppContent projectId={projectId} />
       </TooltipProvider>
     </OverlayTextureCanvasProvider>
   )
