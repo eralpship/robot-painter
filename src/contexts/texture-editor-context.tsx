@@ -202,7 +202,7 @@ export function TextureEditorContextProvider({
   projectId?: number
   children: React.ReactNode
 }) {
-  const { saveState, loadState, getMostRecentProjectId, createProject, clearState } = useTextureEditorPersistence()
+  const { saveState, loadState, getMostRecentProjectId, createProject } = useTextureEditorPersistence()
 
   // Start with empty elements - we'll load from database
   const [elements, dispatchElementsAction] = useReducer(

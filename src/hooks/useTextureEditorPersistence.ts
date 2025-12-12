@@ -185,25 +185,10 @@ export function useTextureEditorPersistence() {
     }
   }, [])
 
-  const clearState = useCallback(async () => {
-    try {
-      const currentIdStr = localStorage.getItem(CURRENT_PROJECT_ID_KEY)
-      if (currentIdStr) {
-        const id = parseInt(currentIdStr, 10)
-        await db.textureProjects.delete(id)
-        localStorage.removeItem(CURRENT_PROJECT_ID_KEY)
-        console.log('[Persistence] Cleared project', id)
-      }
-    } catch (error) {
-      console.error('[Persistence] Failed to clear texture editor state:', error)
-    }
-  }, [])
-
   return {
     saveState,
     loadState,
     getMostRecentProjectId,
     createProject,
-    clearState,
   }
 }
