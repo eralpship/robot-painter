@@ -221,11 +221,16 @@ export function TextureEditorContextProvider({
 
   // Load saved state only after TextureEditor signals it's ready
   const hasLoadedFromStorage = useRef(false)
+  const redirectCountRef = useRef(0)
+  const MAX_REDIRECTS = 3
   const notifyEditorReady = useCallback(() => {
     if (hasLoadedFromStorage.current) {
       console.log('[TextureEditor] Already loaded from storage, skipping')
       return
     }
+
+    // Set flag immediately to prevent race conditions from duplicate calls
+    hasLoadedFromStorage.current = true
 
     console.log('[TextureEditor] Editor is ready, loading saved state from IndexedDB', { projectId })
 
@@ -234,6 +239,17 @@ export function TextureEditorContextProvider({
       console.log('[TextureEditor] No project ID in URL, looking up most recent project')
       getMostRecentProjectId().then(async recentProjectId => {
         if (recentProjectId !== null) {
+          // Check redirect circuit breaker
+          if (redirectCountRef.current >= MAX_REDIRECTS) {
+            console.error('[TextureEditor] Max redirects exceeded, stopping to prevent infinite loop')
+            alert('Unable to load project. Please clear browser data and refresh.')
+            setIsLoaded(true)
+            return
+          }
+
+          redirectCountRef.current += 1
+          console.log('[TextureEditor] Redirect attempt', { count: redirectCountRef.current })
+
           // Redirect to most recent project
           console.log('[TextureEditor] Redirecting to most recent project', { id: recentProjectId })
           const currentPath = mode === 'full' ? '/texture-editor' : '/'
@@ -245,18 +261,27 @@ export function TextureEditorContextProvider({
             const defaultProjectId = await createProject('default')
             console.log('[TextureEditor] Created default project', { id: defaultProjectId })
 
+            // Check redirect circuit breaker
+            if (redirectCountRef.current >= MAX_REDIRECTS) {
+              console.error('[TextureEditor] Max redirects exceeded, stopping to prevent infinite loop')
+              alert('Unable to load project. Please clear browser data and refresh.')
+              setIsLoaded(true)
+              return
+            }
+
+            redirectCountRef.current += 1
+            console.log('[TextureEditor] Redirect attempt', { count: redirectCountRef.current })
+
             // Reload page with new project ID
             const currentPath = mode === 'full' ? '/texture-editor' : '/'
             window.location.href = `${currentPath}?project-id=${defaultProjectId}`
           } catch (error) {
             console.error('[TextureEditor] Failed to create default project:', error)
-            hasLoadedFromStorage.current = true
             setIsLoaded(true)
           }
         }
       }).catch(error => {
         console.error('[TextureEditor] Failed to get most recent project ID:', error)
-        hasLoadedFromStorage.current = true
         setIsLoaded(true)
       })
       return
@@ -271,17 +296,50 @@ export function TextureEditorContextProvider({
         })
         dispatchElementsAction({ type: 'load', elements: loaded.elements })
         setBackgroundColor(loaded.backgroundColor)
-        hasLoadedFromStorage.current = true
         setIsLoaded(true)
+        redirectCountRef.current = 0 // Reset counter on successful load
       } else {
-        // Invalid project ID - show alert
+        // Invalid project ID - check if other projects exist
         alert(`Project with id ${projectId} doesn't exist!`)
-        hasLoadedFromStorage.current = true
-        setIsLoaded(true)
+        console.log('[TextureEditor] Invalid project ID, checking for other projects')
+
+        const recentProjectId = await getMostRecentProjectId()
+        const currentPath = mode === 'full' ? '/texture-editor' : '/'
+
+        if (recentProjectId !== null) {
+          // Check redirect circuit breaker
+          if (redirectCountRef.current >= MAX_REDIRECTS) {
+            console.error('[TextureEditor] Max redirects exceeded, stopping to prevent infinite loop')
+            alert('Unable to load project. Please clear browser data and refresh.')
+            setIsLoaded(true)
+            return
+          }
+
+          redirectCountRef.current += 1
+          console.log('[TextureEditor] Redirect attempt', { count: redirectCountRef.current })
+
+          // Redirect to most recent project
+          console.log('[TextureEditor] Redirecting to most recent project', { id: recentProjectId })
+          window.location.href = `${currentPath}?project-id=${recentProjectId}`
+        } else {
+          // Check redirect circuit breaker
+          if (redirectCountRef.current >= MAX_REDIRECTS) {
+            console.error('[TextureEditor] Max redirects exceeded, stopping to prevent infinite loop')
+            alert('Unable to load project. Please clear browser data and refresh.')
+            setIsLoaded(true)
+            return
+          }
+
+          redirectCountRef.current += 1
+          console.log('[TextureEditor] Redirect attempt', { count: redirectCountRef.current })
+
+          // No projects exist - clear parameter and reload (will trigger default project creation)
+          console.log('[TextureEditor] No projects found, clearing parameter to trigger default project creation')
+          window.location.href = currentPath
+        }
       }
     }).catch(error => {
       console.error('[TextureEditor] Failed to load state from IndexedDB:', error)
-      hasLoadedFromStorage.current = true
       setIsLoaded(true)
     })
   }, [loadState, getMostRecentProjectId, projectId, createProject, mode])
@@ -341,24 +399,19 @@ export function TextureEditorContextProvider({
     }
   }, [createProject])
 
-  // Track if user has made any changes to enable auto-save
-  const hasUserMadeChanges = useRef(false)
-  const mountTimeRef = useRef(Date.now())
-
-  // Auto-sync to IndexedDB when state changes (only after user interaction)
+  // Auto-sync to IndexedDB when state changes (only after load completes)
   useEffect(() => {
-    const timeSinceMount = Date.now() - mountTimeRef.current
-
-    // Skip auto-save for the first 2 seconds after mount to avoid saving initial state
-    if (timeSinceMount < 2000) {
-      console.log('[TextureEditor] Skipping auto-save - within initial mount period', {
-        timeSinceMount
-      })
+    // Skip auto-save until initial load is complete
+    if (!isLoaded) {
+      console.log('[TextureEditor] Skipping auto-save - not yet loaded')
       return
     }
 
-    // Enable auto-save after first 2 seconds (user has had time to interact)
-    hasUserMadeChanges.current = true
+    // Skip auto-save if no project ID in URL
+    if (!projectId) {
+      console.warn('[TextureEditor] No project ID in URL, skipping auto-save')
+      return
+    }
 
     console.log('[TextureEditor] State changed, scheduling auto-save in 300ms', {
       backgroundColor,
@@ -370,7 +423,7 @@ export function TextureEditorContextProvider({
         backgroundColor,
         elementCount: elements.size
       })
-      saveState(backgroundColor, elements).then(() => {
+      saveState(projectId, backgroundColor, elements).then(() => {
         console.log('[TextureEditor] Auto-save completed successfully')
       }).catch(error => {
         console.error('[TextureEditor] Auto-save failed:', error)
@@ -378,7 +431,7 @@ export function TextureEditorContextProvider({
     }, 300)
 
     return () => clearTimeout(timeoutId)
-  }, [backgroundColor, elements, saveState])
+  }, [backgroundColor, elements, isLoaded, saveState, projectId])
 
   return (
     <TextureEditorContext.Provider

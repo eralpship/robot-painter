@@ -10,9 +10,16 @@ type SearchParams = {
 
 export const Route = createFileRoute('/texture-editor')({
   validateSearch: (search: Record<string, unknown>): SearchParams => {
-    return {
-      'project-id': search['project-id'] ? Number(search['project-id']) : undefined,
+    const id = search['project-id']
+    const numId = Number(id)
+
+    // Valid: positive integers only
+    if (numId > 0 && Number.isInteger(numId)) {
+      return { 'project-id': numId }
     }
+
+    // Invalid: undefined will trigger "no project ID" flow
+    return { 'project-id': undefined }
   },
   component: TextureEditor,
 })

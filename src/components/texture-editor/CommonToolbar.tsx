@@ -100,19 +100,14 @@ export function CommonToolbar() {
           setIsCreatingProject(true)
           try {
             // Create project and get the new ID
-            await ctx.createNewProject(sanitizedName)
+            const newProjectId = await ctx.createNewProject(sanitizedName)
 
             // Navigate to the current route with the new project-id
             // Use full page reload to ensure context reinitializes with new projectId
             const currentPath = ctx.mode === 'full' ? '/texture-editor' : '/'
 
-            // Get the newly created project ID from localStorage
-            const newProjectId = localStorage.getItem('current-project-id')
-
-            if (newProjectId) {
-              // Force full page reload with new URL
-              window.location.href = `${currentPath}?project-id=${newProjectId}`
-            }
+            // Force full page reload with new URL
+            window.location.href = `${currentPath}?project-id=${newProjectId}`
           } catch (error) {
             console.error('[CommonToolbar] Failed to create new project:', error)
             setIsCreatingProject(false)
