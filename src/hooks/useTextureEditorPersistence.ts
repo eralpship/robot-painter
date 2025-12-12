@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 import type { TextureEditorElementWithUuid } from '@/contexts/texture-editor-context'
+import { db } from '@/db/db'
 
-const STORAGE_KEY = 'texture-editor-state'
+const CURRENT_PROJECT_ID_KEY = 'current-project-id'
 const CURRENT_VERSION = 2
 
 type PersistedState = {
@@ -12,22 +13,47 @@ type PersistedState = {
 
 export function useTextureEditorPersistence() {
   const saveState = useCallback(
-    (backgroundColor: string, elements: Map<string, TextureEditorElementWithUuid>) => {
+    async (backgroundColor: string, elements: Map<string, TextureEditorElementWithUuid>) => {
       try {
         const state: PersistedState = {
           version: CURRENT_VERSION,
           backgroundColor,
           elements: Array.from(elements.values()),
         }
-        const serialized = JSON.stringify(state)
-        localStorage.setItem(STORAGE_KEY, serialized)
-        console.log('[Persistence] Saved to localStorage', {
-          key: STORAGE_KEY,
-          version: CURRENT_VERSION,
-          backgroundColor,
-          elementCount: elements.size,
-          serializedLength: serialized.length
-        })
+
+        const json = JSON.stringify(state)
+        const currentIdStr = localStorage.getItem(CURRENT_PROJECT_ID_KEY)
+
+        if (currentIdStr) {
+          // Update existing project
+          const id = parseInt(currentIdStr, 10)
+          await db.textureProjects.update(id, {
+            json,
+            dateModified: new Date(),
+          })
+          console.log('[Persistence] Updated project', {
+            id,
+            version: CURRENT_VERSION,
+            backgroundColor,
+            elementCount: elements.size,
+            jsonLength: json.length,
+          })
+        } else {
+          // Create new project
+          const id = await db.textureProjects.add({
+            name: 'My Texture Project',
+            json,
+            dateCreated: new Date(),
+            dateModified: new Date(),
+          })
+          localStorage.setItem(CURRENT_PROJECT_ID_KEY, id.toString())
+          console.log('[Persistence] Created new project', {
+            id,
+            version: CURRENT_VERSION,
+            backgroundColor,
+            elementCount: elements.size,
+          })
+        }
       } catch (error) {
         console.error('[Persistence] Failed to save texture editor state:', error)
       }
@@ -35,30 +61,40 @@ export function useTextureEditorPersistence() {
     []
   )
 
-  const loadState = useCallback((): {
+  const loadState = useCallback(async (): Promise<{
     backgroundColor: string
     elements: Map<string, TextureEditorElementWithUuid>
-  } | null => {
+  } | null> => {
     try {
-      console.log('[Persistence] Attempting to load from localStorage, key:', STORAGE_KEY)
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (!stored) {
-        console.log('[Persistence] No data found in localStorage')
+      console.log('[Persistence] Attempting to load from IndexedDB')
+
+      // Get most recently modified project
+      const project = await db.textureProjects
+        .orderBy('dateModified')
+        .reverse()
+        .first()
+
+      if (!project) {
+        console.log('[Persistence] No projects found in IndexedDB')
         return null
       }
 
-      console.log('[Persistence] Found data in localStorage, length:', stored.length)
-      const parsed: PersistedState = JSON.parse(stored)
+      const parsed: PersistedState = JSON.parse(project.json)
 
       // Version check - clear incompatible formats
       if (!parsed.version || parsed.version < CURRENT_VERSION) {
         console.log('[Persistence] Incompatible version detected', {
           storedVersion: parsed.version || 1,
           currentVersion: CURRENT_VERSION,
-          action: 'clearing old state'
+          projectId: project.id,
+          action: 'skipping this project',
         })
-        localStorage.removeItem(STORAGE_KEY)
         return null
+      }
+
+      // Store current project ID for future saves
+      if (project.id) {
+        localStorage.setItem(CURRENT_PROJECT_ID_KEY, project.id.toString())
       }
 
       // Convert array back to Map, preserving UUIDs
@@ -67,10 +103,13 @@ export function useTextureEditorPersistence() {
         elementsMap.set(element.uuid, element)
       }
 
-      console.log('[Persistence] Loaded from localStorage', {
+      console.log('[Persistence] Loaded from IndexedDB', {
+        projectId: project.id,
+        projectName: project.name,
         version: parsed.version,
         backgroundColor: parsed.backgroundColor,
-        elementCount: elementsMap.size
+        elementCount: elementsMap.size,
+        dateModified: project.dateModified,
       })
 
       return {
@@ -83,11 +122,17 @@ export function useTextureEditorPersistence() {
     }
   }, [])
 
-  const clearState = useCallback(() => {
+  const clearState = useCallback(async () => {
     try {
-      localStorage.removeItem(STORAGE_KEY)
+      const currentIdStr = localStorage.getItem(CURRENT_PROJECT_ID_KEY)
+      if (currentIdStr) {
+        const id = parseInt(currentIdStr, 10)
+        await db.textureProjects.delete(id)
+        localStorage.removeItem(CURRENT_PROJECT_ID_KEY)
+        console.log('[Persistence] Cleared project', id)
+      }
     } catch (error) {
-      console.error('Failed to clear texture editor state:', error)
+      console.error('[Persistence] Failed to clear texture editor state:', error)
     }
   }, [])
 

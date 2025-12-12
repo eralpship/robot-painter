@@ -2,7 +2,6 @@ import { TextureEditorContext, CANVAS_SIZE } from '@/contexts/texture-editor-con
 import { useContext } from 'react'
 import {
   compressImage,
-  checkLocalStorageQuota,
   formatBytes,
   DEFAULT_MAX_IMAGE_WIDTH,
   DEFAULT_MAX_IMAGE_HEIGHT,
@@ -70,24 +69,12 @@ export function AddElementToolbar() {
                   maxHeight: DEFAULT_MAX_IMAGE_HEIGHT,
                 })
 
-                // Check compressed size limit (what actually gets stored)
+                // Check compressed size limit
                 if (compressed.compressedSize > MAX_COMPRESSED_SIZE) {
                   alert(
                     `Compressed image is too large (${formatBytes(compressed.compressedSize)}). ` +
                     `Maximum allowed is ${formatBytes(MAX_COMPRESSED_SIZE)}. ` +
                     `Try using a simpler image with fewer colors or details.`
-                  )
-                  document.body.removeChild(input)
-                  return
-                }
-
-                // Check localStorage quota
-                const quota = checkLocalStorageQuota(compressed.base64data.length)
-                if (!quota.hasSpace) {
-                  alert(
-                    `Not enough space in localStorage. Current usage: ${formatBytes(quota.estimatedUsage)}. ` +
-                    `This image would add ${formatBytes(compressed.compressedSize)}. ` +
-                    `Please remove some elements or use a smaller image.`
                   )
                   document.body.removeChild(input)
                   return

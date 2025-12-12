@@ -339,29 +339,3 @@ export function formatBytes(bytes: number): string {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
-/**
- * Checks if localStorage has enough space for the data
- */
-export function checkLocalStorageQuota(dataSize: number): {
-  hasSpace: boolean
-  estimatedUsage: number
-  estimatedLimit: number
-} {
-  const estimatedLimit = 5 * 1024 * 1024 // 5MB typical limit
-
-  // Calculate current usage
-  let currentUsage = 0
-  for (const key in localStorage) {
-    if (localStorage.hasOwnProperty(key)) {
-      currentUsage += localStorage[key].length + key.length
-    }
-  }
-
-  const estimatedUsageAfter = currentUsage + dataSize
-
-  return {
-    hasSpace: estimatedUsageAfter < estimatedLimit * 0.9, // Keep 10% buffer
-    estimatedUsage: currentUsage,
-    estimatedLimit,
-  }
-}

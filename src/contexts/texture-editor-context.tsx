@@ -216,23 +216,28 @@ export function TextureEditorContextProvider({
   const hasLoadedFromStorage = useRef(false)
   const notifyEditorReady = useCallback(() => {
     if (hasLoadedFromStorage.current) {
+      console.log('[TextureEditor] Already loaded from storage, skipping')
       return
     }
 
-    console.log('[TextureEditor] Editor is ready, loading saved state')
-    const loaded = loadState()
-    if (loaded) {
-      console.log('[TextureEditor] Loading saved state from localStorage', {
-        backgroundColor: loaded.backgroundColor,
-        elementCount: loaded.elements.size
-      })
-      dispatchElementsAction({ type: 'load', elements: loaded.elements })
-      setBackgroundColor(loaded.backgroundColor)
+    console.log('[TextureEditor] Editor is ready, loading saved state from IndexedDB')
+    loadState().then(loaded => {
+      if (loaded) {
+        console.log('[TextureEditor] Loading saved state from IndexedDB', {
+          backgroundColor: loaded.backgroundColor,
+          elementCount: loaded.elements.size
+        })
+        dispatchElementsAction({ type: 'load', elements: loaded.elements })
+        setBackgroundColor(loaded.backgroundColor)
+        hasLoadedFromStorage.current = true
+      } else {
+        console.log('[TextureEditor] No saved state found in IndexedDB, using defaults')
+        hasLoadedFromStorage.current = true
+      }
+    }).catch(error => {
+      console.error('[TextureEditor] Failed to load state from IndexedDB:', error)
       hasLoadedFromStorage.current = true
-    } else {
-      console.log('[TextureEditor] No saved state found, using defaults')
-      hasLoadedFromStorage.current = true
-    }
+    })
   }, [loadState])
 
   const resetToDefaults = useCallback(() => {
@@ -281,7 +286,7 @@ export function TextureEditorContextProvider({
   const hasUserMadeChanges = useRef(false)
   const mountTimeRef = useRef(Date.now())
 
-  // Auto-sync to localStorage when state changes (only after user interaction)
+  // Auto-sync to IndexedDB when state changes (only after user interaction)
   useEffect(() => {
     const timeSinceMount = Date.now() - mountTimeRef.current
 
@@ -302,11 +307,15 @@ export function TextureEditorContextProvider({
     })
 
     const timeoutId = setTimeout(() => {
-      console.log('[TextureEditor] Auto-saving to localStorage', {
+      console.log('[TextureEditor] Auto-saving to IndexedDB', {
         backgroundColor,
         elementCount: elements.size
       })
-      saveState(backgroundColor, elements)
+      saveState(backgroundColor, elements).then(() => {
+        console.log('[TextureEditor] Auto-save completed successfully')
+      }).catch(error => {
+        console.error('[TextureEditor] Auto-save failed:', error)
+      })
     }, 300)
 
     return () => clearTimeout(timeoutId)

@@ -21,6 +21,8 @@
     "@tanstack/react-router": "^1.114.3",
     "@tanstack/react-router-devtools": "^1.114.3",
     "@tanstack/router-plugin": "^1.114.3",
+    "dexie": "^4.2.1",
+    "dexie-react-hooks": "^4.2.0",
     "leva": "^0.10.0",
     "lodash": "^4.17.21",
     "react": "^19.0.0",
