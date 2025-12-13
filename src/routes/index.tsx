@@ -1,445 +1,445 @@
-import { createFileRoute } from '@tanstack/react-router'
-import '../App.css'
-import { Canvas, useThree } from '@react-three/fiber'
+import { createFileRoute } from "@tanstack/react-router";
+import "../App.css";
+import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
+import { Canvas, useThree } from "@react-three/fiber";
+import { button, Leva, useControls } from "leva";
 import {
-  HEADLIGHT_INTENSITY_DEFAULT,
-  Model,
-  TAILLIGHT_COLOR_DEFAULT,
-  TAILLIGHT_INTENSITY_DEFAULT,
-  type ModelRef,
-} from '../components/E-model'
-import { OrbitControls, ContactShadows, Environment } from '@react-three/drei'
-import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
+	forwardRef,
+	Suspense,
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useRef,
+	useState,
+} from "react";
+import { type AmbientLight, PerspectiveCamera } from "three";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
-  useRef,
-  useEffect,
-  Suspense,
-  useCallback,
-  forwardRef,
-  useImperativeHandle,
-  useState,
-} from 'react'
-import { TooltipProvider } from '../contexts/tooltip-context'
-import { OverlayTextureCanvasProvider } from '../contexts/overlay-texture-canvas-context'
-import { FloatingCollapsibleWindow } from '../components/FloatingCollapsibleWindow'
-import { TextureEditorWrapper } from '../components/texture-editor/TextureEditorWrapper'
-import { Leva, useControls, button } from 'leva'
-import { PerspectiveCamera } from 'three'
+	HEADLIGHT_INTENSITY_DEFAULT,
+	Model,
+	type ModelRef,
+	TAILLIGHT_COLOR_DEFAULT,
+	TAILLIGHT_INTENSITY_DEFAULT,
+} from "../components/E-model";
+import { FloatingCollapsibleWindow } from "../components/FloatingCollapsibleWindow";
+import { TextureEditorWrapper } from "../components/texture-editor/TextureEditorWrapper";
+import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
+import { TooltipProvider } from "../contexts/tooltip-context";
 
-const FOV_INITIAL = 20
-const INITIAL_AMBIENT_LIGHT = 0.8
-const INITIAL_ENVIRONMENT_INTENSITY = 0.7
-const INITIAL_BACKGROUND_BLUR = 0.7
-const INITIAL_BACKGROUND_INTENSITY = 0.4
+const FOV_INITIAL = 20;
+const INITIAL_AMBIENT_LIGHT = 0.8;
+const INITIAL_ENVIRONMENT_INTENSITY = 0.7;
+const INITIAL_BACKGROUND_BLUR = 0.7;
+const INITIAL_BACKGROUND_INTENSITY = 0.4;
 
 const customLevaTheme = {
-  sizes: {
-    rootWidth: '340px',
-  },
-}
+	sizes: {
+		rootWidth: "340px",
+	},
+};
 
 type SearchParams = {
-  'project-id'?: number
-}
+	"project-id"?: number;
+};
 
-export const Route = createFileRoute('/')({
-  validateSearch: (search: Record<string, unknown>): SearchParams => {
-    const id = search['project-id']
-    const numId = Number(id)
+export const Route = createFileRoute("/")({
+	validateSearch: (search: Record<string, unknown>): SearchParams => {
+		const id = search["project-id"];
+		const numId = Number(id);
 
-    // Valid: positive integers only
-    if (numId > 0 && Number.isInteger(numId)) {
-      return { 'project-id': numId }
-    }
+		// Valid: positive integers only
+		if (numId > 0 && Number.isInteger(numId)) {
+			return { "project-id": numId };
+		}
 
-    // Invalid: undefined will trigger "no project ID" flow
-    return { 'project-id': undefined }
-  },
-  component: App,
-})
+		// Invalid: undefined will trigger "no project ID" flow
+		return { "project-id": undefined };
+	},
+	component: App,
+});
 
 function useModelControls({
-  modelRef,
-  cameraControlsRef,
-  cameraControllerRef,
-  ambientLightRef,
-  environmentWrapperRef,
+	modelRef,
+	cameraControlsRef,
+	cameraControllerRef,
+	ambientLightRef,
+	environmentWrapperRef,
 }: {
-  modelRef: React.RefObject<ModelRef | null>
-  cameraControlsRef: React.RefObject<OrbitControlsImpl | null>
-  cameraControllerRef: React.RefObject<CameraControllerRef | null>
-  ambientLightRef: React.RefObject<any>
-  environmentWrapperRef: React.RefObject<EnvironmentWrapperRef | null>
+	modelRef: React.RefObject<ModelRef | null>;
+	cameraControlsRef: React.RefObject<OrbitControlsImpl | null>;
+	cameraControllerRef: React.RefObject<CameraControllerRef | null>;
+	ambientLightRef: React.RefObject<AmbientLight | null>;
+	environmentWrapperRef: React.RefObject<EnvironmentWrapperRef | null>;
 }) {
-  const [_lighting, setLighting] = useControls('Lighting', () => ({
-    headlightsIntensity: {
-      value: HEADLIGHT_INTENSITY_DEFAULT,
-      label: 'Headlights Intensity',
-      max: 60,
-      min: 0,
-      step: 0.1,
-      onChange: (value: number) => {
-        modelRef.current?.setHeadlightsIntensity(value)
-      },
-    },
-    taillightsIntensity: {
-      value: TAILLIGHT_INTENSITY_DEFAULT,
-      label: 'Taillights Intensity',
-      max: 60,
-      min: 0,
-      step: 0.1,
-      onChange: (value: number) => {
-        modelRef.current?.setTaillightsIntensity(value)
-      },
-    },
-    tailLightColor: {
-      value: TAILLIGHT_COLOR_DEFAULT,
-      label: 'Tail Light Color',
-      onChange: (value: string) => {
-        modelRef.current?.setTailLightColor(value)
-      },
-    },
-  }))
+	const [_lighting, setLighting] = useControls("Lighting", () => ({
+		headlightsIntensity: {
+			value: HEADLIGHT_INTENSITY_DEFAULT,
+			label: "Headlights Intensity",
+			max: 60,
+			min: 0,
+			step: 0.1,
+			onChange: (value: number) => {
+				modelRef.current?.setHeadlightsIntensity(value);
+			},
+		},
+		taillightsIntensity: {
+			value: TAILLIGHT_INTENSITY_DEFAULT,
+			label: "Taillights Intensity",
+			max: 60,
+			min: 0,
+			step: 0.1,
+			onChange: (value: number) => {
+				modelRef.current?.setTaillightsIntensity(value);
+			},
+		},
+		tailLightColor: {
+			value: TAILLIGHT_COLOR_DEFAULT,
+			label: "Tail Light Color",
+			onChange: (value: string) => {
+				modelRef.current?.setTailLightColor(value);
+			},
+		},
+	}));
 
-  const [_animation, setAnimation] = useControls('Animation', () => ({
-    lidOpen: {
-      value: false,
-      label: 'Lid Open',
-      onChange: (value: boolean) => {
-        modelRef.current?.setLidOpen(value)
-      },
-    },
-    bogie: {
-      value: 0.5,
-      label: 'Bogie',
-      min: 0,
-      max: 1,
-      step: 0.1,
-      onChange: (value: number) => {
-        modelRef.current?.setBogieAmount(value)
-      },
-    },
-    touchFlag: button(() => modelRef.current?.touchFlag()),
-  }))
+	const [_animation, setAnimation] = useControls("Animation", () => ({
+		lidOpen: {
+			value: false,
+			label: "Lid Open",
+			onChange: (value: boolean) => {
+				modelRef.current?.setLidOpen(value);
+			},
+		},
+		bogie: {
+			value: 0.5,
+			label: "Bogie",
+			min: 0,
+			max: 1,
+			step: 0.1,
+			onChange: (value: number) => {
+				modelRef.current?.setBogieAmount(value);
+			},
+		},
+		touchFlag: button(() => modelRef.current?.touchFlag()),
+	}));
 
-  useControls(
-    'Camera',
-    {
-      autoRotate: {
-        value: true,
-        label: 'Auto Rotate',
-        onChange: (value: boolean) => {
-          if (cameraControlsRef.current) {
-            cameraControlsRef.current.autoRotate = value
-          }
-        },
-      },
-      fov: {
-        value: FOV_INITIAL,
-        label: 'FOV',
-        min: 5,
-        max: 60,
-        step: 0.5,
-        onChange: (value: number) => {
-          cameraControllerRef.current?.setFov(value)
-        },
-      },
-      resetCamera: button(() => cameraControlsRef.current?.reset()),
-    },
-    { collapsed: true }
-  )
+	useControls(
+		"Camera",
+		{
+			autoRotate: {
+				value: true,
+				label: "Auto Rotate",
+				onChange: (value: boolean) => {
+					if (cameraControlsRef.current) {
+						cameraControlsRef.current.autoRotate = value;
+					}
+				},
+			},
+			fov: {
+				value: FOV_INITIAL,
+				label: "FOV",
+				min: 5,
+				max: 60,
+				step: 0.5,
+				onChange: (value: number) => {
+					cameraControllerRef.current?.setFov(value);
+				},
+			},
+			resetCamera: button(() => cameraControlsRef.current?.reset()),
+		},
+		{ collapsed: true },
+	);
 
-  useControls(
-    'Environment',
-    () => ({
-      ambientLight: {
-        value: INITIAL_AMBIENT_LIGHT,
-        label: 'Ambient Light',
-        max: 2,
-        min: 0,
-        step: 0.1,
-        onChange: (value: number) => {
-          if (ambientLightRef.current) {
-            ambientLightRef.current.intensity = value
-          }
-        },
-      },
-      backgroundIntensity: {
-        value: INITIAL_BACKGROUND_INTENSITY,
-        label: 'Background Intensity',
-        max: 1,
-        min: 0,
-        step: 0.01,
-        onChange: (value: number) => {
-          environmentWrapperRef.current?.setBackgroundIntensity(value)
-        },
-      },
-      backgroundBlur: {
-        value: INITIAL_BACKGROUND_BLUR,
-        label: 'Background Blur',
-        max: 1,
-        min: 0,
-        step: 0.01,
-        onChange: (value: number) => {
-          environmentWrapperRef.current?.setBackgroundBlur(value)
-        },
-      },
-      environmentIntensity: {
-        value: INITIAL_ENVIRONMENT_INTENSITY,
-        label: 'Environment Intensity',
-        max: 1,
-        min: 0,
-        step: 0.01,
-        onChange: (value: number) => {
-          environmentWrapperRef.current?.setEnvironmentIntensity(value)
-        },
-      },
-    }),
-    { collapsed: true }
-  )
+	useControls(
+		"Environment",
+		() => ({
+			ambientLight: {
+				value: INITIAL_AMBIENT_LIGHT,
+				label: "Ambient Light",
+				max: 2,
+				min: 0,
+				step: 0.1,
+				onChange: (value: number) => {
+					if (ambientLightRef.current) {
+						ambientLightRef.current.intensity = value;
+					}
+				},
+			},
+			backgroundIntensity: {
+				value: INITIAL_BACKGROUND_INTENSITY,
+				label: "Background Intensity",
+				max: 1,
+				min: 0,
+				step: 0.01,
+				onChange: (value: number) => {
+					environmentWrapperRef.current?.setBackgroundIntensity(value);
+				},
+			},
+			backgroundBlur: {
+				value: INITIAL_BACKGROUND_BLUR,
+				label: "Background Blur",
+				max: 1,
+				min: 0,
+				step: 0.01,
+				onChange: (value: number) => {
+					environmentWrapperRef.current?.setBackgroundBlur(value);
+				},
+			},
+			environmentIntensity: {
+				value: INITIAL_ENVIRONMENT_INTENSITY,
+				label: "Environment Intensity",
+				max: 1,
+				min: 0,
+				step: 0.01,
+				onChange: (value: number) => {
+					environmentWrapperRef.current?.setEnvironmentIntensity(value);
+				},
+			},
+		}),
+		{ collapsed: true },
+	);
 
-  const setLidOpen = useCallback(
-    (lidOpen: boolean) => {
-      setAnimation({ lidOpen })
-    },
-    [setAnimation]
-  )
-  const setTaillightIntensity = useCallback(
-    (taillightsIntensity: number) => {
-      setLighting({ taillightsIntensity })
-    },
-    [setLighting]
-  )
-  const setHeadlightsIntensity = useCallback(
-    (headlightsIntensity: number) => {
-      setLighting({ headlightsIntensity })
-    },
-    [setLighting]
-  )
-  const setBogieAmount = useCallback(
-    (bogie: number) => {
-      setAnimation({ bogie })
-    },
-    [setAnimation]
-  )
+	const setLidOpen = useCallback(
+		(lidOpen: boolean) => {
+			setAnimation({ lidOpen });
+		},
+		[setAnimation],
+	);
+	const setTaillightIntensity = useCallback(
+		(taillightsIntensity: number) => {
+			setLighting({ taillightsIntensity });
+		},
+		[setLighting],
+	);
+	const setHeadlightsIntensity = useCallback(
+		(headlightsIntensity: number) => {
+			setLighting({ headlightsIntensity });
+		},
+		[setLighting],
+	);
+	const setBogieAmount = useCallback(
+		(bogie: number) => {
+			setAnimation({ bogie });
+		},
+		[setAnimation],
+	);
 
-  return {
-    setLidOpen,
-    setHeadlightsIntensity,
-    setTaillightIntensity,
-    setBogieAmount,
-  }
+	return {
+		setLidOpen,
+		setHeadlightsIntensity,
+		setTaillightIntensity,
+		setBogieAmount,
+	};
 }
 
-type CameraControllerRef = { setFov: (fov: number) => void }
+type CameraControllerRef = { setFov: (fov: number) => void };
 const CameraController = forwardRef<CameraControllerRef>((_, ref) => {
-  const { camera } = useThree()
+	const { camera } = useThree();
 
-  const setFov = useCallback(
-    (fov: number) => {
-      if (camera instanceof PerspectiveCamera) {
-        camera.fov = fov
-        camera.updateProjectionMatrix()
-      }
-    },
-    [camera]
-  )
+	const setFov = useCallback(
+		(fov: number) => {
+			if (camera instanceof PerspectiveCamera) {
+				camera.fov = fov;
+				camera.updateProjectionMatrix();
+			}
+		},
+		[camera],
+	);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      setFov,
-    }),
-    [setFov]
-  )
+	useImperativeHandle(
+		ref,
+		() => ({
+			setFov,
+		}),
+		[setFov],
+	);
 
-  return null
-})
+	return null;
+});
 
 type EnvironmentWrapperRef = {
-  setBackgroundIntensity: (value: number) => void
-  setBackgroundBlur: (value: number) => void
-  setEnvironmentIntensity: (value: number) => void
-}
+	setBackgroundIntensity: (value: number) => void;
+	setBackgroundBlur: (value: number) => void;
+	setEnvironmentIntensity: (value: number) => void;
+};
 
 const EnvironmentWrapper = forwardRef<EnvironmentWrapperRef>((_, ref) => {
-  const [backgroundIntensity, setBackgroundIntensity] = useState(
-    INITIAL_BACKGROUND_INTENSITY
-  )
-  const [backgroundBlur, setBackgroundBlur] = useState(INITIAL_BACKGROUND_BLUR)
-  const [environmentIntensity, setEnvironmentIntensity] = useState(
-    INITIAL_ENVIRONMENT_INTENSITY
-  )
+	const [backgroundIntensity, setBackgroundIntensity] = useState(
+		INITIAL_BACKGROUND_INTENSITY,
+	);
+	const [backgroundBlur, setBackgroundBlur] = useState(INITIAL_BACKGROUND_BLUR);
+	const [environmentIntensity, setEnvironmentIntensity] = useState(
+		INITIAL_ENVIRONMENT_INTENSITY,
+	);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      setBackgroundIntensity,
-      setBackgroundBlur,
-      setEnvironmentIntensity,
-    }),
-    []
-  )
+	useImperativeHandle(
+		ref,
+		() => ({
+			setBackgroundIntensity,
+			setBackgroundBlur,
+			setEnvironmentIntensity,
+		}),
+		[],
+	);
 
-  return (
-    <Suspense fallback={null}>
-      <Environment
-        preset="dawn"
-        background
-        blur={backgroundBlur}
-        backgroundIntensity={backgroundIntensity}
-        environmentIntensity={environmentIntensity}
-        resolution={256}
-      />
-    </Suspense>
-  )
-})
+	return (
+		<Suspense fallback={null}>
+			<Environment
+				preset="dawn"
+				background
+				blur={backgroundBlur}
+				backgroundIntensity={backgroundIntensity}
+				environmentIntensity={environmentIntensity}
+				resolution={256}
+			/>
+		</Suspense>
+	);
+});
 
 function AppContent({ projectId }: { projectId?: number }) {
-  const inactivityTimeout = 5_000
-  const hasInteractedRef = useRef(false)
-  const lastInteractionTimeRef = useRef(Date.now())
-  const cameraControlsRef = useRef<OrbitControlsImpl | null>(null)
-  const cameraControllerRef = useRef<CameraControllerRef | null>(null)
-  const ambientLightRef = useRef<any>(null)
-  const environmentWrapperRef = useRef<EnvironmentWrapperRef | null>(null)
+	const inactivityTimeout = 5_000;
+	const hasInteractedRef = useRef(false);
+	const lastInteractionTimeRef = useRef(Date.now());
+	const cameraControlsRef = useRef<OrbitControlsImpl | null>(null);
+	const cameraControllerRef = useRef<CameraControllerRef | null>(null);
+	const ambientLightRef = useRef<AmbientLight | null>(null);
+	const environmentWrapperRef = useRef<EnvironmentWrapperRef | null>(null);
 
-  const modelRef = useRef<ModelRef | null>(null)
-  const {
-    setLidOpen,
-    setHeadlightsIntensity,
-    setTaillightIntensity,
-    setBogieAmount,
-  } = useModelControls({
-    modelRef,
-    cameraControlsRef,
-    cameraControllerRef,
-    ambientLightRef,
-    environmentWrapperRef,
-  })
+	const modelRef = useRef<ModelRef | null>(null);
+	const {
+		setLidOpen,
+		setHeadlightsIntensity,
+		setTaillightIntensity,
+		setBogieAmount,
+	} = useModelControls({
+		modelRef,
+		cameraControlsRef,
+		cameraControllerRef,
+		ambientLightRef,
+		environmentWrapperRef,
+	});
 
-  console.log('AppContent rendered')
+	console.log("AppContent rendered");
 
-  // Static values - never change, no re-renders
-  const initialAutoRotate = true
+	// Static values - never change, no re-renders
+	const initialAutoRotate = true;
 
-  const handleInteraction = useCallback(() => {
-    lastInteractionTimeRef.current = Date.now()
-    if (
-      !hasInteractedRef.current &&
-      cameraControlsRef.current?.autoRotate !== false
-    ) {
-      hasInteractedRef.current = true
-    }
+	const handleInteraction = useCallback(() => {
+		lastInteractionTimeRef.current = Date.now();
+		if (
+			!hasInteractedRef.current &&
+			cameraControlsRef.current?.autoRotate !== false
+		) {
+			hasInteractedRef.current = true;
+		}
 
-    // Update OrbitControls autoRotate directly
-    if (cameraControlsRef.current) {
-      cameraControlsRef.current.autoRotate = false
-    }
-  }, [])
+		// Update OrbitControls autoRotate directly
+		if (cameraControlsRef.current) {
+			cameraControlsRef.current.autoRotate = false;
+		}
+	}, []);
 
-  useEffect(() => {
-    let frameId: number
+	useEffect(() => {
+		let frameId: number;
 
-    const checkInactivity = () => {
-      const now = Date.now()
-      if (
-        hasInteractedRef.current &&
-        now - lastInteractionTimeRef.current > inactivityTimeout
-      ) {
-        hasInteractedRef.current = false
-        // Update OrbitControls autoRotate directly
-        if (cameraControlsRef.current) {
-          cameraControlsRef.current.autoRotate = initialAutoRotate
-        }
-      }
-      frameId = requestAnimationFrame(checkInactivity)
-    }
+		const checkInactivity = () => {
+			const now = Date.now();
+			if (
+				hasInteractedRef.current &&
+				now - lastInteractionTimeRef.current > inactivityTimeout
+			) {
+				hasInteractedRef.current = false;
+				// Update OrbitControls autoRotate directly
+				if (cameraControlsRef.current) {
+					cameraControlsRef.current.autoRotate = initialAutoRotate;
+				}
+			}
+			frameId = requestAnimationFrame(checkInactivity);
+		};
 
-    frameId = requestAnimationFrame(checkInactivity)
-    return () => cancelAnimationFrame(frameId)
-  }, [])
+		frameId = requestAnimationFrame(checkInactivity);
+		return () => cancelAnimationFrame(frameId);
+	}, []);
 
-  return (
-    <div className="App">
-      <Leva
-        theme={customLevaTheme}
-        collapsed={false}
-        titleBar={{ title: 'Options', filter: false }}
-      />
-      <Canvas
-        style={{
-          height: '100vh',
-          width: '100vw',
-        }}
-        camera={{
-          position: [40, 30, 40],
-          fov: FOV_INITIAL,
-        }}
-      >
-        <CameraController ref={cameraControllerRef} />
-        <EnvironmentWrapper ref={environmentWrapperRef} />
+	return (
+		<div className="App">
+			<Leva
+				theme={customLevaTheme}
+				collapsed={false}
+				titleBar={{ title: "Options", filter: false }}
+			/>
+			<Canvas
+				style={{
+					height: "100vh",
+					width: "100vw",
+				}}
+				camera={{
+					position: [40, 30, 40],
+					fov: FOV_INITIAL,
+				}}
+			>
+				<CameraController ref={cameraControllerRef} />
+				<EnvironmentWrapper ref={environmentWrapperRef} />
 
-        {/* Ambient light to control overall brightness */}
-        <ambientLight ref={ambientLightRef} intensity={INITIAL_AMBIENT_LIGHT} />
+				{/* Ambient light to control overall brightness */}
+				<ambientLight ref={ambientLightRef} intensity={INITIAL_AMBIENT_LIGHT} />
 
-        {/* Simple contact shadow */}
-        <ContactShadows
-          position={[0, -2.9, 0]}
-          opacity={2.5}
-          scale={180}
-          blur={2}
-          far={100}
-          resolution={256}
-          color="#000000"
-        />
-        <Model
-          ref={modelRef}
-          position={[0, -3, 0]}
-          scale={1}
-          initialHeadlightIntensity={HEADLIGHT_INTENSITY_DEFAULT}
-          initialTailLightIntensity={TAILLIGHT_INTENSITY_DEFAULT}
-          onHeadlightIntensityChanged={setHeadlightsIntensity}
-          onTaillightIntensityChanged={setTaillightIntensity}
-          onLidOpenChanged={setLidOpen}
-          onBogieAmountChanged={setBogieAmount}
-        />
-        <OrbitControls
-          ref={cameraControlsRef}
-          makeDefault
-          minPolarAngle={0}
-          maxPolarAngle={1.55}
-          minDistance={10}
-          maxDistance={200}
-          minAzimuthAngle={-Infinity}
-          maxAzimuthAngle={Infinity}
-          autoRotate={initialAutoRotate}
-          autoRotateSpeed={2}
-          onStart={handleInteraction}
-        />
-      </Canvas>
-      <FloatingCollapsibleWindow
-        title="Texture Editor"
-        x={10}
-        y={10}
-        width={306}
-        height={384}
-      >
-        <TextureEditorWrapper mode="basic" projectId={projectId} />
-      </FloatingCollapsibleWindow>
-    </div>
-  )
+				{/* Simple contact shadow */}
+				<ContactShadows
+					position={[0, -2.9, 0]}
+					opacity={2.5}
+					scale={180}
+					blur={2}
+					far={100}
+					resolution={256}
+					color="#000000"
+				/>
+				<Model
+					ref={modelRef}
+					position={[0, -3, 0]}
+					scale={1}
+					initialHeadlightIntensity={HEADLIGHT_INTENSITY_DEFAULT}
+					initialTailLightIntensity={TAILLIGHT_INTENSITY_DEFAULT}
+					onHeadlightIntensityChanged={setHeadlightsIntensity}
+					onTaillightIntensityChanged={setTaillightIntensity}
+					onLidOpenChanged={setLidOpen}
+					onBogieAmountChanged={setBogieAmount}
+				/>
+				<OrbitControls
+					ref={cameraControlsRef}
+					makeDefault
+					minPolarAngle={0}
+					maxPolarAngle={1.55}
+					minDistance={10}
+					maxDistance={200}
+					minAzimuthAngle={-Infinity}
+					maxAzimuthAngle={Infinity}
+					autoRotate={initialAutoRotate}
+					autoRotateSpeed={2}
+					onStart={handleInteraction}
+				/>
+			</Canvas>
+			<FloatingCollapsibleWindow
+				title="Texture Editor"
+				x={10}
+				y={10}
+				width={306}
+				height={384}
+			>
+				<TextureEditorWrapper mode="basic" projectId={projectId} />
+			</FloatingCollapsibleWindow>
+		</div>
+	);
 }
 
 function App() {
-  const search = Route.useSearch()
-  const projectId = search['project-id']
+	const search = Route.useSearch();
+	const projectId = search["project-id"];
 
-  return (
-    <OverlayTextureCanvasProvider>
-      <TooltipProvider>
-        <AppContent projectId={projectId} />
-      </TooltipProvider>
-    </OverlayTextureCanvasProvider>
-  )
+	return (
+		<OverlayTextureCanvasProvider>
+			<TooltipProvider>
+				<AppContent projectId={projectId} />
+			</TooltipProvider>
+		</OverlayTextureCanvasProvider>
+	);
 }

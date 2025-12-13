@@ -1,1 +1,1 @@
-export const hexColorRegex = /^#[0-9A-Fa-f]{6}$/
+export const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
