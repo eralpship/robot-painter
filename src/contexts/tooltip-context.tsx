@@ -93,25 +93,8 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
 			{children}
 			<div
 				ref={tooltipRef}
-				style={{
-					pointerEvents: "none",
-					position: "fixed",
-					transform: "none",
-					backgroundColor: "rgba(0, 0, 0, 0.8)",
-					color: "white",
-					padding: "4px 6px",
-					borderRadius: "4px",
-					fontSize: "14px",
-					whiteSpace: "pre-line",
-					zIndex: 1000,
-					left: 0,
-					top: 0,
-					maxWidth: "200px",
-					lineHeight: "1.4",
-					visibility: "hidden",
-					opacity: 0,
-					transition: "opacity 0.1s ease-in-out",
-				}}
+				className="pointer-events-none fixed bg-overlay text-foreground px-1.5 py-1 rounded text-sm whitespace-pre-line z-tooltip max-w-[200px] leading-[1.4] invisible opacity-0 transition-opacity duration-100"
+				style={{ left: 0, top: 0 }}
 			/>
 		</TooltipContext.Provider>
 	);

@@ -17,13 +17,8 @@ export function SideSelector() {
 	};
 
 	return (
-		<div className="side-selector">
-			<select
-				id="side-select"
-				value={side}
-				onChange={handleChange}
-				className="side-dropdown"
-			>
+		<div>
+			<select id="side-select" value={side} onChange={handleChange}>
 				<option value="lid">Lid</option>
 				<option value="left">Left</option>
 				<option value="right">Right</option>

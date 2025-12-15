@@ -1,8 +1,6 @@
 import type React from "react";
 import { useState } from "react";
 import { Rnd } from "react-rnd";
-import "./FloatingCollapsibleWindow.css";
-import "@/styles/checkered-background.css";
 
 const headerHeight = 40;
 const minSize = 200;
@@ -48,14 +46,16 @@ export function FloatingCollapsibleWindow({
 			maxHeight={isCollapsed ? headerHeight : undefined}
 			bounds="window"
 			dragHandleClassName="drag-handle"
-			className={`overlay-texture-window ${isCollapsed ? "collapsed" : ""}`}
+			className="rounded-window shadow-window z-window font-mono text-ui select-none overflow-hidden outline outline-2 outline-border-muted"
 			enableResizing={isCollapsed ? { right: true, left: true } : true}
 		>
-			<div className="overlay-texture-window-container">
-				<div className="overlay-texture-window-title">
+			<div className="w-full h-full flex flex-col min-h-0">
+				<div
+					className={`bg-surface-elevated text-foreground-muted flex items-center cursor-grab min-h-toolbar px-3 hover:text-foreground ${isCollapsed ? "rounded-b-window" : ""}`}
+				>
 					<button
 						type="button"
-						className="overlay-texture-window-toggle"
+						className="bg-transparent border-none text-inherit cursor-pointer p-0.5 flex items-center justify-center rounded-button transition-colors w-[18px] h-[18px] shrink-0"
 						onClick={toggleCollapse}
 						aria-label={isCollapsed ? "Expand" : "Collapse"}
 					>
@@ -63,7 +63,7 @@ export function FloatingCollapsibleWindow({
 							width="12"
 							height="8"
 							viewBox="0 0 9 5"
-							className={`toggle-icon ${isCollapsed ? "collapsed" : ""}`}
+							className={`transition-transform duration-200 ${isCollapsed ? "-rotate-90" : "rotate-0"}`}
 							aria-hidden="true"
 						>
 							<path
@@ -72,11 +72,11 @@ export function FloatingCollapsibleWindow({
 							/>
 						</svg>
 					</button>
-					<span className="overlay-texture-window-title-text drag-handle">
+					<span className="flex-1 text-center mr-[18px] select-none drag-handle text-[11px]">
 						{title}
 					</span>
 				</div>
-				<div className="overlay-texture-window-content checkered-background">
+				<div className="flex-1 flex items-center justify-center text-xs font-normal text-foreground-subtle min-h-0 overflow-hidden checkered-background">
 					{children}
 				</div>
 			</div>

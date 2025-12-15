@@ -1,5 +1,6 @@
 import isEmpty from "lodash/isEmpty";
 import { useContext } from "react";
+import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { hexColorRegex } from "./utils/hexColorRegex";
 
@@ -7,8 +8,7 @@ export function TextToolbar() {
 	const ctx = useContext(TextureEditorContext);
 	return (
 		<>
-			<button
-				type="button"
+			<Button
 				onClick={() => {
 					const element = ctx.selectedElement;
 					if (!element) {
@@ -29,14 +29,10 @@ export function TextToolbar() {
 					}
 					ctx.updateElement(element.uuid, { text });
 				}}
-				style={{
-					cursor: "pointer",
-				}}
 			>
 				change text
-			</button>
-			<button
-				type="button"
+			</Button>
+			<Button
 				onClick={() => {
 					const element = ctx.selectedElement;
 					if (!element) {
@@ -65,14 +61,10 @@ export function TextToolbar() {
 					}
 					ctx.updateElement(element.uuid, { fontSize });
 				}}
-				style={{
-					cursor: "pointer",
-				}}
 			>
 				font size
-			</button>
-			<button
-				type="button"
+			</Button>
+			<Button
 				onClick={() => {
 					const element = ctx.selectedElement;
 					if (!element) {
@@ -100,12 +92,9 @@ export function TextToolbar() {
 					}
 					ctx.updateElement(element.uuid, { color });
 				}}
-				style={{
-					cursor: "pointer",
-				}}
 			>
 				change color
-			</button>
+			</Button>
 		</>
 	);
 }

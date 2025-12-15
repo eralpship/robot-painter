@@ -30,7 +30,7 @@ function TextureEditor() {
 
 	return (
 		<OverlayTextureCanvasProvider>
-			<div style={{ height: "100vh", width: "100vw" }}>
+			<div className="h-screen w-screen">
 				<TextureEditorWrapper mode="full" projectId={projectId} />
 				<FloatingCollapsibleWindow
 					title="preview"

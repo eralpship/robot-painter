@@ -1,11 +1,11 @@
 import { useContext } from "react";
+import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 
 export function ElementToolbar() {
 	const ctx = useContext(TextureEditorContext);
 	return (
-		<button
-			type="button"
+		<Button
 			onClick={() => {
 				const element = ctx.selectedElement;
 				if (!element) {
@@ -13,11 +13,8 @@ export function ElementToolbar() {
 				}
 				ctx.removeElement(element.uuid);
 			}}
-			style={{
-				cursor: "pointer",
-			}}
 		>
 			remove
-		</button>
+		</Button>
 	);
 }

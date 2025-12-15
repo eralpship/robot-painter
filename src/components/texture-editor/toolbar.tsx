@@ -9,31 +9,8 @@ import { TextToolbar } from "./TextToolbar";
 export function Toolbar() {
 	const ctx = useContext(TextureEditorContext);
 	return (
-		<div
-			style={{
-				padding: "8px",
-				backgroundColor: "#181c20",
-				borderBottom: "1px solid #444",
-				display: "flex",
-				gap: "8px",
-				alignItems: "center",
-				width: "100%",
-				boxSizing: "border-box",
-				position: "relative",
-			}}
-		>
-			<div
-				style={{
-					fontSize: "12px",
-					color: "rgb(180, 184, 188)",
-					display: "flex",
-					flexWrap: "wrap",
-					flexDirection: "row",
-					alignItems: "start",
-					justifyContent: "start",
-					gap: "8px",
-				}}
-			>
+		<div className="p-2 bg-surface border-b border-border flex gap-2 items-center w-full box-border relative">
+			<div className="text-xs text-foreground-subtle flex flex-wrap flex-row items-start justify-start gap-2">
 				<CommonToolbar />
 				<SideSelector />
 				{ctx.mode === "full" ? (

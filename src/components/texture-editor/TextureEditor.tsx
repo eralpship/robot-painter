@@ -63,6 +63,9 @@ export function TextureEditor({
 }) {
 	const editorCtx = useContext(TextureEditorContext);
 	const textureCtx = useContext(OverlayTextureContext);
+	// Extract setSide to avoid re-creating updateTexture when textures change
+	// setSide is stable (created with useCallback([]))
+	const setSideTexture = textureCtx?.setSide;
 
 	const svgRef = useRef<SVGSVGElement>(null);
 	const moveableRef = useRef<Moveable>(null);
@@ -70,7 +73,7 @@ export function TextureEditor({
 	const hidden = editorCtx.side !== side;
 
 	const updateTexture = useCallback(() => {
-		if (!textureCtx || !svgRef.current) {
+		if (!setSideTexture || !svgRef.current) {
 			return;
 		}
 		const serializedSvg = serializeSvg(svgRef.current, [
@@ -80,14 +83,14 @@ export function TextureEditor({
 		]);
 		const img = new Image();
 		img.onload = () => {
-			textureCtx.setSide(side, img);
+			setSideTexture(side, img);
 		};
 		img.onerror = (error) => {
 			console.error("Failed to load SVG as image:", error);
 		};
 		const encodedSvg = encodeURIComponent(serializedSvg);
 		img.src = `data:image/svg+xml,${encodedSvg}`;
-	}, [side, textureCtx]);
+	}, [side, setSideTexture]);
 
 	// Update texture when backgroundColor or elements change (but only after initial load)
 	useEffect(() => {

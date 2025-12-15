@@ -3,12 +3,15 @@ import { Canvas } from "@react-three/fiber";
 import { useRef } from "react";
 import { Model, type ModelRef } from "./E-model";
 
+// Stable no-op function to prevent re-renders from callback reference changes
+const noop = () => {};
+
 export function RobotPreview() {
 	const modelRef = useRef<ModelRef>(null);
 
 	return (
 		<Canvas
-			style={{ height: "100%", width: "100%", background: "transparent" }}
+			className="h-full w-full bg-transparent"
 			orthographic
 			camera={{ position: [10, 5, 10], zoom: 20 }}
 			gl={{ toneMapping: 0 }} // Disable tone mapping for flat colors
@@ -21,12 +24,12 @@ export function RobotPreview() {
 				ref={modelRef}
 				position={[0, -3.5, 0]}
 				scale={1}
-				onLidOpenChanged={() => {}}
-				onTaillightIntensityChanged={() => {}}
-				onHeadlightIntensityChanged={() => {}}
+				onLidOpenChanged={noop}
+				onTaillightIntensityChanged={noop}
+				onHeadlightIntensityChanged={noop}
 				initialHeadlightIntensity={0}
 				initialTailLightIntensity={0}
-				onBogieAmountChanged={() => {}}
+				onBogieAmountChanged={noop}
 			/>
 			<OrbitControls
 				makeDefault

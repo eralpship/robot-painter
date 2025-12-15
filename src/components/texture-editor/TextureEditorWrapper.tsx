@@ -4,9 +4,9 @@ import {
 	TextureEditorContextProvider,
 	type TexureEditorMode,
 } from "@/contexts/texture-editor-context";
+import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
 import { TextureEditor } from "./TextureEditor";
 import { Toolbar } from "./toolbar";
-import "@/styles/checkered-background.css";
 
 const editorStyle = {
 	width: "min(100cqw, 100cqh)",
@@ -14,7 +14,29 @@ const editorStyle = {
 	aspectRatio: "1",
 };
 
-function BackdropWithDeselect({ children }: { children: React.ReactNode }) {
+/**
+ * Wrapper that shows/hides a TextureEditor based on whether its side is active.
+ * Inactive editors remain mounted but are invisible and don't accept input.
+ */
+function SideLayer({
+	side,
+	activeSide,
+}: {
+	side: keyof OverlayTextureSides;
+	activeSide: keyof OverlayTextureSides;
+}) {
+	const isActive = side === activeSide;
+
+	return (
+		<div
+			className={`absolute inset-0 flex items-center justify-center ${isActive ? "visible pointer-events-auto" : "invisible pointer-events-none"}`}
+		>
+			<TextureEditor side={side} style={editorStyle} />
+		</div>
+	);
+}
+
+function BackdropWithDeselect() {
 	const editorCtx = useContext(TextureEditorContext);
 
 	const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -28,18 +50,15 @@ function BackdropWithDeselect({ children }: { children: React.ReactNode }) {
 	return (
 		<div
 			id="texture-editor-wrapper-backdrop"
-			className="checkered-background"
+			className="min-h-0 flex items-center justify-center relative checkered-background [container-type:size]"
 			onMouseDown={handleBackdropClick}
 			role="application"
-			style={{
-				minHeight: 0,
-				containerType: "size",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-			}}
 		>
-			{children}
+			<SideLayer side="front" activeSide={editorCtx.side} />
+			<SideLayer side="back" activeSide={editorCtx.side} />
+			<SideLayer side="left" activeSide={editorCtx.side} />
+			<SideLayer side="right" activeSide={editorCtx.side} />
+			<SideLayer side="lid" activeSide={editorCtx.side} />
 		</div>
 	);
 }
@@ -52,24 +71,10 @@ export function TextureEditorWrapper({
 	projectId?: number;
 }) {
 	return (
-		<div
-			style={{
-				height: "100%",
-				width: "100%",
-				display: "grid",
-				gridTemplateRows: "auto 1fr",
-				gridTemplateColumns: "1fr",
-			}}
-		>
+		<div className="h-full w-full grid grid-rows-[auto_1fr] grid-cols-1">
 			<TextureEditorContextProvider mode={mode} projectId={projectId}>
 				<Toolbar />
-				<BackdropWithDeselect>
-					<TextureEditor side="front" style={editorStyle} />
-					<TextureEditor side="back" style={editorStyle} />
-					<TextureEditor side="left" style={editorStyle} />
-					<TextureEditor side="right" style={editorStyle} />
-					<TextureEditor side="lid" style={editorStyle} />
-				</BackdropWithDeselect>
+				<BackdropWithDeselect />
 			</TextureEditorContextProvider>
 		</div>
 	);

@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { Button } from "@/components/ui/Button";
 import {
 	CANVAS_SIZE,
 	TextureEditorContext,
@@ -18,8 +19,7 @@ export function AddElementToolbar() {
 	const ctx = useContext(TextureEditorContext);
 	return (
 		<>
-			<button
-				type="button"
+			<Button
 				onClick={() => {
 					ctx.addElement({
 						type: "text",
@@ -36,14 +36,10 @@ export function AddElementToolbar() {
 						side: ctx.side,
 					});
 				}}
-				style={{
-					cursor: "pointer",
-				}}
 			>
 				add text
-			</button>
-			<button
-				type="button"
+			</Button>
+			<Button
 				onClick={() => {
 					const input = document.createElement("input");
 					input.type = "file";
@@ -135,12 +131,9 @@ export function AddElementToolbar() {
 						input.click();
 					}, 100);
 				}}
-				style={{
-					cursor: "pointer",
-				}}
 			>
 				add image
-			</button>
+			</Button>
 		</>
 	);
 }

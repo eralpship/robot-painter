@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { debounce } from "lodash";
 import { useCallback, useContext, useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import {
 	sanitizeProjectName,
@@ -28,27 +29,16 @@ export function CommonToolbar() {
 
 	return (
 		<>
-			<button
-				type="button"
+			<Button
 				onClick={() => {
 					navigate({
 						to: ctx.mode === "full" ? "/" : "/texture-editor",
 					});
 				}}
-				style={{
-					cursor: "pointer",
-				}}
 			>
 				{ctx.mode === "full" ? "robot editor" : "texture editor"}
-			</button>
-			<label
-				style={{
-					cursor: "pointer",
-					display: "inline-flex",
-					alignItems: "center",
-					gap: "4px",
-				}}
-			>
+			</Button>
+			<label className="cursor-pointer inline-flex items-center gap-1">
 				<span>background</span>
 				<input
 					type="color"
@@ -58,19 +48,10 @@ export function CommonToolbar() {
 						setLocalColor(newColor);
 						debouncedSetColor(newColor);
 					}}
-					style={{
-						cursor: "pointer",
-						width: "30px",
-						height: "20px",
-						border: "none",
-						borderRadius: "2px",
-						padding: 0,
-						outline: "1px solid rgba(0,0,0,0.2)",
-					}}
+					className="cursor-pointer w-[30px] h-5 border-none rounded-sm p-0 outline outline-1 outline-border-muted"
 				/>
 			</label>
-			<button
-				type="button"
+			<Button
 				onClick={() => {
 					if (
 						confirm(
@@ -80,14 +61,10 @@ export function CommonToolbar() {
 						ctx.resetToDefaults();
 					}
 				}}
-				style={{
-					cursor: "pointer",
-				}}
 			>
 				reset
-			</button>
-			<button
-				type="button"
+			</Button>
+			<Button
 				onClick={async () => {
 					if (isCreatingProject) return;
 
@@ -126,14 +103,11 @@ export function CommonToolbar() {
 						setIsCreatingProject(false);
 					}
 				}}
-				style={{
-					cursor: "pointer",
-					opacity: isCreatingProject ? 0.5 : 1,
-				}}
+				className={isCreatingProject ? "opacity-50" : ""}
 				disabled={isCreatingProject}
 			>
 				{isCreatingProject ? "creating..." : "new project"}
-			</button>
+			</Button>
 		</>
 	);
 }

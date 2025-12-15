@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import "../App.css";
 import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { button, Leva, useControls } from "leva";
@@ -361,17 +360,14 @@ function AppContent({ projectId }: { projectId?: number }) {
 	}, []);
 
 	return (
-		<div className="App">
+		<div className="h-screen w-screen">
 			<Leva
 				theme={customLevaTheme}
 				collapsed={false}
 				titleBar={{ title: "Options", filter: false }}
 			/>
 			<Canvas
-				style={{
-					height: "100vh",
-					width: "100vw",
-				}}
+				className="h-screen w-screen"
 				camera={{
 					position: [40, 30, 40],
 					fov: FOV_INITIAL,
