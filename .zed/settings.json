@@ -3,9 +3,30 @@
 // For a full list of overridable settings, and general information on folder-specific settings,
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
+  "lsp": {
+    "biome": {
+      "binary": {
+        "path": "node_modules/.bin/biome",
+        "arguments": ["lsp-proxy"]
+      }
+    }
+  },
   "format_on_save": "on",
   "formatter": "language_server",
   "languages": {
+    "CSS": {
+      "lsp": {
+        "css-language-server": {
+          "settings": {
+            "css": {
+              "lint": {
+                "unknownAtRules": "ignore"
+              }
+            }
+          }
+        }
+      }
+    },
     "JavaScript": {
       "formatter": "language_server",
       "language_servers": ["biome"]

@@ -93,6 +93,7 @@ export function TextureEditor({
 	}, [side, setSideTexture]);
 
 	// Update texture when backgroundColor or elements change (but only after initial load)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: backgroundColor and elements affect the SVG DOM that updateTexture() serializes. These dependencies are required to trigger texture updates when the visual content changes.
 	useEffect(() => {
 		// Don't update texture until initial load is complete
 		if (!editorCtx.isLoaded) {
@@ -114,7 +115,12 @@ export function TextureEditor({
 				cancelAnimationFrame(rafId);
 			}
 		};
-	}, [editorCtx.isLoaded, updateTexture]);
+	}, [
+		editorCtx.backgroundColor,
+		editorCtx.elements,
+		editorCtx.isLoaded,
+		updateTexture,
+	]);
 
 	// Notify context when editor is ready (SVG is mounted)
 	useEffect(() => {

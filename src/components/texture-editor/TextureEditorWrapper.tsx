@@ -1,10 +1,10 @@
 import { useContext } from "react";
+import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
 import {
 	TextureEditorContext,
 	TextureEditorContextProvider,
 	type TexureEditorMode,
 } from "@/contexts/texture-editor-context";
-import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
 import { TextureEditor } from "./TextureEditor";
 import { Toolbar } from "./toolbar";
 
@@ -50,7 +50,7 @@ function BackdropWithDeselect() {
 	return (
 		<div
 			id="texture-editor-wrapper-backdrop"
-			className="min-h-0 flex items-center justify-center relative checkered-background [container-type:size]"
+			className="min-h-0 flex items-center justify-center relative checkered-background @container-[size]"
 			onMouseDown={handleBackdropClick}
 			role="application"
 		>

@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
+import { createFileRoute } from "@tanstack/react-router";
 import { button, Leva, useControls } from "leva";
 import {
 	forwardRef,
