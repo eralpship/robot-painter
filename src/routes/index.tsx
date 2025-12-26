@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { button, Leva, useControls } from "leva";
 import {
 	forwardRef,
+	lazy,
 	Suspense,
 	useCallback,
 	useEffect,
@@ -21,8 +22,13 @@ import {
 	TAILLIGHT_INTENSITY_DEFAULT,
 } from "../components/E-model";
 import { FloatingCollapsibleWindow } from "../components/FloatingCollapsibleWindow";
-import { TextureEditorWrapper } from "../components/texture-editor/TextureEditorWrapper";
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
+
+const TextureEditorWrapper = lazy(() =>
+	import("../components/texture-editor/TextureEditorWrapper").then((m) => ({
+		default: m.TextureEditorWrapper,
+	})),
+);
 import { TooltipProvider } from "../contexts/tooltip-context";
 
 const FOV_INITIAL = 20;
@@ -427,7 +433,9 @@ function AppContent({ projectId }: { projectId?: number }) {
 				width={306}
 				height={384}
 			>
-				<TextureEditorWrapper mode="basic" projectId={projectId} />
+				<Suspense fallback={<div>Loading...</div>}>
+					<TextureEditorWrapper mode="basic" projectId={projectId} />
+				</Suspense>
 			</FloatingCollapsibleWindow>
 		</div>
 	);

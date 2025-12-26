@@ -1,8 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
 import { FloatingCollapsibleWindow } from "../components/FloatingCollapsibleWindow";
 import { RobotPreview } from "../components/RobotPreview";
-import { TextureEditorWrapper } from "../components/texture-editor/TextureEditorWrapper";
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
+
+const TextureEditorWrapper = lazy(() =>
+	import("../components/texture-editor/TextureEditorWrapper").then((m) => ({
+		default: m.TextureEditorWrapper,
+	})),
+);
 
 type SearchParams = {
 	"project-id"?: number;
@@ -31,7 +37,9 @@ function TextureEditor() {
 	return (
 		<OverlayTextureCanvasProvider>
 			<div className="h-screen w-screen">
-				<TextureEditorWrapper mode="full" projectId={projectId} />
+				<Suspense fallback={<div>Loading...</div>}>
+					<TextureEditorWrapper mode="full" projectId={projectId} />
+				</Suspense>
 				<FloatingCollapsibleWindow
 					title="preview"
 					x={12}
