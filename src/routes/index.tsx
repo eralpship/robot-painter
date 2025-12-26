@@ -1,4 +1,4 @@
-import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
+import { ContactShadows, Environment, Html, OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { createFileRoute } from "@tanstack/react-router";
 import { button, Leva, useControls } from "leva";
@@ -281,9 +281,15 @@ const EnvironmentWrapper = forwardRef<EnvironmentWrapperRef>((_, ref) => {
 	);
 
 	return (
-		<Suspense fallback={null}>
+		<Suspense
+			fallback={
+				<Html center>
+					<div style={{ color: "white", fontSize: "24px" }}>Loading...</div>
+				</Html>
+			}
+		>
 			<Environment
-				preset="dawn"
+				files="/kiara_1_dawn_1k.hdr"
 				background
 				blur={backgroundBlur}
 				backgroundIntensity={backgroundIntensity}
