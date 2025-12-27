@@ -8,7 +8,6 @@ import React, {
 	useContext,
 	useEffect,
 	useImperativeHandle,
-	useMemo,
 	useRef,
 } from "react";
 import * as THREE from "three";
@@ -505,11 +504,11 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 		const ClickableLight = ({
 			children,
 		}: {
-			children: React.ReactElement;
+			children: React.ReactElement<React.ComponentProps<"pointLight">>;
 		}) => {
-			const position = children.props.position;
-			const name = children.props.name;
-			const scale = children.props.scale || 30;
+			const position = children.props.position as [number, number, number];
+			const name = children.props.name as string;
+			const scale = (children.props.scale as number) ?? 30;
 
 			return (
 				<>
