@@ -1,35 +1,30 @@
-import { ContactShadows, Environment, Html, OrbitControls } from "@react-three/drei";
+import {
+	ContactShadows,
+	Environment,
+	Html,
+	OrbitControls,
+} from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { createFileRoute } from "@tanstack/react-router";
-import { button, Leva, useControls } from "leva";
-import {
-	forwardRef,
-	Suspense,
-	useCallback,
-	useEffect,
-	useImperativeHandle,
-	useRef,
-	useState,
-} from "react";
-import { type AmbientLight, PerspectiveCamera } from "three";
+import { Leva } from "leva";
+import { Suspense, useCallback, useEffect, useRef } from "react";
+import { PerspectiveCamera } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import {
-	HEADLIGHT_INTENSITY_DEFAULT,
-	Model,
-	type ModelRef,
-	TAILLIGHT_COLOR_DEFAULT,
-	TAILLIGHT_INTENSITY_DEFAULT,
-} from "../components/E-model";
+import { Model, type ModelRef } from "../components/E-model";
 import { FloatingCollapsibleWindow } from "../components/FloatingCollapsibleWindow";
 import { TextureEditorWrapper } from "../components/texture-editor/TextureEditorWrapper";
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
 import { TooltipProvider } from "../contexts/tooltip-context";
-
-const FOV_INITIAL = 20;
-const INITIAL_AMBIENT_LIGHT = 0.8;
-const INITIAL_ENVIRONMENT_INTENSITY = 0.7;
-const INITIAL_BACKGROUND_BLUR = 0.7;
-const INITIAL_BACKGROUND_INTENSITY = 0.4;
+import { useLevaModelControls } from "../hooks/useLevaModelControls";
+import {
+	MODEL_DEFAULTS,
+	useAmbientLight,
+	useAutoRotate,
+	useBackgroundBlur,
+	useBackgroundIntensity,
+	useEnvironmentIntensity,
+	useFov,
+} from "../stores/model-store";
 
 const customLevaTheme = {
 	sizes: {
@@ -57,228 +52,26 @@ export const Route = createFileRoute("/")({
 	component: App,
 });
 
-function useModelControls({
-	modelRef,
-	cameraControlsRef,
-	cameraControllerRef,
-	ambientLightRef,
-	environmentWrapperRef,
-}: {
-	modelRef: React.RefObject<ModelRef | null>;
-	cameraControlsRef: React.RefObject<OrbitControlsImpl | null>;
-	cameraControllerRef: React.RefObject<CameraControllerRef | null>;
-	ambientLightRef: React.RefObject<AmbientLight | null>;
-	environmentWrapperRef: React.RefObject<EnvironmentWrapperRef | null>;
-}) {
-	const [_lighting, setLighting] = useControls("Lighting", () => ({
-		headlightsIntensity: {
-			value: HEADLIGHT_INTENSITY_DEFAULT,
-			label: "Headlights Intensity",
-			max: 60,
-			min: 0,
-			step: 0.1,
-			onChange: (value: number) => {
-				modelRef.current?.setHeadlightsIntensity(value);
-			},
-		},
-		taillightsIntensity: {
-			value: TAILLIGHT_INTENSITY_DEFAULT,
-			label: "Taillights Intensity",
-			max: 60,
-			min: 0,
-			step: 0.1,
-			onChange: (value: number) => {
-				modelRef.current?.setTaillightsIntensity(value);
-			},
-		},
-		tailLightColor: {
-			value: TAILLIGHT_COLOR_DEFAULT,
-			label: "Tail Light Color",
-			onChange: (value: string) => {
-				modelRef.current?.setTailLightColor(value);
-			},
-		},
-	}));
-
-	const [_animation, setAnimation] = useControls("Animation", () => ({
-		lidOpen: {
-			value: false,
-			label: "Lid Open",
-			onChange: (value: boolean) => {
-				modelRef.current?.setLidOpen(value);
-			},
-		},
-		bogie: {
-			value: 0.5,
-			label: "Bogie",
-			min: 0,
-			max: 1,
-			step: 0.1,
-			onChange: (value: number) => {
-				modelRef.current?.setBogieAmount(value);
-			},
-		},
-		touchFlag: button(() => modelRef.current?.touchFlag()),
-	}));
-
-	useControls(
-		"Camera",
-		{
-			autoRotate: {
-				value: true,
-				label: "Auto Rotate",
-				onChange: (value: boolean) => {
-					if (cameraControlsRef.current) {
-						cameraControlsRef.current.autoRotate = value;
-					}
-				},
-			},
-			fov: {
-				value: FOV_INITIAL,
-				label: "FOV",
-				min: 5,
-				max: 60,
-				step: 0.5,
-				onChange: (value: number) => {
-					cameraControllerRef.current?.setFov(value);
-				},
-			},
-			resetCamera: button(() => cameraControlsRef.current?.reset()),
-		},
-		{ collapsed: true },
-	);
-
-	useControls(
-		"Environment",
-		() => ({
-			ambientLight: {
-				value: INITIAL_AMBIENT_LIGHT,
-				label: "Ambient Light",
-				max: 2,
-				min: 0,
-				step: 0.1,
-				onChange: (value: number) => {
-					if (ambientLightRef.current) {
-						ambientLightRef.current.intensity = value;
-					}
-				},
-			},
-			backgroundIntensity: {
-				value: INITIAL_BACKGROUND_INTENSITY,
-				label: "Background Intensity",
-				max: 1,
-				min: 0,
-				step: 0.01,
-				onChange: (value: number) => {
-					environmentWrapperRef.current?.setBackgroundIntensity(value);
-				},
-			},
-			backgroundBlur: {
-				value: INITIAL_BACKGROUND_BLUR,
-				label: "Background Blur",
-				max: 1,
-				min: 0,
-				step: 0.01,
-				onChange: (value: number) => {
-					environmentWrapperRef.current?.setBackgroundBlur(value);
-				},
-			},
-			environmentIntensity: {
-				value: INITIAL_ENVIRONMENT_INTENSITY,
-				label: "Environment Intensity",
-				max: 1,
-				min: 0,
-				step: 0.01,
-				onChange: (value: number) => {
-					environmentWrapperRef.current?.setEnvironmentIntensity(value);
-				},
-			},
-		}),
-		{ collapsed: true },
-	);
-
-	const setLidOpen = useCallback(
-		(lidOpen: boolean) => {
-			setAnimation({ lidOpen });
-		},
-		[setAnimation],
-	);
-	const setTaillightIntensity = useCallback(
-		(taillightsIntensity: number) => {
-			setLighting({ taillightsIntensity });
-		},
-		[setLighting],
-	);
-	const setHeadlightsIntensity = useCallback(
-		(headlightsIntensity: number) => {
-			setLighting({ headlightsIntensity });
-		},
-		[setLighting],
-	);
-	const setBogieAmount = useCallback(
-		(bogie: number) => {
-			setAnimation({ bogie });
-		},
-		[setAnimation],
-	);
-
-	return {
-		setLidOpen,
-		setHeadlightsIntensity,
-		setTaillightIntensity,
-		setBogieAmount,
-	};
-}
-
-type CameraControllerRef = { setFov: (fov: number) => void };
-const CameraController = forwardRef<CameraControllerRef>((_, ref) => {
+// CameraController reads FOV from store
+const CameraController = () => {
 	const { camera } = useThree();
+	const fov = useFov();
 
-	const setFov = useCallback(
-		(fov: number) => {
-			if (camera instanceof PerspectiveCamera) {
-				camera.fov = fov;
-				camera.updateProjectionMatrix();
-			}
-		},
-		[camera],
-	);
-
-	useImperativeHandle(
-		ref,
-		() => ({
-			setFov,
-		}),
-		[setFov],
-	);
+	useEffect(() => {
+		if (camera instanceof PerspectiveCamera) {
+			camera.fov = fov;
+			camera.updateProjectionMatrix();
+		}
+	}, [fov, camera]);
 
 	return null;
-});
-
-type EnvironmentWrapperRef = {
-	setBackgroundIntensity: (value: number) => void;
-	setBackgroundBlur: (value: number) => void;
-	setEnvironmentIntensity: (value: number) => void;
 };
 
-const EnvironmentWrapper = forwardRef<EnvironmentWrapperRef>((_, ref) => {
-	const [backgroundIntensity, setBackgroundIntensity] = useState(
-		INITIAL_BACKGROUND_INTENSITY,
-	);
-	const [backgroundBlur, setBackgroundBlur] = useState(INITIAL_BACKGROUND_BLUR);
-	const [environmentIntensity, setEnvironmentIntensity] = useState(
-		INITIAL_ENVIRONMENT_INTENSITY,
-	);
-
-	useImperativeHandle(
-		ref,
-		() => ({
-			setBackgroundIntensity,
-			setBackgroundBlur,
-			setEnvironmentIntensity,
-		}),
-		[],
-	);
+// EnvironmentWrapper reads from store
+const EnvironmentWrapper = () => {
+	const backgroundIntensity = useBackgroundIntensity();
+	const backgroundBlur = useBackgroundBlur();
+	const environmentIntensity = useEnvironmentIntensity();
 
 	return (
 		<Suspense
@@ -298,35 +91,26 @@ const EnvironmentWrapper = forwardRef<EnvironmentWrapperRef>((_, ref) => {
 			/>
 		</Suspense>
 	);
-});
+};
+
+// AmbientLightWrapper reads from store
+const AmbientLightWrapper = () => {
+	const ambientLight = useAmbientLight();
+	return <ambientLight intensity={ambientLight} />;
+};
 
 function AppContent({ projectId }: { projectId?: number }) {
 	const inactivityTimeout = 5_000;
 	const hasInteractedRef = useRef(false);
 	const lastInteractionTimeRef = useRef(Date.now());
 	const cameraControlsRef = useRef<OrbitControlsImpl | null>(null);
-	const cameraControllerRef = useRef<CameraControllerRef | null>(null);
-	const ambientLightRef = useRef<AmbientLight | null>(null);
-	const environmentWrapperRef = useRef<EnvironmentWrapperRef | null>(null);
-
 	const modelRef = useRef<ModelRef | null>(null);
-	const {
-		setLidOpen,
-		setHeadlightsIntensity,
-		setTaillightIntensity,
-		setBogieAmount,
-	} = useModelControls({
-		modelRef,
-		cameraControlsRef,
-		cameraControllerRef,
-		ambientLightRef,
-		environmentWrapperRef,
-	});
 
-	console.log("AppContent rendered");
+	// Use the new Leva-Zustand sync hook
+	useLevaModelControls(modelRef, cameraControlsRef);
 
-	// Static values - never change, no re-renders
-	const initialAutoRotate = true;
+	// Read autoRotate from store
+	const autoRotate = useAutoRotate();
 
 	const handleInteraction = useCallback(() => {
 		lastInteractionTimeRef.current = Date.now();
@@ -355,7 +139,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 				hasInteractedRef.current = false;
 				// Update OrbitControls autoRotate directly
 				if (cameraControlsRef.current) {
-					cameraControlsRef.current.autoRotate = initialAutoRotate;
+					cameraControlsRef.current.autoRotate = autoRotate;
 				}
 			}
 			frameId = requestAnimationFrame(checkInactivity);
@@ -363,7 +147,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 
 		frameId = requestAnimationFrame(checkInactivity);
 		return () => cancelAnimationFrame(frameId);
-	}, []);
+	}, [autoRotate]);
 
 	return (
 		<div className="h-screen w-screen">
@@ -376,14 +160,12 @@ function AppContent({ projectId }: { projectId?: number }) {
 				className="h-screen w-screen"
 				camera={{
 					position: [40, 30, 40],
-					fov: FOV_INITIAL,
+					fov: MODEL_DEFAULTS.fov,
 				}}
 			>
-				<CameraController ref={cameraControllerRef} />
-				<EnvironmentWrapper ref={environmentWrapperRef} />
-
-				{/* Ambient light to control overall brightness */}
-				<ambientLight ref={ambientLightRef} intensity={INITIAL_AMBIENT_LIGHT} />
+				<CameraController />
+				<EnvironmentWrapper />
+				<AmbientLightWrapper />
 
 				{/* Simple contact shadow */}
 				<ContactShadows
@@ -395,17 +177,10 @@ function AppContent({ projectId }: { projectId?: number }) {
 					resolution={256}
 					color="#000000"
 				/>
-				<Model
-					ref={modelRef}
-					position={[0, -3, 0]}
-					scale={1}
-					initialHeadlightIntensity={HEADLIGHT_INTENSITY_DEFAULT}
-					initialTailLightIntensity={TAILLIGHT_INTENSITY_DEFAULT}
-					onHeadlightIntensityChanged={setHeadlightsIntensity}
-					onTaillightIntensityChanged={setTaillightIntensity}
-					onLidOpenChanged={setLidOpen}
-					onBogieAmountChanged={setBogieAmount}
-				/>
+
+				{/* Model - simplified, no callback props needed */}
+				<Model ref={modelRef} position={[0, -3, 0]} scale={1} />
+
 				<OrbitControls
 					ref={cameraControlsRef}
 					makeDefault
@@ -413,9 +188,9 @@ function AppContent({ projectId }: { projectId?: number }) {
 					maxPolarAngle={1.55}
 					minDistance={10}
 					maxDistance={200}
-					minAzimuthAngle={-Infinity}
-					maxAzimuthAngle={Infinity}
-					autoRotate={initialAutoRotate}
+					minAzimuthAngle={-Number.POSITIVE_INFINITY}
+					maxAzimuthAngle={Number.POSITIVE_INFINITY}
+					autoRotate={autoRotate}
 					autoRotateSpeed={2}
 					onStart={handleInteraction}
 				/>

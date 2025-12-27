@@ -35,23 +35,39 @@ import {
 } from "@/contexts/texture-editor-context";
 import { extractCanonicalTransform, toSVGTransform } from "@/utils/transforms";
 
+/**
+ * Serialize SVG to string, removing specified elements by id.
+ * Uses DOM manipulation for reliable removal of nested elements.
+ */
 function serializeSvg(
 	svgElement: SVGSVGElement,
-	filterElements: string[] = [],
+	filterIds: string[] = [],
 ): string {
-	let svgString = new XMLSerializer().serializeToString(svgElement);
+	// Clone the SVG so we don't modify the original
+	const clone = svgElement.cloneNode(true) as SVGSVGElement;
 
-	// Filter out specific labeled elements
-	if (filterElements.length > 0) {
-		const labelPattern = filterElements.join("|");
-		const filterRegex = new RegExp(
-			`<[^>]*(?:inkscape:label=['"](?:${labelPattern})['"]|id=['"](?:${labelPattern})['"])[^>]*/?>`,
-			"g",
-		);
-		svgString = svgString.replace(filterRegex, "");
+	// Remove elements by id
+	for (const id of filterIds) {
+		const element = clone.querySelector(`#${id}`);
+		if (element) {
+			element.remove();
+		}
 	}
 
-	return svgString;
+	// Also remove any nested SVG elements (from React component imports)
+	// These are the stencil SVGs that shouldn't be in the texture
+	const nestedSvgs = clone.querySelectorAll("svg svg");
+	for (const nested of nestedSvgs) {
+		nested.remove();
+	}
+
+	// Remove style elements (used for stencil styling, not needed in output)
+	const styleElements = clone.querySelectorAll("style");
+	for (const style of styleElements) {
+		style.remove();
+	}
+
+	return new XMLSerializer().serializeToString(clone);
 }
 
 export function TextureEditor({
@@ -77,8 +93,8 @@ export function TextureEditor({
 			return;
 		}
 		const serializedSvg = serializeSvg(svgRef.current, [
-			"stencil", // root element in the svg needs to have name "stencil" in inkscape
-			"render",
+			"stencil", // a root element in the svg needs to have name "stencil" in inkscape
+			"render", // a root element or group in the svg needs to have name "render" in inkscape below it
 		]);
 		const img = new Image();
 		img.onload = () => {
@@ -96,7 +112,6 @@ export function TextureEditor({
 	useEffect(() => {
 		// Don't update texture until initial load is complete
 		if (!editorCtx.isLoaded) {
-			console.log("[TextureEditor] Skipping texture update - not yet loaded");
 			return;
 		}
 
@@ -105,7 +120,6 @@ export function TextureEditor({
 		let rafId: number | null = null;
 
 		rafId = requestAnimationFrame(() => {
-			console.log("[TextureEditor] Updating texture after state change");
 			updateTexture();
 		});
 
@@ -124,10 +138,9 @@ export function TextureEditor({
 	// Notify context when editor is ready (SVG is mounted)
 	useEffect(() => {
 		if (svgRef.current && !hidden) {
-			console.log("[TextureEditor] SVG mounted and visible for side:", side);
 			editorCtx.notifyEditorReady();
 		}
-	}, [hidden, side, editorCtx]);
+	}, [hidden, editorCtx]);
 
 	const elementRefs = useRef<Map<string, SVGTextElement | SVGImageElement>>(
 		new Map(),
@@ -164,7 +177,6 @@ export function TextureEditor({
 				}
 
 				// Otherwise, deselect
-				console.log("[TextureEditor] Clicking non-element area, deselecting");
 				editorCtx.setSelectedElementId(undefined);
 			}
 		},
@@ -173,30 +185,15 @@ export function TextureEditor({
 
 	const handleOnMoveableActionEnd = useCallback(
 		(target: SVGElement | HTMLElement) => {
-			console.log("[TextureEditor] handleOnMoveableActionEnd called");
 			const uuid = target.getAttribute("id");
 			if (!uuid) {
 				console.warn("[TextureEditor] No UUID found on target element");
 				return;
 			}
 
-			console.log("[TextureEditor] Processing element:", uuid);
-			console.log("[TextureEditor] Target element:", target);
-			console.log(
-				"[TextureEditor] Current transform attribute:",
-				target.getAttribute("transform"),
-			);
-			console.log(
-				"[TextureEditor] Current style.transform:",
-				(target as HTMLElement).style.transform,
-			);
-
 			// Check if Moveable actually applied any CSS transforms
 			const cssTransform = (target as HTMLElement).style.transform;
 			if (!cssTransform || cssTransform.trim() === "") {
-				console.log(
-					"[TextureEditor] No CSS transform applied, skipping update (likely just a selection)",
-				);
 				return;
 			}
 
@@ -207,36 +204,25 @@ export function TextureEditor({
 				return;
 			}
 
-			console.log("[TextureEditor] Extracted transform:", transform);
-
 			// Update element with canonical format
-			console.log("[TextureEditor] Updating element in context...");
 			editorCtx.updateElement(uuid, { transform });
 
 			// Update SVG attribute for immediate visual feedback
 			const svgTransform = toSVGTransform(transform);
-			console.log(
-				"[TextureEditor] Setting SVG transform attribute to:",
-				svgTransform,
-			);
 			target.setAttribute("transform", svgTransform);
 
 			// Clear CSS transform now that we've saved it to SVG attribute
 			(target as HTMLElement).style.transform = "";
 
-			console.log("[TextureEditor] Updating texture...");
 			updateTexture();
 			setMoveableKey(uuid);
-			console.log("[TextureEditor] handleOnMoveableActionEnd complete");
 		},
 		[editorCtx, updateTexture],
 	);
 
-	const StencilSvg = useCallback(() => {
-	  const SideSvg = stencilSideMap[side]
-		return <SideSvg style={{backgroundColor: 'red', width: '100%', height: '100%'}} />
-	}, [side]) ;
+	const StencilSvg = stencilSideMap[side];
 
+	// Elements filtered for the current side
 	const elements = useMemo(
 		() =>
 			Array.from(editorCtx.elements.entries()).filter(
@@ -264,26 +250,18 @@ export function TextureEditor({
 				aria-label={`Texture editor canvas for ${side} side`}
 			>
 				<title>{`Texture editor canvas for ${side} side`}</title>
-				<StencilSvg />
+				{/* CSS to style the stencil SVG properly */}
+				{/* Stencil SVG - shows outline for user guidance */}
+				<StencilSvg style={{ width: "100%", height: "100%" }} />
 				{elements.map(([uuid, element]) => {
 					switch (element.type) {
 						case "text": {
 							const textTransform = toSVGTransform(element.transform);
-							console.log("[TextureEditor] Rendering text element:", {
-								uuid,
-								text: element.text,
-								transform: element.transform,
-								svgTransform: textTransform,
-							});
 							return (
 								<text
 									ref={(el) => {
 										if (el) {
 											elementRefs.current.set(uuid, el);
-											console.log(
-												"[TextureEditor] Text element ref set:",
-												uuid,
-											);
 										} else {
 											elementRefs.current.delete(uuid);
 										}

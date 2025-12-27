@@ -42,7 +42,6 @@ function BackdropWithDeselect() {
 	const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		// Only deselect if clicking directly on the backdrop (not its children like SVG)
 		if (e.target === e.currentTarget) {
-			console.log("[TextureEditorWrapper] Backdrop clicked, deselecting");
 			editorCtx.setSelectedElementId(undefined);
 		}
 	};

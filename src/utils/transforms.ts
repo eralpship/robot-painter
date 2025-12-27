@@ -12,12 +12,7 @@ export type CanonicalTransform = {
  * This is the standard transform order that matches how Moveable saves transforms
  */
 export function toSVGTransform(transform: CanonicalTransform): string {
-	const result = `translate(${transform.centerX}, ${transform.centerY}) rotate(${transform.rotation}) scale(${transform.scaleX}, ${transform.scaleY})`;
-	console.log("[Transform] toSVGTransform:", {
-		input: transform,
-		output: result,
-	});
-	return result;
+	return `translate(${transform.centerX}, ${transform.centerY}) rotate(${transform.rotation}) scale(${transform.scaleX}, ${transform.scaleY})`;
 }
 
 /**
@@ -32,14 +27,8 @@ export function toSVGTransform(transform: CanonicalTransform): string {
 export function extractCanonicalTransform(
 	element: SVGElement,
 ): CanonicalTransform | null {
-	console.log(
-		"[Transform] extractCanonicalTransform called for element:",
-		element.id,
-	);
-
 	// Start with the existing SVG transform attribute (our canonical source of truth)
 	const svgTransform = element.getAttribute("transform");
-	console.log("[Transform] Current SVG transform attribute:", svgTransform);
 
 	const baseTransform: CanonicalTransform = {
 		centerX: 0,
@@ -60,22 +49,13 @@ export function extractCanonicalTransform(
 		if (translateMatch) {
 			baseTransform.centerX = parseFloat(translateMatch[1]);
 			baseTransform.centerY = parseFloat(translateMatch[2]);
-			console.log("[Transform] Parsed base translate:", {
-				centerX: baseTransform.centerX,
-				centerY: baseTransform.centerY,
-			});
 		}
 		if (rotateMatch) {
 			baseTransform.rotation = parseFloat(rotateMatch[1]);
-			console.log("[Transform] Parsed base rotation:", baseTransform.rotation);
 		}
 		if (scaleMatch) {
 			baseTransform.scaleX = parseFloat(scaleMatch[1]);
 			baseTransform.scaleY = parseFloat(scaleMatch[2]);
-			console.log("[Transform] Parsed base scale:", {
-				scaleX: baseTransform.scaleX,
-				scaleY: baseTransform.scaleY,
-			});
 		}
 	}
 
@@ -83,10 +63,7 @@ export function extractCanonicalTransform(
 	const computedStyle = element.computedStyleMap();
 	const cssTransform = computedStyle?.get("transform");
 
-	console.log("[Transform] CSS transform value:", cssTransform);
-
 	if (!cssTransform || !(cssTransform instanceof CSSTransformValue)) {
-		console.log("[Transform] No CSS transform, using base SVG transform");
 		return baseTransform;
 	}
 
@@ -96,24 +73,12 @@ export function extractCanonicalTransform(
 	let cssRotation = 0;
 
 	// Extract the CSS deltas applied by Moveable
-	console.log("[Transform] Iterating through CSS transform components...");
 	for (const component of cssTransform) {
-		console.log(
-			"[Transform] Component type:",
-			component.constructor.name,
-			component,
-		);
-
 		if (component instanceof CSSTranslate) {
 			cssTranslateX += component.x.to("px").value;
 			cssTranslateY += component.y.to("px").value;
-			console.log("[Transform] CSS translate delta:", {
-				x: component.x.to("px").value,
-				y: component.y.to("px").value,
-			});
 		} else if (component instanceof CSSRotate) {
 			cssRotation = component.angle.to("deg").value;
-			console.log("[Transform] CSS rotation:", cssRotation);
 		} else if (component instanceof CSSScale) {
 			const scaleX =
 				typeof component.x === "number"
@@ -125,7 +90,6 @@ export function extractCanonicalTransform(
 					: (component.y as CSSUnitValue).value;
 			result.scaleX *= scaleX;
 			result.scaleY *= scaleY;
-			console.log("[Transform] CSS scale delta:", { scaleX, scaleY });
 		}
 	}
 
@@ -133,8 +97,6 @@ export function extractCanonicalTransform(
 	result.centerX += cssTranslateX;
 	result.centerY += cssTranslateY;
 	result.rotation += cssRotation;
-
-	console.log("[Transform] Final extracted transform:", result);
 
 	// Assertions for debugging
 	if (Math.abs(result.centerX) > 2000 || Math.abs(result.centerY) > 2000) {

@@ -55,22 +55,12 @@ export function AddElementToolbar() {
 						if (file) {
 							// Pre-compression file size check to avoid processing extremely large files
 							if (file.size > MAX_INPUT_FILE_SIZE) {
-								console.error("File too large:", file.size, "bytes");
 								alert(
 									`Image file is too large. Please use an image smaller than ${formatBytes(MAX_INPUT_FILE_SIZE)}`,
 								);
 								document.body.removeChild(input);
 								return;
 							}
-
-							console.log(
-								"Loading image:",
-								file.name,
-								"Size:",
-								formatBytes(file.size),
-								"Type:",
-								file.type,
-							);
 
 							try {
 								// Compress the image using ImageMagick WASM (converts all formats to PNG)
@@ -111,9 +101,7 @@ export function AddElementToolbar() {
 									height: compressed.height,
 									side: ctx.side,
 								});
-								console.log("Image element added to context");
-							} catch (error) {
-								console.error("Failed to process image:", error);
+							} catch {
 								alert(
 									"Failed to load the image. The file might be corrupted or in an unsupported format.",
 								);

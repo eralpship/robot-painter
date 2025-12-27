@@ -24,5 +24,10 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, './src'),
     },
-  }
+  },
+  server: {
+    watch: {
+      ignored: ['**/.beads/**'],
+    },
+  },
 });

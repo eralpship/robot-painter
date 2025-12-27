@@ -229,23 +229,14 @@ export function TextureEditorContextProvider({
 	const MAX_REDIRECTS = 3;
 	const notifyEditorReady = useCallback(() => {
 		if (hasLoadedFromStorage.current) {
-			console.log("[TextureEditor] Already loaded from storage, skipping");
 			return;
 		}
 
 		// Set flag immediately to prevent race conditions from duplicate calls
 		hasLoadedFromStorage.current = true;
 
-		console.log(
-			"[TextureEditor] Editor is ready, loading saved state from IndexedDB",
-			{ projectId },
-		);
-
 		// If no projectId provided, redirect to most recent project
 		if (projectId === undefined) {
-			console.log(
-				"[TextureEditor] No project ID in URL, looking up most recent project",
-			);
 			getMostRecentProjectId()
 				.then(async (recentProjectId) => {
 					if (recentProjectId !== null) {
@@ -262,26 +253,12 @@ export function TextureEditorContextProvider({
 						}
 
 						redirectCountRef.current += 1;
-						console.log("[TextureEditor] Redirect attempt", {
-							count: redirectCountRef.current,
-						});
-
-						// Redirect to most recent project
-						console.log("[TextureEditor] Redirecting to most recent project", {
-							id: recentProjectId,
-						});
 						const currentPath = mode === "full" ? "/texture-editor" : "/";
 						window.location.href = `${currentPath}?project-id=${recentProjectId}`;
 					} else {
 						// No projects exist - create a default project and reload
-						console.log(
-							"[TextureEditor] No projects found, creating default project",
-						);
 						try {
 							const defaultProjectId = await createProject("default");
-							console.log("[TextureEditor] Created default project", {
-								id: defaultProjectId,
-							});
 
 							// Check redirect circuit breaker
 							if (redirectCountRef.current >= MAX_REDIRECTS) {
@@ -296,11 +273,6 @@ export function TextureEditorContextProvider({
 							}
 
 							redirectCountRef.current += 1;
-							console.log("[TextureEditor] Redirect attempt", {
-								count: redirectCountRef.current,
-							});
-
-							// Reload page with new project ID
 							const currentPath = mode === "full" ? "/texture-editor" : "/";
 							window.location.href = `${currentPath}?project-id=${defaultProjectId}`;
 						} catch (error) {
@@ -326,10 +298,6 @@ export function TextureEditorContextProvider({
 		loadState(projectId)
 			.then(async (loaded) => {
 				if (loaded) {
-					console.log("[TextureEditor] Loading saved state from IndexedDB", {
-						backgroundColor: loaded.backgroundColor,
-						elementCount: loaded.elements.size,
-					});
 					dispatchElementsAction({ type: "load", elements: loaded.elements });
 					setBackgroundColor(loaded.backgroundColor);
 					setIsLoaded(true);
@@ -337,9 +305,6 @@ export function TextureEditorContextProvider({
 				} else {
 					// Invalid project ID - check if other projects exist
 					alert(`Project with id ${projectId} doesn't exist!`);
-					console.log(
-						"[TextureEditor] Invalid project ID, checking for other projects",
-					);
 
 					const recentProjectId = await getMostRecentProjectId();
 					const currentPath = mode === "full" ? "/texture-editor" : "/";
@@ -358,14 +323,6 @@ export function TextureEditorContextProvider({
 						}
 
 						redirectCountRef.current += 1;
-						console.log("[TextureEditor] Redirect attempt", {
-							count: redirectCountRef.current,
-						});
-
-						// Redirect to most recent project
-						console.log("[TextureEditor] Redirecting to most recent project", {
-							id: recentProjectId,
-						});
 						window.location.href = `${currentPath}?project-id=${recentProjectId}`;
 					} else {
 						// Check redirect circuit breaker
@@ -381,14 +338,6 @@ export function TextureEditorContextProvider({
 						}
 
 						redirectCountRef.current += 1;
-						console.log("[TextureEditor] Redirect attempt", {
-							count: redirectCountRef.current,
-						});
-
-						// No projects exist - clear parameter and reload (will trigger default project creation)
-						console.log(
-							"[TextureEditor] No projects found, clearing parameter to trigger default project creation",
-						);
 						window.location.href = currentPath;
 					}
 				}
@@ -403,7 +352,6 @@ export function TextureEditorContextProvider({
 	}, [loadState, getMostRecentProjectId, projectId, createProject, mode]);
 
 	const resetToDefaults = useCallback(() => {
-		console.log("[TextureEditor] Resetting current project to defaults");
 		// Don't clear state - just reset elements and background
 		// The auto-save will update the current project
 		dispatchElementsAction({ type: "reset" });
@@ -445,14 +393,8 @@ export function TextureEditorContextProvider({
 
 	const createNewProject = useCallback(
 		async (name: string): Promise<number> => {
-			console.log("[TextureEditor] Creating new project", { name });
-
 			try {
 				const newProjectId = await createProject(name);
-				console.log("[TextureEditor] New project created", {
-					id: newProjectId,
-					name,
-				});
 				return newProjectId;
 			} catch (error) {
 				console.error("[TextureEditor] Failed to create new project:", error);
@@ -466,37 +408,14 @@ export function TextureEditorContextProvider({
 	// Auto-sync to IndexedDB when state changes (only after load completes)
 	useEffect(() => {
 		// Skip auto-save until initial load is complete
-		if (!isLoaded) {
-			console.log("[TextureEditor] Skipping auto-save - not yet loaded");
+		if (!isLoaded || !projectId) {
 			return;
 		}
-
-		// Skip auto-save if no project ID in URL
-		if (!projectId) {
-			console.warn("[TextureEditor] No project ID in URL, skipping auto-save");
-			return;
-		}
-
-		console.log(
-			"[TextureEditor] State changed, scheduling auto-save in 300ms",
-			{
-				backgroundColor,
-				elementCount: elements.size,
-			},
-		);
 
 		const timeoutId = setTimeout(() => {
-			console.log("[TextureEditor] Auto-saving to IndexedDB", {
-				backgroundColor,
-				elementCount: elements.size,
+			saveState(projectId, backgroundColor, elements).catch((error) => {
+				console.error("[TextureEditor] Auto-save failed:", error);
 			});
-			saveState(projectId, backgroundColor, elements)
-				.then(() => {
-					console.log("[TextureEditor] Auto-save completed successfully");
-				})
-				.catch((error) => {
-					console.error("[TextureEditor] Auto-save failed:", error);
-				});
 		}, 300);
 
 		return () => clearTimeout(timeoutId);

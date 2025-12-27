@@ -1,4 +1,4 @@
-import { animated, easings, useSpring } from "@react-spring/three";
+import { animated, useSpring } from "@react-spring/three";
 import { useAnimations } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
@@ -17,10 +17,15 @@ import {
 	OverlayTextureContext,
 } from "../contexts/overlay-texture-canvas-context";
 import { useTooltip } from "../contexts/tooltip-context";
-
-export const HEADLIGHT_INTENSITY_DEFAULT = 12;
-export const TAILLIGHT_INTENSITY_DEFAULT = 12;
-export const TAILLIGHT_COLOR_DEFAULT = "#ff0000";
+import { useBogieAnimation } from "../hooks/useBogieAnimation";
+import {
+	MODEL_DEFAULTS,
+	useHeadlightIntensity,
+	useLidOpen,
+	useModelStore,
+	useTaillightColor,
+	useTaillightIntensity,
+} from "../stores/model-store";
 
 interface GLTFAction extends THREE.AnimationClip {
 	name: "open lid" | "rocker";
@@ -59,23 +64,11 @@ type GLTFResult = GLTF & {
 	animations: GLTFAction[];
 };
 
-interface ModelProps extends React.ComponentProps<"group"> {
-	onHeadlightIntensityChanged: (value: number) => void;
-	onTaillightIntensityChanged: (value: number) => void;
-	onLidOpenChanged: (open: boolean) => void;
-	initialHeadlightIntensity: number;
-	initialTailLightIntensity: number;
-	onBogieAmountChanged: (amount: number) => void;
-}
+// Simplified props - no more callbacks or initial values needed
+type ModelProps = React.ComponentProps<"group">;
 
 export interface ModelRef {
 	touchFlag: () => void;
-	setBogieAmount: (amount: number) => void;
-	setTailLightColor: (color: string) => void;
-	setLidOpen: (open: boolean) => void;
-	setHeadlightsIntensity: (intensity: number) => void;
-	setTaillightsIntensity: (intensity: number) => void;
-	updateLevaLidState?: (open: boolean) => void;
 }
 
 const loadingManager = new THREE.LoadingManager();
@@ -91,659 +84,520 @@ loadingManager.setURLModifier((url) => {
 	return url;
 });
 
-export const Model = forwardRef<ModelRef, ModelProps>(
-	(
-		{
-			onLidOpenChanged,
-			onHeadlightIntensityChanged,
-			onTaillightIntensityChanged,
-			initialHeadlightIntensity,
-			initialTailLightIntensity,
-			onBogieAmountChanged,
-			...props
+export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
+	const group = React.useRef<THREE.Group>(null);
+	const flagRef = useRef<THREE.Mesh>(null);
+
+	const { nodes, materials, animations } = useLoader(
+		GLTFLoader,
+		"/e-model.gltf",
+		(loader) => {
+			loader.manager = loadingManager;
 		},
+	) as unknown as GLTFResult;
+
+	const { actions, mixer } = useAnimations(animations, group);
+	const { camera, mouse, raycaster } = useThree();
+	const { setTooltip } = useTooltip();
+	const currentTooltip = useRef<string | null>(null);
+	const textures = useContext(OverlayTextureContext);
+
+	// Read state from Zustand store (only for rendering, not for animation)
+	const headlightIntensity = useHeadlightIntensity();
+	const taillightIntensity = useTaillightIntensity();
+	const taillightColor = useTaillightColor();
+	const lidOpen = useLidOpen();
+
+	// Get store actions
+	const setHeadlightIntensity = useModelStore((s) => s.setHeadlightIntensity);
+	const setTaillightIntensity = useModelStore((s) => s.setTaillightIntensity);
+	const setLidOpen = useModelStore((s) => s.setLidOpen);
+	const setBogieTarget = useModelStore((s) => s.setBogieTarget);
+
+	// Bogie animation - encapsulated in custom hook
+	useBogieAnimation({ actions, groupRef: group });
+
+	// Lid animation - react to lidOpen changes from store
+	useEffect(() => {
+		const lidAction = actions["open lid"];
+		if (lidAction) {
+			lidAction.timeScale = lidOpen ? 1 : -1;
+			lidAction.paused = false;
+			lidAction.play();
+		}
+	}, [lidOpen, actions]);
+
+	// Flag spring animation
+	const [springs, api] = useSpring(() => ({
+		rotationX: 0,
+		config: {
+			mass: 1.2,
+			tension: 800,
+			friction: 20,
+			velocity: 0,
+		},
+	}));
+
+	const handleFlagClick = useCallback(
+		(e?: ThreeEvent<MouseEvent>) => {
+			e?.stopPropagation();
+			api.start({
+				from: { rotationX: 0 },
+				to: { rotationX: 1 },
+				config: {
+					mass: 1.2,
+					tension: 800,
+					friction: 20,
+				},
+				onRest: () => {
+					api.set({ rotationX: 0 });
+				},
+			});
+		},
+		[api],
+	);
+
+	// Simplified imperative handle - only touchFlag needed
+	useImperativeHandle(
 		ref,
-	) => {
-		const group = React.useRef<THREE.Group>(null);
-		const updateLevaLidStateRef = useRef<((open: boolean) => void) | null>(
-			null,
+		() => ({
+			touchFlag: () => {
+				handleFlagClick();
+			},
+		}),
+		[handleFlagClick],
+	);
+
+	// Toggle handlers write directly to store
+	const toggleHeadlights = useCallback(() => {
+		const wasOn = headlightIntensity > 0;
+		const newIntensity = wasOn ? 0 : MODEL_DEFAULTS.headlightIntensity;
+		setHeadlightIntensity(newIntensity);
+	}, [headlightIntensity, setHeadlightIntensity]);
+
+	const toggleTaillights = useCallback(() => {
+		const wasOn = taillightIntensity > 0;
+		const newIntensity = wasOn ? 0 : MODEL_DEFAULTS.taillightIntensity;
+		setTaillightIntensity(newIntensity);
+	}, [taillightIntensity, setTaillightIntensity]);
+
+	// Initialize lid animation (can re-run when actions ref changes)
+	useEffect(() => {
+		const lidAction = actions["open lid"];
+		if (lidAction) {
+			lidAction.loop = THREE.LoopOnce;
+			lidAction.clampWhenFinished = true;
+			lidAction.time = 0;
+			lidAction.paused = true;
+		}
+	}, [actions]);
+
+	const interpolatedRotation = springs.rotationX.to({
+		range: [0, 0.5, 1],
+		output: [0, Math.PI / 6, 0],
+	});
+
+	// Animation frame - update mixer for lid animation and handle tooltips
+	useFrame((_, delta) => {
+		// Update mixer for lid animation
+		mixer.update(delta);
+
+		// Handle raycasting for tooltips
+		raycaster.setFromCamera(mouse, camera);
+		const intersects = raycaster.intersectObjects(
+			group.current?.children || [],
+			true,
 		);
-		const leftHeadlightRef = useRef<THREE.PointLight>(null);
-		const rightHeadlightRef = useRef<THREE.PointLight>(null);
-		const tailLightLeftRef = useRef<THREE.PointLight>(null);
-		const tailLightMiddleLeftRef = useRef<THREE.PointLight>(null);
-		const tailLightMiddleMiddleRef = useRef<THREE.PointLight>(null);
-		const tailLightMiddleRightRef = useRef<THREE.PointLight>(null);
-		const tailLightRightRef = useRef<THREE.PointLight>(null);
-		const flagRef = useRef<THREE.Mesh>(null);
+		const firstIntersect = intersects[0];
 
-		console.log("Model component rendered");
+		let newTooltip: string | null = null;
+		if (firstIntersect?.object.name.includes("lid")) {
+			newTooltip = `Lid (${lidOpen ? "Close" : "Open"})`;
+		} else if (firstIntersect?.object.name.includes("headlight")) {
+			newTooltip = "Head Lights (Toggle)";
+		} else if (firstIntersect?.object.name.includes("tail_light")) {
+			newTooltip = "Tail Lights (Toggle)";
+		} else if (firstIntersect?.object.name.includes("flag")) {
+			newTooltip = "Flag (Flick)";
+		} else if (firstIntersect?.object.name.includes("wheel")) {
+			newTooltip = "Wheel (Toggle Bogie)";
+		}
 
-		const { nodes, materials, animations } = useLoader(
-			GLTFLoader,
-			"/e-model.gltf",
-			(loader) => {
-				loader.manager = loadingManager;
-			},
-		) as unknown as GLTFResult;
+		if (newTooltip !== currentTooltip.current) {
+			currentTooltip.current = newTooltip;
+			setTooltip(newTooltip);
+		}
+	});
 
-		const { actions } = useAnimations(animations, group);
-		const { camera, mouse, raycaster } = useThree();
-		const { setTooltip } = useTooltip();
-		const currentTooltip = useRef<string | null>(null);
-		const textures = useContext(OverlayTextureContext);
+	// Material setup
+	useEffect(() => {
+		materials.wheel.metalness = 0.3;
+		materials.wheel.roughness = 0.7;
+		materials.wheel.envMapIntensity = 0.4;
+		materials.wheel.clearcoat = 0.2;
+		materials.wheel.clearcoatRoughness = 0.6;
+		materials.wheel.reflectivity = 0.25;
+		materials.wheel.specularIntensity = 0.6;
+		materials.wheel.ior = 1.6;
+		materials.wheel.sheen = 0.3;
+		materials.wheel.sheenRoughness = 0.7;
+		materials.wheel.sheenColor = new THREE.Color(0x2a2a2a);
+		materials.wheel.normalScale = new THREE.Vector2(2.5, 2.5);
 
-		const [rockerSpring, rockerApi] = useSpring(() => ({
-			progress: 0.5,
-			config: {
-				easing: easings.easeOutBounce,
-				duration: 1500,
-			},
-			onStart: () => {
-				onBogieAmountChanged(rockerSpring.progress.goal);
-			},
-			onRest: () => {
-				const finalAmount = rockerSpring.progress.get();
-				onBogieAmountChanged(finalAmount);
-			},
-		}));
-
-		const internalSetBogieAmount = useCallback(
-			(amount: number) => {
-				rockerApi.start({ progress: amount });
-			},
-			[rockerApi],
-		);
-
-		const updateHeadlights = useCallback((intensity?: number) => {
-			if (leftHeadlightRef.current) {
-				leftHeadlightRef.current.intensity = intensity ?? 0;
-			}
-			if (rightHeadlightRef.current) {
-				rightHeadlightRef.current.intensity = intensity ?? 0;
-			}
-		}, []);
-
-		const updateTaillights = useCallback((intensity?: number) => {
-			const taillightRefs = [
-				tailLightLeftRef,
-				tailLightMiddleLeftRef,
-				tailLightMiddleMiddleRef,
-				tailLightMiddleRightRef,
-				tailLightRightRef,
-			];
-			taillightRefs.forEach((ref) => {
-				if (ref.current) {
-					ref.current.intensity = intensity ?? 0;
-				}
-			});
-		}, []);
-
-		const updateTailLightColor = useCallback((color: string) => {
-			const taillightRefs = [
-				tailLightLeftRef,
-				tailLightMiddleLeftRef,
-				tailLightMiddleMiddleRef,
-				tailLightMiddleRightRef,
-				tailLightRightRef,
-			];
-			taillightRefs.forEach((ref) => {
-				if (ref.current) {
-					ref.current.color.set(color);
-				}
-			});
-		}, []);
-
-		const internalSetLidOpen = useCallback(
-			(open: boolean) => {
-				const action = actions["open lid"];
-				if (action) {
-					action.timeScale = open ? 1 : -1;
-					action.paused = false;
-					action.play();
-				}
-				onLidOpenChanged(open);
-			},
-			[actions, onLidOpenChanged],
-		);
-
-		const [springs, api] = useSpring(() => ({
-			rotationX: 0,
-			config: {
-				mass: 1.2,
-				tension: 800,
-				friction: 20,
-				velocity: 0,
-			},
-		}));
-
-		const handleFlagClick = useCallback(
-			(e?: ThreeEvent<MouseEvent>) => {
-				e?.stopPropagation();
-				api.start({
-					from: { rotationX: 0 },
-					to: { rotationX: 1 },
-					config: {
-						mass: 1.2,
-						tension: 800,
-						friction: 20,
-					},
-					onRest: () => {
-						api.set({ rotationX: 0 });
-					},
-				});
-			},
-			[api],
-		);
-
-		useImperativeHandle(
-			ref,
-			() => ({
-				touchFlag: () => {
-					handleFlagClick();
-				},
-				setBogieAmount: (amount: number) => {
-					internalSetBogieAmount(amount);
-				},
-				setTailLightColor: (color: string) => {
-					updateTailLightColor(color);
-				},
-				setLidOpen: (open: boolean) => {
-					internalSetLidOpen(open);
-				},
-				setHeadlightsIntensity: (intensity: number) => {
-					updateHeadlights(intensity);
-				},
-				setTaillightsIntensity: (intensity: number) => {
-					updateTaillights(intensity);
-				},
-				updateLevaLidState: (open: boolean) => {
-					if (updateLevaLidStateRef.current) {
-						updateLevaLidStateRef.current(open);
-					}
-				},
-			}),
-			[
-				handleFlagClick,
-				internalSetBogieAmount,
-				internalSetLidOpen,
-				updateHeadlights,
-				updateTailLightColor,
-				updateTaillights,
-			],
-		);
-
-		const toggleHeadlights = useCallback(() => {
-			const wasOn = (leftHeadlightRef.current?.intensity ?? 0) > 0;
-			const newIntensity = wasOn ? 0 : HEADLIGHT_INTENSITY_DEFAULT;
-			updateHeadlights(newIntensity);
-			onHeadlightIntensityChanged(newIntensity);
-		}, [updateHeadlights, onHeadlightIntensityChanged]);
-
-		const toggleTaillights = useCallback(() => {
-			const wasOn = (tailLightLeftRef.current?.intensity ?? 0) > 0;
-			const newIntensity = wasOn ? 0 : TAILLIGHT_INTENSITY_DEFAULT;
-			updateTaillights(newIntensity);
-			onTaillightIntensityChanged(newIntensity);
-		}, [updateTaillights, onTaillightIntensityChanged]);
-
-		useEffect(() => {
-			const lidAction = actions["open lid"];
-			if (lidAction) {
-				lidAction.loop = THREE.LoopOnce;
-				lidAction.clampWhenFinished = true;
-				lidAction.time = 0;
-				lidAction.paused = true; // Keep it paused at initial position
-			}
-
-			const rockerAction = actions.rocker;
-			if (rockerAction) {
-				rockerAction.loop = THREE.LoopOnce;
-				rockerAction.clampWhenFinished = true;
-				rockerAction.timeScale = 1;
-				rockerAction.play();
-				rockerAction.reset();
-				rockerAction.paused = true;
-			}
-		}, [actions]);
-
-		const interpolatedRotation = springs.rotationX.to({
-			range: [0, 0.5, 1],
-			output: [0, Math.PI / 6, 0],
-		});
-
-		useFrame(() => {
-			const rockerAction = actions.rocker;
-			if (rockerAction) {
-				// const springProgress = rockerSpring.progress.get()
-				rockerAction.time =
-					rockerAction.getClip().duration * rockerSpring.progress.get();
-			}
-
-			// Handle raycasting for tooltips
-			raycaster.setFromCamera(mouse, camera);
-			const intersects = raycaster.intersectObjects(
-				group.current?.children || [],
-				true,
-			);
-			const firstIntersect = intersects[0];
-
-			let newTooltip: string | null = null;
-			if (firstIntersect?.object.name.includes("lid")) {
-				newTooltip = `Lid (${currentLidStateOpen() ? "Close" : "Open"})`;
-			} else if (firstIntersect?.object.name.includes("headlight")) {
-				newTooltip = "Head Lights (Toggle)";
-			} else if (firstIntersect?.object.name.includes("tail_light")) {
-				newTooltip = "Tail Lights (Toggle)";
-			} else if (firstIntersect?.object.name.includes("flag")) {
-				newTooltip = "Flag (Flick)";
-			} else if (firstIntersect?.object.name.includes("wheel")) {
-				newTooltip = "Wheel (Toggle Bogie)";
-			}
-
-			if (newTooltip !== currentTooltip.current) {
-				currentTooltip.current = newTooltip;
-				setTooltip(newTooltip);
-			}
-		});
-
-		useEffect(() => {
-			materials.wheel.metalness = 0.3;
-			materials.wheel.roughness = 0.7;
-			materials.wheel.envMapIntensity = 0.4;
-			materials.wheel.clearcoat = 0.2;
-			materials.wheel.clearcoatRoughness = 0.6;
-			materials.wheel.reflectivity = 0.25;
-			materials.wheel.specularIntensity = 0.6;
-			materials.wheel.ior = 1.6;
-			materials.wheel.sheen = 0.3;
-			materials.wheel.sheenRoughness = 0.7;
-			materials.wheel.sheenColor = new THREE.Color(0x2a2a2a);
-			materials.wheel.normalScale = new THREE.Vector2(2.5, 2.5);
-
-			materials.Back.transparent = true;
-			materials.Back.opacity = 1;
-			materials.Back.metalness = 0.3;
-			materials.Back.roughness = 0.35;
-			materials.Back.alphaTest = 0.01;
-
-			materials.Front.transparent = true;
-			materials.Front.opacity = 1;
-			materials.Front.metalness = 0.3;
-			materials.Front.roughness = 0.35;
-			materials.Front.alphaTest = 0.01;
-
-			materials.Left.transparent = true;
-			materials.Left.opacity = 1;
-			materials.Left.metalness = 0.3;
-			materials.Left.roughness = 0.35;
-			materials.Left.alphaTest = 0.01;
-
-			materials.Right.transparent = true;
-			materials.Right.opacity = 1;
-			materials.Right.metalness = 0.3;
-			materials.Right.roughness = 0.35;
-			materials.Right.alphaTest = 0.01;
-
-			materials.Lid.transparent = true;
-			materials.Lid.opacity = 1;
-			materials.Lid.metalness = 0.3;
-			materials.Lid.roughness = 0.35;
-			materials.Lid.alphaTest = 0.01;
-
-			materials.body.metalness = 0.3;
-			materials.body.roughness = 0.35;
-		}, [
+		// Side materials with transparency
+		const sideMaterials = [
 			materials.Back,
 			materials.Front,
 			materials.Left,
-			materials.Lid,
 			materials.Right,
-			materials.body,
-			materials.wheel,
-		]);
+			materials.Lid,
+		];
+		for (const mat of sideMaterials) {
+			mat.transparent = true;
+			mat.opacity = 1;
+			mat.metalness = 0.3;
+			mat.roughness = 0.35;
+			mat.alphaTest = 0.01;
+		}
 
-		useEffect(() => {
-			if (textures?.lid && materials.Lid.map) {
-				materials.Lid.map.image = textures.lid;
-				materials.Lid.map.needsUpdate = true;
-				materials.Lid.needsUpdate = true;
-			}
-		}, [textures?.lid, materials.Lid]);
-		useEffect(() => {
-			if (textures?.front && materials.Front.map) {
-				materials.Front.map.image = textures.front;
-				materials.Front.map.needsUpdate = true;
-				materials.Front.needsUpdate = true;
-			}
-		}, [textures?.front, materials.Front]);
-		useEffect(() => {
-			if (textures?.back && materials.Back.map) {
-				materials.Back.map.image = textures.back;
-				materials.Back.map.needsUpdate = true;
-				materials.Back.needsUpdate = true;
-			}
-		}, [textures?.back, materials.Back]);
-		useEffect(() => {
-			if (textures?.left && materials.Left.map) {
-				materials.Left.map.image = textures.left;
-				materials.Left.map.needsUpdate = true;
-				materials.Left.needsUpdate = true;
-			}
-		}, [textures?.left, materials.Left]);
-		useEffect(() => {
-			if (textures?.right && materials.Right.map) {
-				materials.Right.map.image = textures.right;
-				materials.Right.map.needsUpdate = true;
-				materials.Right.needsUpdate = true;
-			}
-		}, [textures?.right, materials.Right]);
+		materials.body.metalness = 0.3;
+		materials.body.roughness = 0.35;
+	}, [
+		materials.Back,
+		materials.Front,
+		materials.Left,
+		materials.Lid,
+		materials.Right,
+		materials.body,
+		materials.wheel,
+	]);
 
-		const currentLidStateOpen = useCallback(() => {
-			const lidAction = actions["open lid"];
-			if (!lidAction) return false;
-			const duration = lidAction.getClip().duration;
-			const currentProgress = lidAction.time / duration;
-			return currentProgress >= 0.5;
-		}, [actions]);
+	// Texture updates - consolidated
+	useEffect(() => {
+		const textureMap: [
+			HTMLImageElement | undefined,
+			THREE.MeshStandardMaterial,
+		][] = [
+			[textures?.lid, materials.Lid],
+			[textures?.front, materials.Front],
+			[textures?.back, materials.Back],
+			[textures?.left, materials.Left],
+			[textures?.right, materials.Right],
+		];
 
-		const handleLidClick = useCallback(
-			(e: ThreeEvent<MouseEvent>) => {
-				e.stopPropagation();
-				const newLidOpen = !currentLidStateOpen();
-				internalSetLidOpen(newLidOpen);
-				if (updateLevaLidStateRef.current) {
-					updateLevaLidStateRef.current(newLidOpen);
+		for (const [texture, material] of textureMap) {
+			if (texture) {
+				if (!material.map) {
+					material.map = new THREE.Texture(texture);
+				} else {
+					material.map.image = texture;
 				}
-			},
-			[currentLidStateOpen, internalSetLidOpen],
-		);
+				material.map.needsUpdate = true;
+				material.needsUpdate = true;
+			}
+		}
+	}, [
+		textures?.lid,
+		textures?.front,
+		textures?.back,
+		textures?.left,
+		textures?.right,
+		materials.Lid,
+		materials.Front,
+		materials.Back,
+		materials.Left,
+		materials.Right,
+	]);
 
-		const handleHitboxClick = useCallback(
-			(e: ThreeEvent<MouseEvent>) => {
-				e.stopPropagation();
-				console.log("Hitbox clicked:", e.object.name);
-				if (e.object.name.includes("headlight")) {
-					console.log("Toggling headlights");
-					toggleHeadlights();
-				} else if (e.object.name.includes("tail_light")) {
-					console.log("Toggling taillights");
-					toggleTaillights();
-				}
-			},
-			[toggleHeadlights, toggleTaillights],
-		);
+	// Click handlers
+	const handleLidClick = useCallback(
+		(e: ThreeEvent<MouseEvent>) => {
+			e.stopPropagation();
+			setLidOpen(!lidOpen);
+		},
+		[lidOpen, setLidOpen],
+	);
 
-		const toggleBogieToTarget = (target: number) => {
-			const currentAmount = rockerSpring.progress.get();
-			const distanceToNormal = Math.abs(currentAmount - 0.5);
-			const distanceToTarget = Math.abs(currentAmount - target);
+	const handleHitboxClick = useCallback(
+		(e: ThreeEvent<MouseEvent>) => {
+			e.stopPropagation();
+			if (e.object.name.includes("headlight")) {
+				toggleHeadlights();
+			} else if (e.object.name.includes("tail_light")) {
+				toggleTaillights();
+			}
+		},
+		[toggleHeadlights, toggleTaillights],
+	);
+
+	const toggleBogieToTarget = useCallback(
+		(target: number) => {
+			// Read current target from store
+			const currentTarget = useModelStore.getState().bogieTarget;
+			const distanceToNormal = Math.abs(currentTarget - 0.5);
+			const distanceToTarget = Math.abs(currentTarget - target);
 			if (distanceToNormal < distanceToTarget) {
-				internalSetBogieAmount(target);
+				setBogieTarget(target);
 			} else {
-				internalSetBogieAmount(0.5);
+				setBogieTarget(0.5);
 			}
-		};
+		},
+		[setBogieTarget],
+	);
 
-		const hanldeOnFrontWheelClick = (e: ThreeEvent<MouseEvent>) => {
+	// Wheel click handlers - front/back use target=1, middle uses target=0
+	const handleOuterWheelClick = useCallback(
+		(e: ThreeEvent<MouseEvent>) => {
 			e.stopPropagation();
 			toggleBogieToTarget(1);
-		};
+		},
+		[toggleBogieToTarget],
+	);
 
-		const handleOnMiddleWheelClick = (e: ThreeEvent<MouseEvent>) => {
+	const handleMiddleWheelClick = useCallback(
+		(e: ThreeEvent<MouseEvent>) => {
 			e.stopPropagation();
 			toggleBogieToTarget(0);
-		};
+		},
+		[toggleBogieToTarget],
+	);
 
-		const handleOnBackWheelClick = (e: ThreeEvent<MouseEvent>) => {
-			e.stopPropagation();
-			toggleBogieToTarget(1);
-		};
-
-		// Wrapper component that adds a clickable hitbox to a light
-		const ClickableLight = ({
-			children,
-		}: {
-			children: React.ReactElement<React.ComponentProps<"pointLight">>;
-		}) => {
-			const position = children.props.position as [number, number, number];
-			const name = children.props.name as string;
-			const scale = (children.props.scale as number) ?? 30;
-
-			return (
-				<>
-					{children}
-					<mesh
-						name={`${name}_hitbox`}
-						position={position}
-						scale={scale}
-						onClick={handleHitboxClick}
-					>
-						<sphereGeometry args={[1, 16, 16]} />
-						<meshBasicMaterial
-							color="red"
-							transparent
-							opacity={0.5}
-							visible={false}
-						/>
-					</mesh>
-				</>
-			);
-		};
-
-		const headlightColor = "#ffe8a0";
+	// Wrapper component that adds a clickable hitbox to a light
+	const ClickableLight = ({
+		children,
+	}: {
+		children: React.ReactElement<React.ComponentProps<"pointLight">>;
+	}) => {
+		const position = children.props.position as [number, number, number];
+		const name = children.props.name as string;
+		const scale = (children.props.scale as number) ?? 30;
 
 		return (
-			<group ref={group} {...props} dispose={null}>
+			<>
+				{children}
 				<mesh
-					name="robot"
-					geometry={nodes.robot.geometry}
-					material={materials.body}
-					rotation={[Math.PI / 2, 0, 0]}
-					scale={0.01}
+					name={`${name}_hitbox`}
+					position={position}
+					scale={scale}
+					onClick={handleHitboxClick}
 				>
-					{/* Lid */}
-					<mesh
-						name="lid"
-						geometry={nodes.lid.geometry}
-						material={materials.Lid}
-						position={[0, 447.187, -637.429]}
-						onClick={handleLidClick}
-					>
-						<mesh
-							name="lid_inside"
-							geometry={nodes.lid_inside.geometry}
-							material={materials["body inside light"]}
-						/>
-					</mesh>
-
-					{/* Headlights */}
-					<ClickableLight>
-						<pointLight
-							ref={leftHeadlightRef}
-							name="headlight_left"
-							intensity={initialHeadlightIntensity}
-							decay={2}
-							color={headlightColor}
-							position={[-235.912, 385.374, -301.501]}
-							rotation={[-Math.PI, 0, 0]}
-							scale={30}
-						/>
-					</ClickableLight>
-					<ClickableLight>
-						<pointLight
-							ref={rightHeadlightRef}
-							name="headlight_right"
-							intensity={initialHeadlightIntensity}
-							decay={2}
-							color={headlightColor}
-							position={[241.584, 386.931, -299.362]}
-							rotation={[-Math.PI, 0, 0]}
-							scale={30}
-						/>
-					</ClickableLight>
-
-					{/* Tail Middle Lights */}
-					<ClickableLight>
-						<pointLight
-							ref={tailLightMiddleLeftRef}
-							name="tail_light_middle_left"
-							intensity={initialTailLightIntensity}
-							decay={2}
-							color={TAILLIGHT_COLOR_DEFAULT}
-							position={[38.204, -384.368, -602.573]}
-							rotation={[-Math.PI, 0, 0]}
-							scale={25}
-						/>
-					</ClickableLight>
-					<ClickableLight>
-						<pointLight
-							ref={tailLightMiddleMiddleRef}
-							name="tail_light_middle_middle"
-							intensity={initialTailLightIntensity}
-							decay={2}
-							color={TAILLIGHT_COLOR_DEFAULT}
-							position={[-0.018, -384.368, -602.573]}
-							rotation={[-Math.PI, 0, 0]}
-							scale={25}
-						/>
-					</ClickableLight>
-					<ClickableLight>
-						<pointLight
-							ref={tailLightMiddleRightRef}
-							name="tail_light_middle_right"
-							intensity={initialTailLightIntensity}
-							decay={2}
-							color={TAILLIGHT_COLOR_DEFAULT}
-							position={[-47.829, -384.368, -602.573]}
-							rotation={[-Math.PI, 0, 0]}
-							scale={25}
-						/>
-					</ClickableLight>
-
-					{/* Tail Side Lights */}
-					<ClickableLight>
-						<pointLight
-							ref={tailLightRightRef}
-							name="tail_light_right"
-							intensity={initialTailLightIntensity}
-							decay={2}
-							color={TAILLIGHT_COLOR_DEFAULT}
-							position={[-248.999, -326.223, -602.573]}
-							rotation={[-Math.PI, 0, 0]}
-							scale={25}
-						/>
-					</ClickableLight>
-					<ClickableLight>
-						<pointLight
-							ref={tailLightLeftRef}
-							name="tail_light_left"
-							intensity={initialTailLightIntensity}
-							decay={2}
-							color={TAILLIGHT_COLOR_DEFAULT}
-							position={[250.51, -326.223, -602.573]}
-							rotation={[-Math.PI, 0, 0]}
-							scale={25}
-						/>
-					</ClickableLight>
-
-					<animated.mesh
-						ref={flagRef}
-						name="robot_flag_new"
-						geometry={nodes.robot_flag_new.geometry}
-						material={materials.body}
-						position={[-301.249, 198.68, -535.916]}
-						rotation-x={interpolatedRotation}
-						onClick={handleFlagClick}
+					<sphereGeometry args={[1, 16, 16]} />
+					<meshBasicMaterial
+						color="red"
+						transparent
+						opacity={0.5}
+						visible={false}
 					/>
+				</mesh>
+			</>
+		);
+	};
 
-					{/* Body sides */}
-					<mesh
-						name="body_back"
-						geometry={nodes.body_back.geometry}
-						material={materials.Back}
-					/>
-					<mesh
-						name="body_front"
-						geometry={nodes.body_front.geometry}
-						material={materials.Front}
-					/>
-					<mesh
-						name="body_left"
-						geometry={nodes.body_left.geometry}
-						material={materials.Left}
-					/>
-					<mesh
-						name="body_right"
-						geometry={nodes.body_right.geometry}
-						material={materials.Right}
-					/>
+	const headlightColor = "#ffe8a0";
 
-					{/* Body inside */}
+	return (
+		<group ref={group} {...props} dispose={null}>
+			<mesh
+				name="robot"
+				geometry={nodes.robot.geometry}
+				material={materials.body}
+				rotation={[Math.PI / 2, 0, 0]}
+				scale={0.01}
+			>
+				{/* Lid */}
+				<mesh
+					name="lid"
+					geometry={nodes.lid.geometry}
+					material={materials.Lid}
+					position={[0, 447.187, -637.429]}
+					onClick={handleLidClick}
+				>
 					<mesh
-						name="body_inside"
-						geometry={nodes.body_inside.geometry}
-						material={materials["body inside dark"]}
-						position={[0, 0, -1.723]}
+						name="lid_inside"
+						geometry={nodes.lid_inside.geometry}
+						material={materials["body inside light"]}
 					/>
+				</mesh>
 
-					{/* Wheels */}
+				{/* Headlights */}
+				<ClickableLight>
+					<pointLight
+						name="headlight_left"
+						intensity={headlightIntensity}
+						decay={2}
+						color={headlightColor}
+						position={[-235.912, 385.374, -301.501]}
+						rotation={[-Math.PI, 0, 0]}
+						scale={30}
+					/>
+				</ClickableLight>
+				<ClickableLight>
+					<pointLight
+						name="headlight_right"
+						intensity={headlightIntensity}
+						decay={2}
+						color={headlightColor}
+						position={[241.584, 386.931, -299.362]}
+						rotation={[-Math.PI, 0, 0]}
+						scale={30}
+					/>
+				</ClickableLight>
+
+				{/* Tail Middle Lights */}
+				<ClickableLight>
+					<pointLight
+						name="tail_light_middle_left"
+						intensity={taillightIntensity}
+						decay={2}
+						color={taillightColor}
+						position={[38.204, -384.368, -602.573]}
+						rotation={[-Math.PI, 0, 0]}
+						scale={25}
+					/>
+				</ClickableLight>
+				<ClickableLight>
+					<pointLight
+						name="tail_light_middle_middle"
+						intensity={taillightIntensity}
+						decay={2}
+						color={taillightColor}
+						position={[-0.018, -384.368, -602.573]}
+						rotation={[-Math.PI, 0, 0]}
+						scale={25}
+					/>
+				</ClickableLight>
+				<ClickableLight>
+					<pointLight
+						name="tail_light_middle_right"
+						intensity={taillightIntensity}
+						decay={2}
+						color={taillightColor}
+						position={[-47.829, -384.368, -602.573]}
+						rotation={[-Math.PI, 0, 0]}
+						scale={25}
+					/>
+				</ClickableLight>
+
+				{/* Tail Side Lights */}
+				<ClickableLight>
+					<pointLight
+						name="tail_light_right"
+						intensity={taillightIntensity}
+						decay={2}
+						color={taillightColor}
+						position={[-248.999, -326.223, -602.573]}
+						rotation={[-Math.PI, 0, 0]}
+						scale={25}
+					/>
+				</ClickableLight>
+				<ClickableLight>
+					<pointLight
+						name="tail_light_left"
+						intensity={taillightIntensity}
+						decay={2}
+						color={taillightColor}
+						position={[250.51, -326.223, -602.573]}
+						rotation={[-Math.PI, 0, 0]}
+						scale={25}
+					/>
+				</ClickableLight>
+
+				<animated.mesh
+					ref={flagRef}
+					name="robot_flag_new"
+					geometry={nodes.robot_flag_new.geometry}
+					material={materials.body}
+					position={[-301.249, 198.68, -535.916]}
+					rotation-x={interpolatedRotation}
+					onClick={handleFlagClick}
+				/>
+
+				{/* Body sides */}
+				<mesh
+					name="body_back"
+					geometry={nodes.body_back.geometry}
+					material={materials.Back}
+				/>
+				<mesh
+					name="body_front"
+					geometry={nodes.body_front.geometry}
+					material={materials.Front}
+				/>
+				<mesh
+					name="body_left"
+					geometry={nodes.body_left.geometry}
+					material={materials.Left}
+				/>
+				<mesh
+					name="body_right"
+					geometry={nodes.body_right.geometry}
+					material={materials.Right}
+				/>
+
+				{/* Body inside */}
+				<mesh
+					name="body_inside"
+					geometry={nodes.body_inside.geometry}
+					material={materials["body inside dark"]}
+					position={[0, 0, -1.723]}
+				/>
+
+				{/* Wheels */}
+				<mesh
+					name="wheel_front_left"
+					onClick={handleOuterWheelClick}
+					geometry={nodes.wheel_front_left.geometry}
+					material={materials.wheel}
+					position={[-322.374, 348.386, -139.723]}
+				/>
+				<mesh
+					name="wheel_front_right"
+					onClick={handleOuterWheelClick}
+					geometry={nodes.wheel_front_right.geometry}
+					material={materials.wheel}
+					position={[322.257, 348.386, -139.723]}
+					rotation={[-Math.PI, 0, -Math.PI]}
+				/>
+				<mesh
+					name="rocker-bogie"
+					geometry={nodes["rocker-bogie"].geometry}
+					material={materials.body}
+					position={[0.008, -89.078, -141.649]}
+				>
 					<mesh
-						name="wheel_front_left"
-						onClick={hanldeOnFrontWheelClick}
-						geometry={nodes.wheel_front_left.geometry}
+						name="wheel_back_left"
+						onClick={handleOuterWheelClick}
+						geometry={nodes.wheel_back_left.geometry}
 						material={materials.wheel}
-						position={[-322.374, 348.386, -139.723]}
+						position={[-322.382, -143.059, 1.926]}
 					/>
 					<mesh
-						name="wheel_front_right"
-						onClick={hanldeOnFrontWheelClick}
-						geometry={nodes.wheel_front_right.geometry}
+						name="wheel_back_right"
+						onClick={handleOuterWheelClick}
+						geometry={nodes.wheel_back_right.geometry}
 						material={materials.wheel}
-						position={[322.257, 348.386, -139.723]}
+						position={[322.249, -143.059, 1.926]}
 						rotation={[-Math.PI, 0, -Math.PI]}
 					/>
 					<mesh
-						name="rocker-bogie"
-						geometry={nodes["rocker-bogie"].geometry}
-						material={materials.body}
-						position={[0.008, -89.078, -141.649]}
-					>
-						<mesh
-							name="wheel_back_left"
-							onClick={handleOnBackWheelClick}
-							geometry={nodes.wheel_back_left.geometry}
-							material={materials.wheel}
-							position={[-322.382, -143.059, 1.926]}
-						/>
-						<mesh
-							name="wheel_back_right"
-							onClick={handleOnBackWheelClick}
-							geometry={nodes.wheel_back_right.geometry}
-							material={materials.wheel}
-							position={[322.249, -143.059, 1.926]}
-							rotation={[-Math.PI, 0, -Math.PI]}
-						/>
-						<mesh
-							onClick={handleOnMiddleWheelClick}
-							name="wheel_middle_left"
-							geometry={nodes.wheel_middle_left.geometry}
-							material={materials.wheel}
-							position={[-322.382, 139.349, 1.926]}
-						/>
-						<mesh
-							onClick={handleOnMiddleWheelClick}
-							name="wheel_middle_right"
-							geometry={nodes.wheel_middle_right.geometry}
-							material={materials.wheel}
-							position={[322.249, 139.349, 1.926]}
-							rotation={[-Math.PI, 0, -Math.PI]}
-						/>
-					</mesh>
+						onClick={handleMiddleWheelClick}
+						name="wheel_middle_left"
+						geometry={nodes.wheel_middle_left.geometry}
+						material={materials.wheel}
+						position={[-322.382, 139.349, 1.926]}
+					/>
+					<mesh
+						onClick={handleMiddleWheelClick}
+						name="wheel_middle_right"
+						geometry={nodes.wheel_middle_right.geometry}
+						material={materials.wheel}
+						position={[322.249, 139.349, 1.926]}
+						rotation={[-Math.PI, 0, -Math.PI]}
+					/>
 				</mesh>
-			</group>
-		);
-	},
-);
+			</mesh>
+		</group>
+	);
+});
 
 Model.displayName = "E-Model";

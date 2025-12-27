@@ -32,13 +32,6 @@ export function useTextureEditorPersistence() {
 					json,
 					dateModified: new Date(),
 				});
-				console.log("[Persistence] Updated project", {
-					id: projectId,
-					version: CURRENT_VERSION,
-					backgroundColor,
-					elementCount: elements.size,
-					jsonLength: json.length,
-				});
 			} catch (error) {
 				console.error(
 					"[Persistence] Failed to save texture editor state:",
@@ -76,10 +69,6 @@ export function useTextureEditorPersistence() {
 			elements: Map<string, TextureEditorElementWithUuid>;
 		} | null> => {
 			try {
-				console.log("[Persistence] Attempting to load from IndexedDB", {
-					projectId,
-				});
-
 				let project: TextureProject | undefined;
 
 				if (projectId !== undefined) {
@@ -87,7 +76,6 @@ export function useTextureEditorPersistence() {
 					project = await db.textureProjects.get(projectId);
 
 					if (!project) {
-						console.log("[Persistence] Project not found", { projectId });
 						return null;
 					}
 				} else {
@@ -98,7 +86,6 @@ export function useTextureEditorPersistence() {
 						.first();
 
 					if (!project) {
-						console.log("[Persistence] No projects found in IndexedDB");
 						return null;
 					}
 				}
@@ -107,12 +94,6 @@ export function useTextureEditorPersistence() {
 
 				// Version check - clear incompatible formats
 				if (!parsed.version || parsed.version < CURRENT_VERSION) {
-					console.log("[Persistence] Incompatible version detected", {
-						storedVersion: parsed.version || 1,
-						currentVersion: CURRENT_VERSION,
-						projectId: project.id,
-						action: "skipping this project",
-					});
 					return null;
 				}
 
@@ -121,15 +102,6 @@ export function useTextureEditorPersistence() {
 				for (const element of parsed.elements) {
 					elementsMap.set(element.uuid, element);
 				}
-
-				console.log("[Persistence] Loaded from IndexedDB", {
-					projectId: project.id,
-					projectName: project.name,
-					version: parsed.version,
-					backgroundColor: parsed.backgroundColor,
-					elementCount: elementsMap.size,
-					dateModified: project.dateModified,
-				});
 
 				return {
 					backgroundColor: parsed.backgroundColor,
@@ -164,13 +136,6 @@ export function useTextureEditorPersistence() {
 				json,
 				dateCreated: new Date(),
 				dateModified: new Date(),
-			});
-
-			console.log("[Persistence] Created new project", {
-				id,
-				name,
-				version: CURRENT_VERSION,
-				elementCount: defaultElements.size,
 			});
 
 			return id as number;

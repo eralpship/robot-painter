@@ -29,7 +29,6 @@ export async function initImageMagick() {
 
 	await initializeImageMagick(wasmLocation);
 	isInitialized = true;
-	console.log("[ImageMagick] Initialized");
 }
 
 export type CompressionOptions = {
@@ -111,15 +110,6 @@ async function processSVG(
 							reader2.onloadend = () => {
 								const base64data = reader2.result as string;
 								const compressedSize = blob.size;
-
-								console.log("[SVG Processing]", {
-									originalSize: formatBytes(file.size),
-									compressedSize: formatBytes(compressedSize),
-									compressionRatio: `${Math.round((compressedSize / file.size) * 100)}%`,
-									format: "PNG",
-									dimensions: `${width}x${height}`,
-									targetMaxSize: "~50KB for 512x512",
-								});
 
 								resolve({
 									base64data,
@@ -226,14 +216,6 @@ export async function compressImage(
 					// Note: For GIFs, ImageMagick.read() automatically reads only the first frame
 					let outputData: Uint8Array | undefined;
 					img.write("PNG", (data: Uint8Array) => {
-						console.log(
-							"[ImageMagick] PNG write callback - data length:",
-							data.length,
-						);
-						console.log(
-							"[ImageMagick] PNG write callback - first 16 bytes:",
-							Array.from(data.slice(0, 16)),
-						);
 						// IMPORTANT: Copy the data! ImageMagick may reuse the buffer
 						outputData = new Uint8Array(data);
 					});
@@ -242,25 +224,10 @@ export async function compressImage(
 						throw new Error("Failed to generate PNG output - data is empty");
 					}
 
-					console.log(
-						"[ImageMagick] Total output data length:",
-						outputData.length,
-					);
-					console.log(
-						"[ImageMagick] PNG signature check (should be [137, 80, 78, 71]):",
-						Array.from(outputData.slice(0, 4)),
-					);
-
 					const mimeType = "image/png";
 
 					// Convert to base64
 					const base64 = arrayBufferToBase64(outputData);
-					console.log("[ImageMagick] Base64 length:", base64.length);
-					console.log(
-						"[ImageMagick] Base64 first 50 chars:",
-						base64.substring(0, 50),
-					);
-
 					const base64data = `data:${mimeType};base64,${base64}`;
 
 					// Validate base64 data
@@ -270,18 +237,6 @@ export async function compressImage(
 
 					const originalSize = file.size;
 					const compressedSize = outputData.length;
-
-					console.log("[Image Compression]", {
-						originalSize: formatBytes(originalSize),
-						compressedSize: formatBytes(compressedSize),
-						compressionRatio: `${Math.round((compressedSize / originalSize) * 100)}%`,
-						format: "PNG",
-						quality: quality,
-						dimensions: `${newWidth}x${newHeight}`,
-						originalDimensions: `${width}x${height}`,
-						hasTransparency: img.hasAlpha,
-						wasResized: newWidth !== width || newHeight !== height,
-					});
 
 					resolve({
 						base64data,
