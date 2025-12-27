@@ -501,47 +501,36 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			toggleBogieToTarget(1);
 		};
 
-		const hitboxes = useMemo(() => {
-			const hitboxes = [];
-			const hitboxRefs = [
-				leftHeadlightRef,
-				rightHeadlightRef,
-				tailLightLeftRef,
-				tailLightMiddleLeftRef,
-				tailLightMiddleMiddleRef,
-				tailLightMiddleRightRef,
-				tailLightRightRef,
-			];
+		// Wrapper component that adds a clickable hitbox to a light
+		const ClickableLight = ({
+			children,
+		}: {
+			children: React.ReactElement;
+		}) => {
+			const position = children.props.position;
+			const name = children.props.name;
+			const scale = children.props.scale || 30;
 
-			for (const ref of hitboxRefs) {
-				if (ref.current) {
-					const position = ref.current.position.clone();
-					const rotation = ref.current.rotation.clone();
-					const scale = ref.current.scale.clone();
-					const name = ref.current.name;
-
-					hitboxes.push(
-						<mesh
-							key={`${name}_hitbox`}
-							name={`${name}_hitbox`}
-							position={position}
-							rotation={rotation}
-							scale={scale}
-							onClick={handleHitboxClick}
-						>
-							<sphereGeometry args={[1, 8, 8]} />
-							<meshBasicMaterial
-								color="red"
-								transparent
-								opacity={0.5}
-								visible={false}
-							/>
-						</mesh>,
-					);
-				}
-			}
-			return hitboxes;
-		}, [handleHitboxClick]);
+			return (
+				<>
+					{children}
+					<mesh
+						name={`${name}_hitbox`}
+						position={position}
+						scale={scale}
+						onClick={handleHitboxClick}
+					>
+						<sphereGeometry args={[1, 16, 16]} />
+						<meshBasicMaterial
+							color="red"
+							transparent
+							opacity={0.5}
+							visible={false}
+						/>
+					</mesh>
+				</>
+			);
+		};
 
 		const headlightColor = "#ffe8a0";
 
@@ -554,9 +543,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					rotation={[Math.PI / 2, 0, 0]}
 					scale={0.01}
 				>
-					{/* Hitboxes */}
-					{hitboxes}
-
 					{/* Lid */}
 					<mesh
 						name="lid"
@@ -573,80 +559,94 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					</mesh>
 
 					{/* Headlights */}
-					<pointLight
-						ref={leftHeadlightRef}
-						name="headlight_left"
-						intensity={initialHeadlightIntensity}
-						decay={2}
-						color={headlightColor}
-						position={[-235.912, 385.374, -301.501]}
-						rotation={[-Math.PI, 0, 0]}
-						scale={30}
-					/>
-					<pointLight
-						ref={rightHeadlightRef}
-						name="headlight_right"
-						intensity={initialHeadlightIntensity}
-						decay={2}
-						color={headlightColor}
-						position={[241.584, 386.931, -299.362]}
-						rotation={[-Math.PI, 0, 0]}
-						scale={30}
-					/>
+					<ClickableLight>
+						<pointLight
+							ref={leftHeadlightRef}
+							name="headlight_left"
+							intensity={initialHeadlightIntensity}
+							decay={2}
+							color={headlightColor}
+							position={[-235.912, 385.374, -301.501]}
+							rotation={[-Math.PI, 0, 0]}
+							scale={30}
+						/>
+					</ClickableLight>
+					<ClickableLight>
+						<pointLight
+							ref={rightHeadlightRef}
+							name="headlight_right"
+							intensity={initialHeadlightIntensity}
+							decay={2}
+							color={headlightColor}
+							position={[241.584, 386.931, -299.362]}
+							rotation={[-Math.PI, 0, 0]}
+							scale={30}
+						/>
+					</ClickableLight>
 
 					{/* Tail Middle Lights */}
-					<pointLight
-						ref={tailLightMiddleLeftRef}
-						name="tail_light_middle_left"
-						intensity={initialTailLightIntensity}
-						decay={2}
-						color={TAILLIGHT_COLOR_DEFAULT}
-						position={[38.204, -384.368, -602.573]}
-						rotation={[-Math.PI, 0, 0]}
-						scale={25}
-					/>
-					<pointLight
-						ref={tailLightMiddleMiddleRef}
-						name="tail_light_middle_middle"
-						intensity={initialTailLightIntensity}
-						decay={2}
-						color={TAILLIGHT_COLOR_DEFAULT}
-						position={[-0.018, -384.368, -602.573]}
-						rotation={[-Math.PI, 0, 0]}
-						scale={25}
-					/>
-					<pointLight
-						ref={tailLightMiddleRightRef}
-						name="tail_light_middle_right"
-						intensity={initialTailLightIntensity}
-						decay={2}
-						color={TAILLIGHT_COLOR_DEFAULT}
-						position={[-47.829, -384.368, -602.573]}
-						rotation={[-Math.PI, 0, 0]}
-						scale={25}
-					/>
+					<ClickableLight>
+						<pointLight
+							ref={tailLightMiddleLeftRef}
+							name="tail_light_middle_left"
+							intensity={initialTailLightIntensity}
+							decay={2}
+							color={TAILLIGHT_COLOR_DEFAULT}
+							position={[38.204, -384.368, -602.573]}
+							rotation={[-Math.PI, 0, 0]}
+							scale={25}
+						/>
+					</ClickableLight>
+					<ClickableLight>
+						<pointLight
+							ref={tailLightMiddleMiddleRef}
+							name="tail_light_middle_middle"
+							intensity={initialTailLightIntensity}
+							decay={2}
+							color={TAILLIGHT_COLOR_DEFAULT}
+							position={[-0.018, -384.368, -602.573]}
+							rotation={[-Math.PI, 0, 0]}
+							scale={25}
+						/>
+					</ClickableLight>
+					<ClickableLight>
+						<pointLight
+							ref={tailLightMiddleRightRef}
+							name="tail_light_middle_right"
+							intensity={initialTailLightIntensity}
+							decay={2}
+							color={TAILLIGHT_COLOR_DEFAULT}
+							position={[-47.829, -384.368, -602.573]}
+							rotation={[-Math.PI, 0, 0]}
+							scale={25}
+						/>
+					</ClickableLight>
 
 					{/* Tail Side Lights */}
-					<pointLight
-						ref={tailLightRightRef}
-						name="tail_light_right"
-						intensity={initialTailLightIntensity}
-						decay={2}
-						color={TAILLIGHT_COLOR_DEFAULT}
-						position={[-248.999, -326.223, -602.573]}
-						rotation={[-Math.PI, 0, 0]}
-						scale={25}
-					/>
-					<pointLight
-						ref={tailLightLeftRef}
-						name="tail_light_left"
-						intensity={initialTailLightIntensity}
-						decay={2}
-						color={TAILLIGHT_COLOR_DEFAULT}
-						position={[250.51, -326.223, -602.573]}
-						rotation={[-Math.PI, 0, 0]}
-						scale={25}
-					/>
+					<ClickableLight>
+						<pointLight
+							ref={tailLightRightRef}
+							name="tail_light_right"
+							intensity={initialTailLightIntensity}
+							decay={2}
+							color={TAILLIGHT_COLOR_DEFAULT}
+							position={[-248.999, -326.223, -602.573]}
+							rotation={[-Math.PI, 0, 0]}
+							scale={25}
+						/>
+					</ClickableLight>
+					<ClickableLight>
+						<pointLight
+							ref={tailLightLeftRef}
+							name="tail_light_left"
+							intensity={initialTailLightIntensity}
+							decay={2}
+							color={TAILLIGHT_COLOR_DEFAULT}
+							position={[250.51, -326.223, -602.573]}
+							rotation={[-Math.PI, 0, 0]}
+							scale={25}
+						/>
+					</ClickableLight>
 
 					<animated.mesh
 						ref={flagRef}
