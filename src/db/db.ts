@@ -27,5 +27,3 @@ export class AppDatabase extends Dexie {
 
 // Create singleton instance
 export const db = new AppDatabase();
-
-console.log("[Database] Dexie database initialized");
