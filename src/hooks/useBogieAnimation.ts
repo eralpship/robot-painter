@@ -60,7 +60,7 @@ export function useBogieAnimation({
 	actions,
 	groupRef,
 }: UseBogieAnimationOptions): void {
-	// Animated progress value (0-1) with easeInOutBack easing
+	// Animated progress value (0-1) with easeOutBounce easing
 	const progress = useSpringValue(useModelStore.getState().bogieTarget, {
 		config: { duration: 1500, easing: easings.easeOutBounce },
 	});

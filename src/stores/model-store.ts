@@ -114,7 +114,6 @@ export const useTaillightIntensity = () =>
 	useModelStore((s) => s.taillightIntensity);
 export const useTaillightColor = () => useModelStore((s) => s.taillightColor);
 export const useLidOpen = () => useModelStore((s) => s.lidOpen);
-export const useBogieTarget = () => useModelStore((s) => s.bogieTarget);
 export const useAutoRotate = () => useModelStore((s) => s.autoRotate);
 export const useFov = () => useModelStore((s) => s.fov);
 export const useAmbientLight = () => useModelStore((s) => s.ambientLight);

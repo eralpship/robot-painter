@@ -33,7 +33,8 @@
       "Bash(bd list:*)",
       "mcp__chrome-devtools__press_key",
       "mcp__chrome-devtools__get_console_message",
-      "mcp__chrome-devtools__handle_dialog"
+      "mcp__chrome-devtools__handle_dialog",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
