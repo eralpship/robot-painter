@@ -1,12 +1,29 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /*
- * Single Theme Definition
- * All colors are semantic and themable - no hardcoded colors in components
- * Future: Can add CSS variables or theme switching here
+ * Single Dark Theme Configuration
+ * Combines app's custom design tokens with shadcn component colors
+ * No theme switching - always dark
  */
-@theme {
-	/* Background colors */
+@theme inline {
+	/* === Fonts === */
+	--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+	/* === Radius === */
+	--radius-sm: 0.375rem;
+	--radius-md: 0.5rem;
+	--radius-lg: 0.625rem;
+	--radius-xl: 1rem;
+	--radius-2xl: 1.25rem;
+	--radius-3xl: 1.5rem;
+	--radius-4xl: 1.75rem;
+	/* App-specific radius */
+	--radius-window: 10px;
+	--radius-button: 3px;
+
+	/* === App Background Colors === */
 	--color-background: oklch(0.42 0.05 320); /* Main app background */
 	--color-surface: #181c20; /* Toolbar, panels */
 	--color-surface-elevated: #292d39; /* Window headers, elevated surfaces */
@@ -16,18 +33,46 @@
 	--color-pattern-base: #2a2a2a;
 	--color-pattern-accent: #3a3a3a;
 
-	/* Text colors */
+	/* === App Text Colors === */
 	--color-foreground: #ffffff; /* Primary text */
 	--color-foreground-muted: rgb(83, 87, 96); /* Secondary/muted text */
 	--color-foreground-subtle: #b4b8bc; /* Tertiary/subtle text */
 
-	/* Border colors */
+	/* === App Border Colors === */
 	--color-border: #3f3f46; /* Default borders */
 	--color-border-muted: rgba(0, 0, 0, 0.4); /* Subtle borders/outlines */
 
-	/* Custom scales (reduce arbitrary values) */
-	--radius-window: 10px;
-	--radius-button: 3px;
+	/* === shadcn Component Colors (dark theme) === */
+	--color-primary: oklch(0.922 0 0);
+	--color-primary-foreground: oklch(0.205 0 0);
+	--color-secondary: oklch(0.269 0 0);
+	--color-secondary-foreground: oklch(0.985 0 0);
+	--color-muted: oklch(0.269 0 0);
+	--color-muted-foreground: oklch(0.708 0 0);
+	--color-accent: oklch(0.269 0 0);
+	--color-accent-foreground: oklch(0.985 0 0);
+	--color-destructive: oklch(0.704 0.191 22.216);
+	--color-card: oklch(0.205 0 0);
+	--color-card-foreground: oklch(0.985 0 0);
+	--color-popover: oklch(0.205 0 0);
+	--color-popover-foreground: oklch(0.985 0 0);
+	--color-input: oklch(1 0 0 / 15%);
+	--color-ring: oklch(0.556 0 0);
+	--color-chart-1: oklch(0.488 0.243 264.376);
+	--color-chart-2: oklch(0.696 0.17 162.48);
+	--color-chart-3: oklch(0.769 0.188 70.08);
+	--color-chart-4: oklch(0.627 0.265 303.9);
+	--color-chart-5: oklch(0.645 0.246 16.439);
+	--color-sidebar: oklch(0.205 0 0);
+	--color-sidebar-foreground: oklch(0.985 0 0);
+	--color-sidebar-primary: oklch(0.488 0.243 264.376);
+	--color-sidebar-primary-foreground: oklch(0.985 0 0);
+	--color-sidebar-accent: oklch(0.269 0 0);
+	--color-sidebar-accent-foreground: oklch(0.985 0 0);
+	--color-sidebar-border: oklch(1 0 0 / 10%);
+	--color-sidebar-ring: oklch(0.556 0 0);
+
+	/* === App Custom Scales === */
 	--font-size-ui: 11px;
 	--spacing-toolbar: 40px;
 	--shadow-window: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -37,16 +82,13 @@
 
 /* Base layer overrides */
 @layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
 	body {
-		@apply fixed w-full h-full overflow-hidden bg-background text-foreground;
-		@apply antialiased;
+		@apply fixed w-full h-full overflow-hidden bg-background text-foreground font-sans antialiased;
 		margin: 0;
-		font-family:
-			-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-			"Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-			sans-serif;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
 	}
 
 	html,
@@ -55,8 +97,13 @@
 	}
 
 	code {
-		font-family:
-			source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+		@apply font-mono;
+	}
+
+	/* Tailwind v4 cursor fix - restore pointer cursor for buttons */
+	button:not(:disabled),
+	[role="button"]:not(:disabled) {
+		cursor: pointer;
 	}
 }
 

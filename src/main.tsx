@@ -5,6 +5,7 @@ import ReactDOM from "react-dom/client";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
+import "@fontsource-variable/inter";
 import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
 import { initImageMagick } from "./utils/image-compression";

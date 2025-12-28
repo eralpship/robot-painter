@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
 	CANVAS_SIZE,
 	TextureEditorContext,
@@ -20,6 +20,8 @@ export function AddElementToolbar() {
 	return (
 		<>
 			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => {
 					ctx.addElement({
 						type: "text",
@@ -40,6 +42,8 @@ export function AddElementToolbar() {
 				add text
 			</Button>
 			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => {
 					const input = document.createElement("input");
 					input.type = "file";

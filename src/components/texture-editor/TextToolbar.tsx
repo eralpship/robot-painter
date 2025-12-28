@@ -1,6 +1,6 @@
 import isEmpty from "lodash/isEmpty";
 import { useContext } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { hexColorRegex } from "./utils/hexColorRegex";
 
@@ -9,6 +9,8 @@ export function TextToolbar() {
 	return (
 		<>
 			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => {
 					const element = ctx.selectedElement;
 					if (!element) {
@@ -33,6 +35,8 @@ export function TextToolbar() {
 				change text
 			</Button>
 			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => {
 					const element = ctx.selectedElement;
 					if (!element) {
@@ -65,6 +69,8 @@ export function TextToolbar() {
 				font size
 			</Button>
 			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => {
 					const element = ctx.selectedElement;
 					if (!element) {

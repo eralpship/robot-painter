@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { debounce } from "lodash";
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import {
 	sanitizeProjectName,
@@ -13,6 +13,7 @@ export function CommonToolbar() {
 	const navigate = useNavigate();
 	const [localColor, setLocalColor] = useState(ctx.backgroundColor);
 	const [isCreatingProject, setIsCreatingProject] = useState(false);
+	const colorInputRef = useRef<HTMLInputElement>(null);
 
 	// Debounced function to update context
 	const debouncedSetColor = useCallback(
@@ -30,6 +31,8 @@ export function CommonToolbar() {
 	return (
 		<>
 			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => {
 					navigate({
 						to: ctx.mode === "full" ? "/" : "/texture-editor",
@@ -38,9 +41,19 @@ export function CommonToolbar() {
 			>
 				{ctx.mode === "full" ? "robot editor" : "texture editor"}
 			</Button>
-			<label className="cursor-pointer inline-flex items-center gap-1">
-				<span>background</span>
+			<Button
+				variant="outline"
+				size="sm"
+				onClick={() => colorInputRef.current?.click()}
+				className="gap-2"
+			>
+				background
+				<span
+					className="w-4 h-4 rounded-sm border border-white/20"
+					style={{ backgroundColor: localColor }}
+				/>
 				<input
+					ref={colorInputRef}
 					type="color"
 					value={localColor}
 					onChange={(e) => {
@@ -48,10 +61,12 @@ export function CommonToolbar() {
 						setLocalColor(newColor);
 						debouncedSetColor(newColor);
 					}}
-					className="cursor-pointer w-[30px] h-5 border-none rounded-sm p-0 outline outline-1 outline-border-muted"
+					className="sr-only"
 				/>
-			</label>
+			</Button>
 			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => {
 					if (
 						confirm(
@@ -65,6 +80,8 @@ export function CommonToolbar() {
 				reset
 			</Button>
 			<Button
+				variant="outline"
+				size="sm"
 				onClick={async () => {
 					if (isCreatingProject) return;
 

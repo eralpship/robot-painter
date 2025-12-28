@@ -35,9 +35,26 @@
       "mcp__chrome-devtools__get_console_message",
       "mcp__chrome-devtools__handle_dialog",
       "Bash(grep:*)",
-      "mcp__chrome-devtools__hover"
+      "mcp__chrome-devtools__hover",
+      "Bash(cat:*)",
+      "Bash(bd epic --help:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "mcp__shadcn__get_project_registries",
+      "mcp__shadcn__search_items_in_registries",
+      "mcp__shadcn__view_items_in_registries",
+      "mcp__shadcn__get_item_examples_from_registries",
+      "mcp__shadcn__get_add_command_for_items",
+      "Bash(bd dep add:*)",
+      "Bash(bd graph:*)",
+      "Bash(bd:*)",
+      "Bash(npx shadcn@latest add select:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
 }
