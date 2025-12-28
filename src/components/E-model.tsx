@@ -18,6 +18,7 @@ import {
 } from "../contexts/overlay-texture-canvas-context";
 import { useTooltip } from "../contexts/tooltip-context";
 import { useBogieAnimation } from "../hooks/useBogieAnimation";
+import { useLidAnimation } from "../hooks/useLidAnimation";
 import {
 	MODEL_DEFAULTS,
 	useHeadlightIntensity,
@@ -96,7 +97,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 		},
 	) as unknown as GLTFResult;
 
-	const { actions, mixer } = useAnimations(animations, group);
+	const { actions } = useAnimations(animations, group);
 	const { camera, mouse, raycaster } = useThree();
 	const { setTooltip } = useTooltip();
 	const currentTooltip = useRef<string | null>(null);
@@ -117,15 +118,8 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 	// Bogie animation - encapsulated in custom hook
 	useBogieAnimation({ actions, groupRef: group });
 
-	// Lid animation - react to lidOpen changes from store
-	useEffect(() => {
-		const lidAction = actions["open lid"];
-		if (lidAction) {
-			lidAction.timeScale = lidOpen ? 1 : -1;
-			lidAction.paused = false;
-			lidAction.play();
-		}
-	}, [lidOpen, actions]);
+	// Lid animation - encapsulated in custom hook with easeOutBounce
+	useLidAnimation({ actions, groupRef: group });
 
 	// Flag spring animation
 	const [springs, api] = useSpring(() => ({
@@ -181,27 +175,13 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 		setTaillightIntensity(newIntensity);
 	}, [taillightIntensity, setTaillightIntensity]);
 
-	// Initialize lid animation (can re-run when actions ref changes)
-	useEffect(() => {
-		const lidAction = actions["open lid"];
-		if (lidAction) {
-			lidAction.loop = THREE.LoopOnce;
-			lidAction.clampWhenFinished = true;
-			lidAction.time = 0;
-			lidAction.paused = true;
-		}
-	}, [actions]);
-
 	const interpolatedRotation = springs.rotationX.to({
 		range: [0, 0.5, 1],
 		output: [0, Math.PI / 6, 0],
 	});
 
-	// Animation frame - update mixer for lid animation and handle tooltips
-	useFrame((_, delta) => {
-		// Update mixer for lid animation
-		mixer.update(delta);
-
+	// Animation frame - handle tooltips
+	useFrame(() => {
 		// Handle raycasting for tooltips
 		raycaster.setFromCamera(mouse, camera);
 		const intersects = raycaster.intersectObjects(
