@@ -3,16 +3,14 @@ import { debounce } from "lodash";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
-import {
-	sanitizeProjectName,
-	validateProjectName,
-} from "@/utils/projectValidation";
+import { NewProjectModal } from "./modals/NewProjectModal";
 
 export function CommonToolbar() {
 	const ctx = useContext(TextureEditorContext);
 	const navigate = useNavigate();
 	const [localColor, setLocalColor] = useState(ctx.backgroundColor);
 	const [isCreatingProject, setIsCreatingProject] = useState(false);
+	const [newProjectOpen, setNewProjectOpen] = useState(false);
 	const colorInputRef = useRef<HTMLInputElement>(null);
 
 	// Debounced function to update context
@@ -82,25 +80,21 @@ export function CommonToolbar() {
 			<Button
 				variant="outline"
 				size="sm"
-				onClick={async () => {
-					if (isCreatingProject) return;
-
-					const name = window.prompt("Enter project name:");
-
-					if (name === null) {
-						// User cancelled
-						return;
+				onClick={() => {
+					if (!isCreatingProject) {
+						setNewProjectOpen(true);
 					}
-
-					const validation = validateProjectName(name);
-
-					if (!validation.valid) {
-						alert(validation.error);
-						return;
-					}
-
-					const sanitizedName = sanitizeProjectName(name);
-
+				}}
+				className={isCreatingProject ? "opacity-50" : ""}
+				disabled={isCreatingProject}
+			>
+				{isCreatingProject ? "creating..." : "new project"}
+			</Button>
+			<NewProjectModal
+				open={newProjectOpen}
+				onOpenChange={setNewProjectOpen}
+				isSubmitting={isCreatingProject}
+				onSubmit={async (sanitizedName) => {
 					setIsCreatingProject(true);
 					try {
 						// Create project and get the new ID
@@ -118,13 +112,10 @@ export function CommonToolbar() {
 							error,
 						);
 						setIsCreatingProject(false);
+						setNewProjectOpen(false);
 					}
 				}}
-				className={isCreatingProject ? "opacity-50" : ""}
-				disabled={isCreatingProject}
-			>
-				{isCreatingProject ? "creating..." : "new project"}
-			</Button>
+			/>
 		</>
 	);
 }

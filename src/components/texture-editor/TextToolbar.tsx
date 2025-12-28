@@ -1,11 +1,30 @@
-import isEmpty from "lodash/isEmpty";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
-import { hexColorRegex } from "./utils/hexColorRegex";
+import { ChangeColorModal } from "./modals/ChangeColorModal";
+import { ChangeTextModal } from "./modals/ChangeTextModal";
+import { FontSizeModal } from "./modals/FontSizeModal";
 
 export function TextToolbar() {
 	const ctx = useContext(TextureEditorContext);
+	const [changeTextOpen, setChangeTextOpen] = useState(false);
+	const [changeTextElement, setChangeTextElement] = useState<{
+		uuid: string;
+		text: string;
+	} | null>(null);
+
+	const [fontSizeOpen, setFontSizeOpen] = useState(false);
+	const [fontSizeElement, setFontSizeElement] = useState<{
+		uuid: string;
+		fontSize: number;
+	} | null>(null);
+
+	const [colorOpen, setColorOpen] = useState(false);
+	const [colorElement, setColorElement] = useState<{
+		uuid: string;
+		color: string;
+	} | null>(null);
+
 	return (
 		<>
 			<Button
@@ -25,15 +44,22 @@ export function TextToolbar() {
 						);
 						return;
 					}
-					const text = window.prompt("Enter new text:", element.text);
-					if (!text || isEmpty(text)) {
-						return;
-					}
-					ctx.updateElement(element.uuid, { text });
+					setChangeTextElement({ uuid: element.uuid, text: element.text });
+					setChangeTextOpen(true);
 				}}
 			>
 				change text
 			</Button>
+			<ChangeTextModal
+				open={changeTextOpen}
+				onOpenChange={setChangeTextOpen}
+				currentText={changeTextElement?.text ?? ""}
+				onSubmit={(text) => {
+					if (changeTextElement) {
+						ctx.updateElement(changeTextElement.uuid, { text });
+					}
+				}}
+			/>
 			<Button
 				variant="outline"
 				size="sm"
@@ -51,23 +77,22 @@ export function TextToolbar() {
 						);
 						return;
 					}
-					const input = window.prompt(
-						"Enter font size (number only):",
-						element.fontSize.toString(),
-					);
-					if (!input) {
-						return;
-					}
-					const fontSize = parseFloat(input);
-					if (Number.isNaN(fontSize) || fontSize <= 0) {
-						alert("Please enter a valid positive number for font size.");
-						return;
-					}
-					ctx.updateElement(element.uuid, { fontSize });
+					setFontSizeElement({ uuid: element.uuid, fontSize: element.fontSize });
+					setFontSizeOpen(true);
 				}}
 			>
 				font size
 			</Button>
+			<FontSizeModal
+				open={fontSizeOpen}
+				onOpenChange={setFontSizeOpen}
+				currentFontSize={fontSizeElement?.fontSize ?? 24}
+				onSubmit={(fontSize) => {
+					if (fontSizeElement) {
+						ctx.updateElement(fontSizeElement.uuid, { fontSize });
+					}
+				}}
+			/>
 			<Button
 				variant="outline"
 				size="sm"
@@ -85,22 +110,22 @@ export function TextToolbar() {
 						);
 						return;
 					}
-					const color = window.prompt(
-						"Enter hex color (e.g., #ff0000, #000000):",
-						element.color,
-					);
-					if (!color) {
-						return;
-					}
-					if (!hexColorRegex.test(color)) {
-						alert("Please enter a valid hex color (e.g., #ff0000, #000000).");
-						return;
-					}
-					ctx.updateElement(element.uuid, { color });
+					setColorElement({ uuid: element.uuid, color: element.color });
+					setColorOpen(true);
 				}}
 			>
 				change color
 			</Button>
+			<ChangeColorModal
+				open={colorOpen}
+				onOpenChange={setColorOpen}
+				currentColor={colorElement?.color ?? "#000000"}
+				onSubmit={(color) => {
+					if (colorElement) {
+						ctx.updateElement(colorElement.uuid, { color });
+					}
+				}}
+			/>
 		</>
 	);
 }
