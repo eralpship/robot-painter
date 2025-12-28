@@ -48,7 +48,14 @@
       "Bash(bd dep add:*)",
       "Bash(bd graph:*)",
       "Bash(bd:*)",
-      "Bash(npx shadcn@latest add select:*)"
+      "Bash(npx shadcn@latest add select:*)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__close_page",
+      "Bash(git stash:*)",
+      "Bash(git checkout:*)",
+      "mcp__context7__get-library-docs",
+      "mcp__context7__resolve-library-id",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

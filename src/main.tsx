@@ -1,5 +1,4 @@
 import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
 // Import the generated route tree
@@ -33,14 +32,11 @@ declare module "@tanstack/react-router" {
 }
 
 // Render the app
+// StrictMode disabled - causes WebGL context loss with R3F in React 19 dev mode
 const rootElement = document.getElementById("app");
 if (rootElement && !rootElement.innerHTML) {
 	const root = ReactDOM.createRoot(rootElement);
-	root.render(
-		<StrictMode>
-			<RouterProvider router={router} />
-		</StrictMode>,
-	);
+	root.render(<RouterProvider router={router} />);
 }
 
 // If you want to start measuring performance in your app, pass a function

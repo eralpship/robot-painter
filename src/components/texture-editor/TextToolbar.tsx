@@ -1,6 +1,6 @@
 import isEmpty from "lodash/isEmpty";
 import { useContext } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { hexColorRegex } from "./utils/hexColorRegex";
 

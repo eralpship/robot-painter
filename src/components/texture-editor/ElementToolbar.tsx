@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 
 export function ElementToolbar() {

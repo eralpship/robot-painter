@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { debounce } from "lodash";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import {
 	sanitizeProjectName,
