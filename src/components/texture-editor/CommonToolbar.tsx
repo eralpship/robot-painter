@@ -1,30 +1,16 @@
 import { useNavigate } from "@tanstack/react-router";
-import { debounce } from "lodash";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { FolderPlus, PaintBucket, Paintbrush, Trash2, Wrench } from "lucide-react";
+import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { NewProjectModal } from "./modals/NewProjectModal";
 
 export function CommonToolbar() {
 	const ctx = useContext(TextureEditorContext);
 	const navigate = useNavigate();
-	const [localColor, setLocalColor] = useState(ctx.backgroundColor);
 	const [isCreatingProject, setIsCreatingProject] = useState(false);
 	const [newProjectOpen, setNewProjectOpen] = useState(false);
-	const colorInputRef = useRef<HTMLInputElement>(null);
-
-	// Debounced function to update context
-	const debouncedSetColor = useCallback(
-		debounce((color: string) => {
-			ctx.setBackgroundColor(color);
-		}, 100),
-		[],
-	);
-
-	// Sync local color when context changes
-	useEffect(() => {
-		setLocalColor(ctx.backgroundColor);
-	}, [ctx.backgroundColor]);
 
 	return (
 		<>
@@ -37,31 +23,23 @@ export function CommonToolbar() {
 					});
 				}}
 			>
-				{ctx.mode === "full" ? "robot editor" : "texture editor"}
+				{ctx.mode === "full" ? (
+					<>
+						<Wrench className="size-4" /> Robot Editor
+					</>
+				) : (
+					<>
+						<Paintbrush className="size-4" /> Texture Editor
+					</>
+				)}
 			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				onClick={() => colorInputRef.current?.click()}
-				className="gap-2"
-			>
-				background
-				<span
-					className="w-4 h-4 rounded-sm border border-white/20"
-					style={{ backgroundColor: localColor }}
-				/>
-				<input
-					ref={colorInputRef}
-					type="color"
-					value={localColor}
-					onChange={(e) => {
-						const newColor = e.target.value;
-						setLocalColor(newColor);
-						debouncedSetColor(newColor);
-					}}
-					className="sr-only"
-				/>
-			</Button>
+			<ColorPickerButton
+				label="Background"
+				color={ctx.backgroundColor}
+				onChange={ctx.setBackgroundColor}
+				debounceMs={100}
+				icon={PaintBucket}
+			/>
 			<Button
 				variant="outline"
 				size="sm"
@@ -75,7 +53,7 @@ export function CommonToolbar() {
 					}
 				}}
 			>
-				reset
+				<Trash2 className="size-4" /> Reset
 			</Button>
 			<Button
 				variant="outline"
@@ -88,7 +66,8 @@ export function CommonToolbar() {
 				className={isCreatingProject ? "opacity-50" : ""}
 				disabled={isCreatingProject}
 			>
-				{isCreatingProject ? "creating..." : "new project"}
+				<FolderPlus className="size-4" />
+				{isCreatingProject ? "Creating..." : "New Project"}
 			</Button>
 			<NewProjectModal
 				open={newProjectOpen}

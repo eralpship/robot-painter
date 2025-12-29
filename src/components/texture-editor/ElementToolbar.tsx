@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
@@ -16,7 +17,7 @@ export function ElementToolbar() {
 				ctx.removeElement(element.uuid);
 			}}
 		>
-			remove
+			<Trash2 className="size-4" /> Remove
 		</Button>
 	);
 }

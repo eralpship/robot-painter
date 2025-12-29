@@ -46,7 +46,8 @@ export function FloatingCollapsibleWindow({
 			maxHeight={isCollapsed ? headerHeight : undefined}
 			bounds="window"
 			dragHandleClassName="drag-handle"
-			className="rounded-window shadow-window z-window font-mono text-ui select-none overflow-hidden outline outline-2 outline-border-muted"
+			className="rounded-window shadow-window font-mono text-ui select-none overflow-hidden outline outline-2 outline-border-muted"
+			style={{ zIndex: 50 }}
 			enableResizing={isCollapsed ? { right: true, left: true } : true}
 		>
 			<div className="w-full h-full flex flex-col min-h-0">

@@ -56,7 +56,9 @@
       "mcp__context7__get-library-docs",
       "mcp__context7__resolve-library-id",
       "Bash(git add:*)",
-      "Bash(npx shadcn@latest add dialog input label -y)"
+      "Bash(npx shadcn@latest add dialog input label -y)",
+      "WebSearch",
+      "WebFetch(domain:lucide.dev)"
     ],
     "deny": [],
     "ask": []

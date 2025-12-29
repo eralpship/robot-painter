@@ -107,6 +107,11 @@
 	}
 }
 
+/* Moveable controls z-index - must be below modal overlay (z-50) */
+.moveable-control-box {
+	z-index: 40 !important;
+}
+
 /* Custom utility for checkered background */
 @utility checkered-background {
 	background-color: var(--color-pattern-base);

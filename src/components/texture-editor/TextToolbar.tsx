@@ -1,7 +1,8 @@
+import { ALargeSmall, Palette, TextCursorInput } from "lucide-react";
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
-import { ChangeColorModal } from "./modals/ChangeColorModal";
 import { ChangeTextModal } from "./modals/ChangeTextModal";
 import { FontSizeModal } from "./modals/FontSizeModal";
 
@@ -19,11 +20,8 @@ export function TextToolbar() {
 		fontSize: number;
 	} | null>(null);
 
-	const [colorOpen, setColorOpen] = useState(false);
-	const [colorElement, setColorElement] = useState<{
-		uuid: string;
-		color: string;
-	} | null>(null);
+	const selectedTextElement =
+		ctx.selectedElement?.type === "text" ? ctx.selectedElement : null;
 
 	return (
 		<>
@@ -48,7 +46,7 @@ export function TextToolbar() {
 					setChangeTextOpen(true);
 				}}
 			>
-				change text
+				<TextCursorInput className="size-4" /> Change Text
 			</Button>
 			<ChangeTextModal
 				open={changeTextOpen}
@@ -81,7 +79,7 @@ export function TextToolbar() {
 					setFontSizeOpen(true);
 				}}
 			>
-				font size
+				<ALargeSmall className="size-4" /> Font Size
 			</Button>
 			<FontSizeModal
 				open={fontSizeOpen}
@@ -93,38 +91,16 @@ export function TextToolbar() {
 					}
 				}}
 			/>
-			<Button
-				variant="outline"
-				size="sm"
-				onClick={() => {
-					const element = ctx.selectedElement;
-					if (!element) {
-						alert(
-							"Please select a text element first by clicking on it in the editor.",
-						);
-						return;
-					}
-					if (element.type !== "text") {
-						alert(
-							"The selected element is not a text element. Please select a text element.",
-						);
-						return;
-					}
-					setColorElement({ uuid: element.uuid, color: element.color });
-					setColorOpen(true);
-				}}
-			>
-				change color
-			</Button>
-			<ChangeColorModal
-				open={colorOpen}
-				onOpenChange={setColorOpen}
-				currentColor={colorElement?.color ?? "#000000"}
-				onSubmit={(color) => {
-					if (colorElement) {
-						ctx.updateElement(colorElement.uuid, { color });
+			<ColorPickerButton
+				label="Text Color"
+				color={selectedTextElement?.color ?? "#000000"}
+				onChange={(color) => {
+					if (selectedTextElement) {
+						ctx.updateElement(selectedTextElement.uuid, { color });
 					}
 				}}
+				disabled={!selectedTextElement}
+				icon={Palette}
 			/>
 		</>
 	);

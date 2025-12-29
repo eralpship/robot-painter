@@ -1,3 +1,4 @@
+import { Image, Type } from "lucide-react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -39,7 +40,7 @@ export function AddElementToolbar() {
 					});
 				}}
 			>
-				add text
+				<Type className="size-4" /> Add Text
 			</Button>
 			<Button
 				variant="outline"
@@ -124,7 +125,7 @@ export function AddElementToolbar() {
 					}, 100);
 				}}
 			>
-				add image
+				<Image className="size-4" /> Add Image
 			</Button>
 		</>
 	);

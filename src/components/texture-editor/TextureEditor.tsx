@@ -83,6 +83,7 @@ export function TextureEditor({
 	// setSide is stable (created with useCallback([]))
 	const setSideTexture = textureCtx?.setSide;
 
+	const containerRef = useRef<HTMLDivElement>(null);
 	const svgRef = useRef<SVGSVGElement>(null);
 	const moveableRef = useRef<Moveable>(null);
 
@@ -232,7 +233,11 @@ export function TextureEditor({
 	);
 
 	return (
-		<>
+		<div
+			ref={containerRef}
+			className="relative overflow-hidden"
+			style={style}
+		>
 			<svg
 				display={hidden ? "none" : undefined}
 				ref={svgRef}
@@ -241,7 +246,8 @@ export function TextureEditor({
 				viewBox={`0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}`}
 				xmlns="http://www.w3.org/2000/svg"
 				style={{
-					...style,
+					width: "100%",
+					height: "100%",
 					userSelect: "none",
 					backgroundColor: editorCtx.backgroundColor,
 					cursor: "default",
@@ -326,6 +332,7 @@ export function TextureEditor({
 			<Moveable
 				key={moveableKey}
 				ref={moveableRef}
+				container={containerRef.current}
 				target={
 					editorCtx.selectedElement?.uuid
 						? elementRefs.current.get(editorCtx.selectedElement.uuid) || null
@@ -349,6 +356,6 @@ export function TextureEditor({
 				onScaleEnd={(e) => handleOnMoveableActionEnd(e.target)}
 				onRotateEnd={(e) => handleOnMoveableActionEnd(e.target)}
 			/>
-		</>
+		</div>
 	);
 }
