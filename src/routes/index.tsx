@@ -212,6 +212,19 @@ function App() {
 	const search = Route.useSearch();
 	const projectId = search["project-id"];
 
+	// If no projectId, show only the project selection modal (no 3D model)
+	if (projectId === undefined) {
+		return (
+			<OverlayTextureCanvasProvider>
+				<TooltipProvider>
+					<div className="h-screen w-screen flex items-center justify-center bg-black">
+						<TextureEditorWrapper mode="basic" projectId={undefined} />
+					</div>
+				</TooltipProvider>
+			</OverlayTextureCanvasProvider>
+		);
+	}
+
 	return (
 		<OverlayTextureCanvasProvider>
 			<TooltipProvider>

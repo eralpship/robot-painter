@@ -28,6 +28,17 @@ function TextureEditor() {
 	const search = Route.useSearch();
 	const projectId = search["project-id"];
 
+	// If no projectId, show only the project selection modal (no preview)
+	if (projectId === undefined) {
+		return (
+			<OverlayTextureCanvasProvider>
+				<div className="h-screen w-screen flex items-center justify-center bg-black">
+					<TextureEditorWrapper mode="full" projectId={undefined} />
+				</div>
+			</OverlayTextureCanvasProvider>
+		);
+	}
+
 	return (
 		<OverlayTextureCanvasProvider>
 			<div className="h-screen w-screen">

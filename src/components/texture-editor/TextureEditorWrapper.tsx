@@ -1,10 +1,13 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useContext } from "react";
+import { createPortal } from "react-dom";
 import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
 import {
 	TextureEditorContext,
 	TextureEditorContextProvider,
 	type TexureEditorMode,
 } from "@/contexts/texture-editor-context";
+import { ProjectSelectionModal } from "./modals/ProjectSelectionModal";
 import { TextureEditor } from "./TextureEditor";
 import { Toolbar } from "./toolbar";
 
@@ -62,6 +65,54 @@ function BackdropWithDeselect() {
 	);
 }
 
+function TextureEditorContent() {
+	const { projectModal, createNewProject, mode } =
+		useContext(TextureEditorContext);
+	const navigate = useNavigate();
+
+	// When project selection modal is showing, don't render the editor
+	// Use a portal to render full-screen overlay at document body level (z-40, below dialog's z-50)
+	if (projectModal.type === "selection") {
+		return (
+			<>
+				{createPortal(
+					<div className="fixed inset-0 z-[9998] bg-black" />,
+					document.body,
+				)}
+				<ProjectSelectionModal
+					open={true}
+					reason={projectModal.reason}
+					invalidProjectId={projectModal.invalidProjectId}
+					recentProject={projectModal.recentProject}
+					onLoadRecent={() => {
+						if (projectModal.recentProject) {
+							const currentPath = mode === "full" ? "/texture-editor" : "/";
+							navigate({ to: currentPath, search: { "project-id": projectModal.recentProject.id } });
+						}
+					}}
+					onCreateProject={async (name) => {
+						try {
+							const newId = await createNewProject(name);
+							const currentPath = mode === "full" ? "/texture-editor" : "/";
+							navigate({ to: currentPath, search: { "project-id": newId } });
+						} catch (error) {
+							console.error("[TextureEditorWrapper] Failed to create project:", error);
+						}
+					}}
+				/>
+			</>
+		);
+	}
+
+	// Normal rendering when project is loaded
+	return (
+		<>
+			<Toolbar />
+			<BackdropWithDeselect />
+		</>
+	);
+}
+
 export function TextureEditorWrapper({
 	mode,
 	projectId,
@@ -72,8 +123,7 @@ export function TextureEditorWrapper({
 	return (
 		<div className="h-full w-full grid grid-rows-[auto_1fr] grid-cols-1">
 			<TextureEditorContextProvider mode={mode} projectId={projectId}>
-				<Toolbar />
-				<BackdropWithDeselect />
+				<TextureEditorContent />
 			</TextureEditorContextProvider>
 		</div>
 	);

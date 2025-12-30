@@ -13,6 +13,15 @@ import { useTextureEditorPersistence } from "@/hooks/useTextureEditorPersistence
 import type { CanonicalTransform } from "@/utils/transforms";
 import type { OverlayTextureSides } from "./overlay-texture-canvas-context";
 
+export type ProjectModalState =
+	| { type: "none" }
+	| {
+			type: "selection";
+			reason: "no-selection" | "not-found" | "first-time";
+			invalidProjectId?: number;
+			recentProject: { id: number; name: string } | null;
+	  };
+
 export const CANVAS_SIZE = 1024; // if you change this also resize the paintable_uv.svg's root size and viewbox size
 
 export type TexureEditorMode = "full" | "basic";
@@ -68,6 +77,8 @@ type TextureEditorContextType = {
 	notifyEditorReady: () => void;
 	createNewProject: (name: string) => Promise<number>;
 	isLoaded: boolean;
+	projectModal: ProjectModalState;
+	setProjectModal: (state: ProjectModalState) => void;
 };
 
 export const TextureEditorContext = createContext<TextureEditorContextType>(
@@ -205,7 +216,7 @@ export function TextureEditorContextProvider({
 	projectId?: number;
 	children: React.ReactNode;
 }) {
-	const { saveState, loadState, getMostRecentProjectId, createProject } =
+	const { saveState, loadState, getMostRecentProject, createProject } =
 		useTextureEditorPersistence();
 
 	// Start with empty elements - we'll load from database
@@ -223,10 +234,13 @@ export function TextureEditorContextProvider({
 	// Track whether initial load is complete
 	const [isLoaded, setIsLoaded] = useState(false);
 
+	// Modal state for project selection/creation
+	const [projectModal, setProjectModal] = useState<ProjectModalState>({
+		type: "none",
+	});
+
 	// Load saved state only after TextureEditor signals it's ready
 	const hasLoadedFromStorage = useRef(false);
-	const redirectCountRef = useRef(0);
-	const MAX_REDIRECTS = 3;
 	const notifyEditorReady = useCallback(() => {
 		if (hasLoadedFromStorage.current) {
 			return;
@@ -235,58 +249,30 @@ export function TextureEditorContextProvider({
 		// Set flag immediately to prevent race conditions from duplicate calls
 		hasLoadedFromStorage.current = true;
 
-		// If no projectId provided, redirect to most recent project
+		// If no projectId provided, show project selection modal
 		if (projectId === undefined) {
-			getMostRecentProjectId()
-				.then(async (recentProjectId) => {
-					if (recentProjectId !== null) {
-						// Check redirect circuit breaker
-						if (redirectCountRef.current >= MAX_REDIRECTS) {
-							console.error(
-								"[TextureEditor] Max redirects exceeded, stopping to prevent infinite loop",
-							);
-							alert(
-								"Unable to load project. Please clear browser data and refresh.",
-							);
-							setIsLoaded(true);
-							return;
-						}
-
-						redirectCountRef.current += 1;
-						const currentPath = mode === "full" ? "/texture-editor" : "/";
-						window.location.href = `${currentPath}?project-id=${recentProjectId}`;
+			getMostRecentProject()
+				.then((recentProject) => {
+					if (recentProject !== null) {
+						// Case #2: No projectId but recent exists - show selection modal
+						setProjectModal({
+							type: "selection",
+							reason: "no-selection",
+							recentProject,
+						});
 					} else {
-						// No projects exist - create a default project and reload
-						try {
-							const defaultProjectId = await createProject("default");
-
-							// Check redirect circuit breaker
-							if (redirectCountRef.current >= MAX_REDIRECTS) {
-								console.error(
-									"[TextureEditor] Max redirects exceeded, stopping to prevent infinite loop",
-								);
-								alert(
-									"Unable to load project. Please clear browser data and refresh.",
-								);
-								setIsLoaded(true);
-								return;
-							}
-
-							redirectCountRef.current += 1;
-							const currentPath = mode === "full" ? "/texture-editor" : "/";
-							window.location.href = `${currentPath}?project-id=${defaultProjectId}`;
-						} catch (error) {
-							console.error(
-								"[TextureEditor] Failed to create default project:",
-								error,
-							);
-							setIsLoaded(true);
-						}
+						// Case #3: No projectId and no projects - show first-time modal
+						setProjectModal({
+							type: "selection",
+							reason: "first-time",
+							recentProject: null,
+						});
 					}
+					setIsLoaded(true);
 				})
 				.catch((error) => {
 					console.error(
-						"[TextureEditor] Failed to get most recent project ID:",
+						"[TextureEditor] Failed to get most recent project:",
 						error,
 					);
 					setIsLoaded(true);
@@ -301,45 +287,28 @@ export function TextureEditorContextProvider({
 					dispatchElementsAction({ type: "load", elements: loaded.elements });
 					setBackgroundColor(loaded.backgroundColor);
 					setIsLoaded(true);
-					redirectCountRef.current = 0; // Reset counter on successful load
 				} else {
-					// Invalid project ID - check if other projects exist
-					alert(`Project with id ${projectId} doesn't exist!`);
+					// Invalid project ID - show modal with option to load recent or create new
+					const recentProject = await getMostRecentProject();
 
-					const recentProjectId = await getMostRecentProjectId();
-					const currentPath = mode === "full" ? "/texture-editor" : "/";
-
-					if (recentProjectId !== null) {
-						// Check redirect circuit breaker
-						if (redirectCountRef.current >= MAX_REDIRECTS) {
-							console.error(
-								"[TextureEditor] Max redirects exceeded, stopping to prevent infinite loop",
-							);
-							alert(
-								"Unable to load project. Please clear browser data and refresh.",
-							);
-							setIsLoaded(true);
-							return;
-						}
-
-						redirectCountRef.current += 1;
-						window.location.href = `${currentPath}?project-id=${recentProjectId}`;
+					if (recentProject !== null) {
+						// Case #4: Invalid projectId but recent exists
+						setProjectModal({
+							type: "selection",
+							reason: "not-found",
+							invalidProjectId: projectId,
+							recentProject,
+						});
 					} else {
-						// Check redirect circuit breaker
-						if (redirectCountRef.current >= MAX_REDIRECTS) {
-							console.error(
-								"[TextureEditor] Max redirects exceeded, stopping to prevent infinite loop",
-							);
-							alert(
-								"Unable to load project. Please clear browser data and refresh.",
-							);
-							setIsLoaded(true);
-							return;
-						}
-
-						redirectCountRef.current += 1;
-						window.location.href = currentPath;
+						// Case #5: Invalid projectId and no projects exist
+						setProjectModal({
+							type: "selection",
+							reason: "not-found",
+							invalidProjectId: projectId,
+							recentProject: null,
+						});
 					}
+					setIsLoaded(true);
 				}
 			})
 			.catch((error) => {
@@ -349,7 +318,7 @@ export function TextureEditorContextProvider({
 				);
 				setIsLoaded(true);
 			});
-	}, [loadState, getMostRecentProjectId, projectId, createProject, mode]);
+	}, [loadState, getMostRecentProject, projectId]);
 
 	const resetToDefaults = useCallback(() => {
 		// Don't clear state - just reset elements and background
@@ -441,6 +410,8 @@ export function TextureEditorContextProvider({
 				notifyEditorReady,
 				createNewProject,
 				isLoaded,
+				projectModal,
+				setProjectModal,
 			}}
 		>
 			{children}
