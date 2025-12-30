@@ -7,6 +7,8 @@ import {
 	TextureEditorContextProvider,
 	type TexureEditorMode,
 } from "@/contexts/texture-editor-context";
+import { navigateToProject } from "@/utils/projectRouteUtils";
+import { ProjectCreatedModal } from "./modals/ProjectCreatedModal";
 import { ProjectSelectionModal } from "./modals/ProjectSelectionModal";
 import { TextureEditor } from "./TextureEditor";
 import { Toolbar } from "./toolbar";
@@ -86,18 +88,35 @@ function TextureEditorContent() {
 					recentProject={projectModal.recentProject}
 					onLoadRecent={() => {
 						if (projectModal.recentProject) {
-							const currentPath = mode === "full" ? "/texture-editor" : "/";
-							navigate({ to: currentPath, search: { "project-id": projectModal.recentProject.id } });
+							navigateToProject(navigate, mode, projectModal.recentProject.id);
 						}
 					}}
 					onCreateProject={async (name) => {
 						try {
 							const newId = await createNewProject(name);
-							const currentPath = mode === "full" ? "/texture-editor" : "/";
-							navigate({ to: currentPath, search: { "project-id": newId } });
+							navigateToProject(navigate, mode, newId);
 						} catch (error) {
 							console.error("[TextureEditorWrapper] Failed to create project:", error);
 						}
+					}}
+				/>
+			</>
+		);
+	}
+
+	// When project created modal is showing
+	if (projectModal.type === "created") {
+		return (
+			<>
+				{createPortal(
+					<div className="fixed inset-0 z-[9998] bg-black" />,
+					document.body,
+				)}
+				<ProjectCreatedModal
+					open={true}
+					projectName={projectModal.projectName}
+					onConfirm={() => {
+						navigateToProject(navigate, mode, projectModal.projectId);
 					}}
 				/>
 			</>

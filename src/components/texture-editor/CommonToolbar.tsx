@@ -1,21 +1,16 @@
 import { useNavigate } from "@tanstack/react-router";
-import { FolderPlus, PaintBucket, Paintbrush, Trash2, Wrench } from "lucide-react";
+import { FolderPlus, PaintBucket, Paintbrush, Undo2, Wrench } from "lucide-react";
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { NewProjectModal } from "./modals/NewProjectModal";
-import { ProjectCreatedModal } from "./modals/ProjectCreatedModal";
 
 export function CommonToolbar() {
 	const ctx = useContext(TextureEditorContext);
 	const navigate = useNavigate();
 	const [isCreatingProject, setIsCreatingProject] = useState(false);
 	const [newProjectOpen, setNewProjectOpen] = useState(false);
-	const [pendingProject, setPendingProject] = useState<{
-		id: number;
-		name: string;
-	} | null>(null);
 
 	return (
 		<>
@@ -58,7 +53,7 @@ export function CommonToolbar() {
 					}
 				}}
 			>
-				<Trash2 className="size-4" /> Reset
+				<Undo2 className="size-4" /> Reset
 			</Button>
 			<Button
 				variant="outline"
@@ -82,8 +77,7 @@ export function CommonToolbar() {
 					setIsCreatingProject(true);
 					try {
 						const newProjectId = await ctx.createNewProject(sanitizedName);
-						// Show confirmation modal instead of immediate redirect
-						setPendingProject({ id: newProjectId, name: sanitizedName });
+						ctx.showProjectCreatedModal(newProjectId, sanitizedName);
 						setNewProjectOpen(false);
 					} catch (error) {
 						console.error(
@@ -93,16 +87,6 @@ export function CommonToolbar() {
 						setNewProjectOpen(false);
 					} finally {
 						setIsCreatingProject(false);
-					}
-				}}
-			/>
-			<ProjectCreatedModal
-				open={pendingProject !== null}
-				projectName={pendingProject?.name ?? ""}
-				onConfirm={() => {
-					if (pendingProject) {
-						const currentPath = ctx.mode === "full" ? "/texture-editor" : "/";
-						navigate({ to: currentPath, search: { "project-id": pendingProject.id } });
 					}
 				}}
 			/>

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { TextureEditorElementWithUuid } from "@/contexts/texture-editor-context";
 import { createDefaultElements } from "@/contexts/texture-editor-context";
-import { db, type TextureProject } from "@/db/db";
+import { db } from "@/db/db";
 
 const CURRENT_VERSION = 2;
 
@@ -62,31 +62,16 @@ export function useTextureEditorPersistence() {
 
 	const loadState = useCallback(
 		async (
-			projectId?: number,
+			projectId: number,
 		): Promise<{
 			backgroundColor: string;
 			elements: Map<string, TextureEditorElementWithUuid>;
 		} | null> => {
 			try {
-				let project: TextureProject | undefined;
+				const project = await db.textureProjects.get(projectId);
 
-				if (projectId !== undefined) {
-					// Load specific project by ID
-					project = await db.textureProjects.get(projectId);
-
-					if (!project) {
-						return null;
-					}
-				} else {
-					// Get most recently modified project
-					project = await db.textureProjects
-						.orderBy("dateModified")
-						.reverse()
-						.first();
-
-					if (!project) {
-						return null;
-					}
+				if (!project) {
+					return null;
 				}
 
 				const parsed: PersistedState = JSON.parse(project.json);

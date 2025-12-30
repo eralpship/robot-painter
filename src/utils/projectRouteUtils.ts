@@ -3,6 +3,9 @@
  * Used by both / and /texture-editor routes.
  */
 
+import type { NavigateFn } from "@tanstack/react-router";
+import type { TexureEditorMode } from "@/contexts/texture-editor-context";
+
 export type ProjectSearchParams = {
 	"project-id"?: number;
 };
@@ -24,4 +27,16 @@ export function validateProjectSearch(
 
 	// Invalid: undefined will trigger "no project ID" flow
 	return { "project-id": undefined };
+}
+
+/**
+ * Navigate to a project by ID with the appropriate path for the current mode.
+ */
+export function navigateToProject(
+	navigate: NavigateFn,
+	mode: TexureEditorMode,
+	projectId: number,
+): void {
+	const path = mode === "full" ? "/texture-editor" : "/";
+	navigate({ to: path, search: { "project-id": projectId } });
 }

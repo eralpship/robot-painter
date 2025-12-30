@@ -20,6 +20,11 @@ export type ProjectModalState =
 			reason: "no-selection" | "not-found" | "first-time";
 			invalidProjectId?: number;
 			recentProject: { id: number; name: string } | null;
+	  }
+	| {
+			type: "created";
+			projectId: number;
+			projectName: string;
 	  };
 
 export const CANVAS_SIZE = 1024; // if you change this also resize the paintable_uv.svg's root size and viewbox size
@@ -79,6 +84,7 @@ type TextureEditorContextType = {
 	isLoaded: boolean;
 	projectModal: ProjectModalState;
 	setProjectModal: (state: ProjectModalState) => void;
+	showProjectCreatedModal: (projectId: number, projectName: string) => void;
 };
 
 export const TextureEditorContext = createContext<TextureEditorContextType>(
@@ -374,6 +380,13 @@ export function TextureEditorContextProvider({
 		[createProject],
 	);
 
+	const showProjectCreatedModal = useCallback(
+		(projectId: number, projectName: string) => {
+			setProjectModal({ type: "created", projectId, projectName });
+		},
+		[],
+	);
+
 	// Auto-sync to IndexedDB when state changes (only after load completes)
 	useEffect(() => {
 		// Skip auto-save until initial load is complete
@@ -389,6 +402,14 @@ export function TextureEditorContextProvider({
 
 		return () => clearTimeout(timeoutId);
 	}, [backgroundColor, elements, isLoaded, saveState, projectId]);
+
+	// Reset modal state when projectId changes (navigation occurred)
+	// This handles the case where navigateToProject() changes the URL
+	// but the component doesn't remount
+	useEffect(() => {
+		setProjectModal({ type: "none" });
+		hasLoadedFromStorage.current = false; // Allow re-loading
+	}, [projectId]);
 
 	return (
 		<TextureEditorContext.Provider
@@ -412,6 +433,7 @@ export function TextureEditorContextProvider({
 				isLoaded,
 				projectModal,
 				setProjectModal,
+				showProjectCreatedModal,
 			}}
 		>
 			{children}

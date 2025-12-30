@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
-	Dialog,
-	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
@@ -10,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { UndismissableDialog } from "@/components/ui/undismissable-dialog";
 import {
 	sanitizeProjectName,
 	validateProjectName,
@@ -69,14 +68,8 @@ export function ProjectSelectionModal({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={() => {}}>
-			<DialogContent
-				showCloseButton={false}
-				onInteractOutside={(e) => e.preventDefault()}
-				onEscapeKeyDown={(e) => e.preventDefault()}
-				className="z-[9999]"
-			>
-				<DialogHeader>
+		<UndismissableDialog open={open} className="z-[9999]">
+			<DialogHeader>
 					<DialogTitle>{TITLES[reason]}</DialogTitle>
 					<DialogDescription>
 						{DESCRIPTIONS[reason](invalidProjectId)}
@@ -112,11 +105,10 @@ export function ProjectSelectionModal({
 				</div>
 
 				<DialogFooter>
-					<Button onClick={handleCreate} disabled={isSubmitting}>
-						{isSubmitting ? "..." : "Create Project"}
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+				<Button onClick={handleCreate} disabled={isSubmitting}>
+					{isSubmitting ? "..." : "Create Project"}
+				</Button>
+			</DialogFooter>
+		</UndismissableDialog>
 	);
 }
