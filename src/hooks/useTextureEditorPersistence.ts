@@ -42,25 +42,6 @@ export function useTextureEditorPersistence() {
 		[],
 	);
 
-	const getMostRecentProjectId = useCallback(async (): Promise<
-		number | null
-	> => {
-		try {
-			const project = await db.textureProjects
-				.orderBy("dateModified")
-				.reverse()
-				.first();
-
-			return project?.id ? (project.id as number) : null;
-		} catch (error) {
-			console.error(
-				"[Persistence] Failed to get most recent project ID:",
-				error,
-			);
-			return null;
-		}
-	}, []);
-
 	const getMostRecentProject = useCallback(async (): Promise<{
 		id: number;
 		name: string;
@@ -163,31 +144,10 @@ export function useTextureEditorPersistence() {
 		}
 	}, []);
 
-	const deleteProject = useCallback(async (projectId: number): Promise<void> => {
-		try {
-			await db.textureProjects.delete(projectId);
-		} catch (error) {
-			console.error("[Persistence] Failed to delete project:", error);
-			throw error;
-		}
-	}, []);
-
-	const deleteAllProjects = useCallback(async (): Promise<void> => {
-		try {
-			await db.textureProjects.clear();
-		} catch (error) {
-			console.error("[Persistence] Failed to delete all projects:", error);
-			throw error;
-		}
-	}, []);
-
 	return {
 		saveState,
 		loadState,
-		getMostRecentProjectId,
 		getMostRecentProject,
 		createProject,
-		deleteProject,
-		deleteAllProjects,
 	};
 }

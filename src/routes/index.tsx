@@ -16,6 +16,7 @@ import { TextureEditorWrapper } from "../components/texture-editor/TextureEditor
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
 import { TooltipProvider } from "../contexts/tooltip-context";
 import { useLevaModelControls } from "../hooks/useLevaModelControls";
+import { validateProjectSearch } from "../utils/projectRouteUtils";
 import {
 	MODEL_DEFAULTS,
 	useAmbientLight,
@@ -32,23 +33,8 @@ const customLevaTheme = {
 	},
 };
 
-type SearchParams = {
-	"project-id"?: number;
-};
-
 export const Route = createFileRoute("/")({
-	validateSearch: (search: Record<string, unknown>): SearchParams => {
-		const id = search["project-id"];
-		const numId = Number(id);
-
-		// Valid: positive integers only
-		if (numId > 0 && Number.isInteger(numId)) {
-			return { "project-id": numId };
-		}
-
-		// Invalid: undefined will trigger "no project ID" flow
-		return { "project-id": undefined };
-	},
+	validateSearch: validateProjectSearch,
 	component: App,
 });
 
