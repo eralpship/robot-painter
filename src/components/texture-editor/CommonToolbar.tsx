@@ -26,6 +26,7 @@ export function CommonToolbar() {
 				onClick={() => {
 					navigate({
 						to: ctx.mode === "full" ? "/" : "/texture-editor",
+						search: (prev) => prev,
 					});
 				}}
 			>
