@@ -19,7 +19,10 @@ export function SideSelector() {
 	const { side, setSide } = ctx;
 
 	return (
-		<Select value={side} onValueChange={(value) => setSide(value as typeof side)}>
+		<Select
+			value={side}
+			onValueChange={(value) => setSide(value as typeof side)}
+		>
 			<SelectTrigger size="sm" className="w-auto">
 				<SelectValue />
 			</SelectTrigger>

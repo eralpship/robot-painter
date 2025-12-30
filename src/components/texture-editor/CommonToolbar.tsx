@@ -1,5 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
-import { FolderPlus, PaintBucket, Paintbrush, Undo2, Wrench } from "lucide-react";
+import {
+	FolderPlus,
+	PaintBucket,
+	Paintbrush,
+	Undo2,
+	Wrench,
+} from "lucide-react";
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ColorPickerButton } from "@/components/ui/ColorPickerButton";

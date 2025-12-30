@@ -70,41 +70,41 @@ export function ProjectSelectionModal({
 	return (
 		<UndismissableDialog open={open} className="z-[9999]">
 			<DialogHeader>
-					<DialogTitle>{TITLES[reason]}</DialogTitle>
-					<DialogDescription>
-						{DESCRIPTIONS[reason](invalidProjectId)}
-					</DialogDescription>
-				</DialogHeader>
+				<DialogTitle>{TITLES[reason]}</DialogTitle>
+				<DialogDescription>
+					{DESCRIPTIONS[reason](invalidProjectId)}
+				</DialogDescription>
+			</DialogHeader>
 
-				<div className="grid gap-4">
-					{recentProject && (
-						<Button
-							onClick={onLoadRecent}
-							disabled={isSubmitting}
-							variant="outline"
-						>
-							Load "{recentProject.name}"
-						</Button>
-					)}
+			<div className="grid gap-4">
+				{recentProject && (
+					<Button
+						onClick={onLoadRecent}
+						disabled={isSubmitting}
+						variant="outline"
+					>
+						Load "{recentProject.name}"
+					</Button>
+				)}
 
-					<div className="grid gap-2">
-						<Label htmlFor="project-name">Project Name</Label>
-						<Input
-							id="project-name"
-							value={name}
-							onChange={(e) => {
-								setName(e.target.value);
-								setError(null);
-							}}
-							placeholder="My Project"
-							disabled={isSubmitting}
-							onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-						/>
-						{error && <p className="text-sm text-destructive">{error}</p>}
-					</div>
+				<div className="grid gap-2">
+					<Label htmlFor="project-name">Project Name</Label>
+					<Input
+						id="project-name"
+						value={name}
+						onChange={(e) => {
+							setName(e.target.value);
+							setError(null);
+						}}
+						placeholder="My Project"
+						disabled={isSubmitting}
+						onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+					/>
+					{error && <p className="text-sm text-destructive">{error}</p>}
 				</div>
+			</div>
 
-				<DialogFooter>
+			<DialogFooter>
 				<Button onClick={handleCreate} disabled={isSubmitting}>
 					{isSubmitting ? "..." : "Create Project"}
 				</Button>

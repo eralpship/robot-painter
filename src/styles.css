@@ -8,8 +8,12 @@
  */
 @theme inline {
 	/* === Fonts === */
-	--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-	--font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	--font-sans:
+		"Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-mono:
+		ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
 
 	/* === Radius === */
 	--radius-sm: 0.375rem;

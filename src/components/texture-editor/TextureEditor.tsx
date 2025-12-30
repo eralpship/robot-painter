@@ -233,11 +233,7 @@ export function TextureEditor({
 	);
 
 	return (
-		<div
-			ref={containerRef}
-			className="relative overflow-hidden"
-			style={style}
-		>
+		<div ref={containerRef} className="relative overflow-hidden" style={style}>
 			<svg
 				display={hidden ? "none" : undefined}
 				ref={svgRef}

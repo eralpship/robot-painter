@@ -75,7 +75,10 @@ export function TextToolbar() {
 						);
 						return;
 					}
-					setFontSizeElement({ uuid: element.uuid, fontSize: element.fontSize });
+					setFontSizeElement({
+						uuid: element.uuid,
+						fontSize: element.fontSize,
+					});
 					setFontSizeOpen(true);
 				}}
 			>

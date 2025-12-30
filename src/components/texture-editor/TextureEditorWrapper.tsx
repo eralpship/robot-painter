@@ -96,7 +96,10 @@ function TextureEditorContent() {
 							const newId = await createNewProject(name);
 							navigateToProject(navigate, mode, newId);
 						} catch (error) {
-							console.error("[TextureEditorWrapper] Failed to create project:", error);
+							console.error(
+								"[TextureEditorWrapper] Failed to create project:",
+								error,
+							);
 						}
 					}}
 				/>
