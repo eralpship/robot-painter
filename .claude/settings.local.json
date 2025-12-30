@@ -62,7 +62,9 @@
       "Bash(for id in w53.1 w53.2 w53.3 w53.4 w53.5 w53.6 w53.7 w53.8 w53.9 w53.10 w53.11 w53.12 w53.13 w53.14)",
       "Bash(do bd show robot-painting-tool-$id)",
       "Bash(do echo \"=== $id ===\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npm run check:*)",
+      "Bash(npm run format:*)"
     ],
     "deny": [],
     "ask": []

@@ -16,7 +16,6 @@ import { TextureEditorWrapper } from "../components/texture-editor/TextureEditor
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
 import { TooltipProvider } from "../contexts/tooltip-context";
 import { useLevaModelControls } from "../hooks/useLevaModelControls";
-import { validateProjectSearch } from "../utils/projectRouteUtils";
 import {
 	MODEL_DEFAULTS,
 	useAmbientLight,
@@ -26,6 +25,7 @@ import {
 	useEnvironmentIntensity,
 	useFov,
 } from "../stores/model-store";
+import { validateProjectSearch } from "../utils/projectRouteUtils";
 
 const customLevaTheme = {
 	sizes: {

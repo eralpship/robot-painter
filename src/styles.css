@@ -112,6 +112,7 @@
 }
 
 /* Moveable controls z-index - must be below modal overlay (z-50) */
+/* Note: !important required to override Moveable library inline styles */
 .moveable-control-box {
 	z-index: 40 !important;
 }

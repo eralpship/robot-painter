@@ -406,6 +406,7 @@ export function TextureEditorContextProvider({
 	// Reset modal state when projectId changes (navigation occurred)
 	// This handles the case where navigateToProject() changes the URL
 	// but the component doesn't remount
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally runs when projectId changes for navigation reset
 	useEffect(() => {
 		setProjectModal({ type: "none" });
 		hasLoadedFromStorage.current = false; // Allow re-loading

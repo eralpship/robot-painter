@@ -26,6 +26,9 @@
       "correctness": {
         "noInvalidUseBeforeDeclaration": "warn",
         "useExhaustiveDependencies": "warn"
+      },
+      "complexity": {
+        "noImportantStyles": "off"
       }
     }
   },
