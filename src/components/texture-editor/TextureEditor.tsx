@@ -360,7 +360,7 @@ export function TextureEditor({
 				scalable
 				draggable
 				rotatable
-				keepRatio
+				keepRatio={editorCtx.selectedElement?.type !== "rectangle"}
 				onScale={(e) => {
 					e.target.style.cssText += e.cssText;
 				}}

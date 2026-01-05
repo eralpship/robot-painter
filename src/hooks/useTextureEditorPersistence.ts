@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type { TextureEditorElementWithUuid } from "@/contexts/texture-editor-context";
 import { createDefaultElements } from "@/contexts/texture-editor-context";
 import { db } from "@/db/db";
+import { parseAndFilterElements } from "@/schemas/texture-editor-elements";
 
 const CURRENT_VERSION = 2;
 
@@ -81,10 +82,24 @@ export function useTextureEditorPersistence() {
 					return null;
 				}
 
-				// Convert array back to Map, preserving UUIDs
+				// Validate and filter elements using Zod schema
+				// Invalid elements are logged and skipped (not loaded)
+				const validElements = parseAndFilterElements(parsed.elements);
+
+				// Convert validated array to Map
 				const elementsMap = new Map<string, TextureEditorElementWithUuid>();
-				for (const element of parsed.elements) {
-					elementsMap.set(element.uuid, element);
+				for (const element of validElements) {
+					elementsMap.set(
+						element.uuid,
+						element as TextureEditorElementWithUuid,
+					);
+				}
+
+				// Log if any elements were filtered out
+				if (validElements.length < parsed.elements.length) {
+					console.warn(
+						`[Persistence] Filtered out ${parsed.elements.length - validElements.length} invalid element(s)`,
+					);
 				}
 
 				return {
