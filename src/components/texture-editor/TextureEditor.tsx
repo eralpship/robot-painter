@@ -33,7 +33,7 @@ import {
 	CANVAS_SIZE,
 	TextureEditorContext,
 } from "@/contexts/texture-editor-context";
-import { extractCanonicalTransform, toSVGTransform } from "@/utils/transforms";
+import { toSVGTransform } from "@/utils/transforms";
 
 /**
  * Serialize SVG to string, removing specified elements by id.
@@ -192,28 +192,31 @@ export function TextureEditor({
 				return;
 			}
 
-			// Check if Moveable actually applied any CSS transforms
-			const cssTransform = (target as HTMLElement).style.transform;
-			if (!cssTransform || cssTransform.trim() === "") {
+			// Parse the SVG transform attribute to get the current transform
+			const svgTransformAttr = target.getAttribute("transform");
+			if (!svgTransformAttr) {
 				return;
 			}
 
-			// Extract canonical transform from the element
-			const transform = extractCanonicalTransform(target as SVGElement);
-			if (!transform) {
-				console.error("[TextureEditor] Failed to extract transform!");
-				return;
-			}
+			// Parse the SVG transform string
+			const translateMatch = svgTransformAttr.match(
+				/translate\(([-\d.]+),\s*([-\d.]+)\)/,
+			);
+			const rotateMatch = svgTransformAttr.match(/rotate\(([-\d.]+)\)/);
+			const scaleMatch = svgTransformAttr.match(
+				/scale\(([-\d.]+),\s*([-\d.]+)\)/,
+			);
 
-			// Update element with canonical format
+			const transform = {
+				centerX: translateMatch ? parseFloat(translateMatch[1]) : 0,
+				centerY: translateMatch ? parseFloat(translateMatch[2]) : 0,
+				rotation: rotateMatch ? parseFloat(rotateMatch[1]) : 0,
+				scaleX: scaleMatch ? parseFloat(scaleMatch[1]) : 1,
+				scaleY: scaleMatch ? parseFloat(scaleMatch[2]) : 1,
+			};
+
+			// Update element with the new transform
 			editorCtx.updateElement(uuid, { transform });
-
-			// Update SVG attribute for immediate visual feedback
-			const svgTransform = toSVGTransform(transform);
-			target.setAttribute("transform", svgTransform);
-
-			// Clear CSS transform now that we've saved it to SVG attribute
-			(target as HTMLElement).style.transform = "";
 
 			updateTexture();
 			setMoveableKey(uuid);
@@ -372,14 +375,62 @@ export function TextureEditor({
 				draggable
 				rotatable
 				keepRatio={editorCtx.selectedElement?.type !== "rectangle"}
-				onScale={(e) => {
-					e.target.style.cssText += e.cssText;
+				onDragStart={(e) => {
+					const uuid = e.target.getAttribute("id");
+					const element = uuid ? editorCtx.elements.get(uuid) : null;
+					if (element) {
+						e.datas.initialTransform = { ...element.transform };
+					}
 				}}
 				onDrag={(e) => {
-					e.target.style.cssText += e.cssText;
+					const initial = e.datas.initialTransform;
+					if (initial) {
+						const newTransform = {
+							...initial,
+							centerX: initial.centerX + e.translate[0],
+							centerY: initial.centerY + e.translate[1],
+						};
+						e.target.setAttribute("transform", toSVGTransform(newTransform));
+					}
+				}}
+				onRotateStart={(e) => {
+					const uuid = e.target.getAttribute("id");
+					const element = uuid ? editorCtx.elements.get(uuid) : null;
+					if (element) {
+						e.datas.initialTransform = { ...element.transform };
+					}
 				}}
 				onRotate={(e) => {
-					e.target.style.cssText += e.cssText;
+					const initial = e.datas.initialTransform;
+					if (initial) {
+						const newTransform = {
+							...initial,
+							centerX: initial.centerX + (e.drag?.translate?.[0] ?? 0),
+							centerY: initial.centerY + (e.drag?.translate?.[1] ?? 0),
+							rotation: initial.rotation + e.beforeDist,
+						};
+						e.target.setAttribute("transform", toSVGTransform(newTransform));
+					}
+				}}
+				onScaleStart={(e) => {
+					const uuid = e.target.getAttribute("id");
+					const element = uuid ? editorCtx.elements.get(uuid) : null;
+					if (element) {
+						e.datas.initialTransform = { ...element.transform };
+					}
+				}}
+				onScale={(e) => {
+					const initial = e.datas.initialTransform;
+					if (initial) {
+						const newTransform = {
+							...initial,
+							centerX: initial.centerX + (e.drag?.translate?.[0] ?? 0),
+							centerY: initial.centerY + (e.drag?.translate?.[1] ?? 0),
+							scaleX: initial.scaleX * e.scale[0],
+							scaleY: initial.scaleY * e.scale[1],
+						};
+						e.target.setAttribute("transform", toSVGTransform(newTransform));
+					}
 				}}
 				onDragEnd={(e) => handleOnMoveableActionEnd(e.target)}
 				onScaleEnd={(e) => handleOnMoveableActionEnd(e.target)}

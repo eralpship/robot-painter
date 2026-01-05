@@ -69,7 +69,8 @@
       "Bash(npm run lint:*)",
       "Bash(npx biome:*)",
       "Bash(npx biome lint:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "mcp__context7__query-docs"
     ],
     "deny": [],
     "ask": []
