@@ -1,4 +1,4 @@
-import { Image, Type } from "lucide-react";
+import { Image, Square, Type } from "lucide-react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -126,6 +126,28 @@ export function AddElementToolbar() {
 				}}
 			>
 				<Image className="size-4" /> Add Image
+			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				onClick={() => {
+					ctx.addElement({
+						type: "rectangle",
+						width: 100,
+						height: 100,
+						color: "#3b82f6",
+						transform: {
+							centerX: ctx.center.x,
+							centerY: ctx.center.y,
+							rotation: 0,
+							scaleX: 1,
+							scaleY: 1,
+						},
+						side: ctx.side,
+					});
+				}}
+			>
+				<Square className="size-4" /> Add Rectangle
 			</Button>
 		</>
 	);

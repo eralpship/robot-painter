@@ -3,6 +3,7 @@ import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { AddElementToolbar } from "./AddElementToolbar";
 import { CommonToolbar } from "./CommonToolbar";
 import { ElementToolbar } from "./ElementToolbar";
+import { RectangleToolbar } from "./RectangleToolbar";
 import { SideSelector } from "./SideSelector";
 import { TextToolbar } from "./TextToolbar";
 
@@ -18,6 +19,9 @@ export function Toolbar() {
 						<AddElementToolbar />
 						{ctx.selectedElement ? <ElementToolbar /> : null}
 						{ctx.selectedElement?.type === "text" ? <TextToolbar /> : null}
+						{ctx.selectedElement?.type === "rectangle" ? (
+							<RectangleToolbar />
+						) : null}
 					</>
 				) : null}
 			</div>

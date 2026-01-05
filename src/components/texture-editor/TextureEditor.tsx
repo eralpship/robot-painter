@@ -143,9 +143,9 @@ export function TextureEditor({
 		}
 	}, [hidden, editorCtx]);
 
-	const elementRefs = useRef<Map<string, SVGTextElement | SVGImageElement>>(
-		new Map(),
-	);
+	const elementRefs = useRef<
+		Map<string, SVGTextElement | SVGImageElement | SVGRectElement>
+	>(new Map());
 
 	const [moveableKey, setMoveableKey] = useState("not-selected");
 
@@ -318,6 +318,28 @@ export function TextureEditor({
 									onError={(e) => {
 										console.error("SVG image failed to render:", uuid, e);
 									}}
+								/>
+							);
+						case "rectangle":
+							return (
+								<rect
+									ref={(el) => {
+										if (el) {
+											elementRefs.current.set(uuid, el);
+										} else {
+											elementRefs.current.delete(uuid);
+										}
+									}}
+									id={uuid}
+									key={uuid}
+									className="texture-element-selectable"
+									x={-element.width / 2}
+									y={-element.height / 2}
+									width={element.width}
+									height={element.height}
+									fill={element.color}
+									transform={toSVGTransform(element.transform)}
+									style={{ cursor: "pointer" }}
 								/>
 							);
 						default:

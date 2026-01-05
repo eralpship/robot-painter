@@ -48,6 +48,12 @@ type _TextureEditorTextElement = {
 	color: string;
 	fontSize: number;
 };
+type _TextureEditorRectangleElement = {
+	type: "rectangle";
+	width: number;
+	height: number;
+	color: string;
+};
 export type TextureEditorElementPatch = Partial<
 	{
 		transform: CanonicalTransform;
@@ -55,11 +61,16 @@ export type TextureEditorElementPatch = Partial<
 	} & (
 		| Omit<_TextureEditorImageElement, "type">
 		| Omit<_TextureEditorTextElement, "type">
+		| Omit<_TextureEditorRectangleElement, "type">
 	)
 >;
 
 type TextureEditorElement = _BaseTextureEditorElement &
-	(_TextureEditorImageElement | _TextureEditorTextElement);
+	(
+		| _TextureEditorImageElement
+		| _TextureEditorTextElement
+		| _TextureEditorRectangleElement
+	);
 export type TextureEditorElementWithUuid = TextureEditorElement & {
 	uuid: string;
 };
