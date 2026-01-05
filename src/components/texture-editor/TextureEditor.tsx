@@ -252,9 +252,16 @@ export function TextureEditor({
 				aria-label={`Texture editor canvas for ${side} side`}
 			>
 				<title>{`Texture editor canvas for ${side} side`}</title>
-				{/* CSS to style the stencil SVG properly */}
-				{/* Stencil SVG - shows outline for user guidance */}
-				<StencilSvg style={{ width: "100%", height: "100%" }} />
+				{/* CSS to control stencil visibility in background vs overlay layers */}
+				<style>{`
+					.stencil-background [inkscape\\:label="stencil"] { display: none !important; }
+					.stencil-overlay > svg > *:not([inkscape\\:label="stencil"]) { display: none !important; }
+				`}</style>
+				{/* Background SVG (render group) - stencil hidden */}
+				<g className="stencil-background">
+					<StencilSvg style={{ width: "100%", height: "100%" }} />
+				</g>
+				{/* User elements render in middle layer */}
 				{elements.map(([uuid, element]) => {
 					switch (element.type) {
 						case "text": {
@@ -346,6 +353,10 @@ export function TextureEditor({
 							return null;
 					}
 				})}
+				{/* Stencil overlay renders last (on top) - only stencil visible, pointer-events: none */}
+				<g className="stencil-overlay" style={{ pointerEvents: "none" }}>
+					<StencilSvg style={{ width: "100%", height: "100%" }} />
+				</g>
 			</svg>
 			<Moveable
 				key={moveableKey}
