@@ -64,7 +64,12 @@
       "Bash(do echo \"=== $id ===\")",
       "Bash(done)",
       "Bash(npm run check:*)",
-      "Bash(npm run format:*)"
+      "Bash(npm run format:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx biome:*)",
+      "Bash(npx biome lint:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

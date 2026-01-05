@@ -11,6 +11,7 @@ import {
 	DEFAULT_MAX_IMAGE_WIDTH,
 	formatBytes,
 } from "@/utils/image-compression";
+import { ElementOrderDropdown } from "./ElementOrderDropdown";
 
 // File size limits
 const MAX_INPUT_FILE_SIZE = 50 * 1024 * 1024; // 50MB - pre-compression limit
@@ -149,6 +150,7 @@ export function AddElementToolbar() {
 			>
 				<Square className="size-4" /> Add Rectangle
 			</Button>
+			<ElementOrderDropdown />
 		</>
 	);
 }

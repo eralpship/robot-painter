@@ -85,6 +85,10 @@ type TextureEditorContextType = {
 	setSelectedElementId: (elementId: string | undefined) => void;
 	selectedElement: TextureEditorElementWithUuid | undefined;
 	updateElement: (elementId: string, patch: TextureEditorElementPatch) => void;
+	moveElementForward: (uuid: string) => void;
+	moveElementBackward: (uuid: string) => void;
+	moveElementToFront: (uuid: string) => void;
+	moveElementToBack: (uuid: string) => void;
 	elements: ElementMap;
 	backgroundColor: string;
 	setBackgroundColor: (color: string) => void;
@@ -107,7 +111,11 @@ type ElementAction =
 	| { type: "remove"; uuid: string }
 	| { type: "update"; uuid: string; patch: TextureEditorElementPatch }
 	| { type: "reset" }
-	| { type: "load"; elements: Map<string, TextureEditorElementWithUuid> };
+	| { type: "load"; elements: Map<string, TextureEditorElementWithUuid> }
+	| { type: "move-forward"; uuid: string }
+	| { type: "move-backward"; uuid: string }
+	| { type: "move-to-front"; uuid: string }
+	| { type: "move-to-back"; uuid: string };
 
 type ElementMap = Map<string, TextureEditorElementWithUuid>;
 
@@ -137,10 +145,89 @@ const elementReducer = (
 			return createDefaultElements();
 		case "load":
 			return action.elements;
+		case "move-forward":
+			return reorderElementWithinSide(state, action.uuid, "forward");
+		case "move-backward":
+			return reorderElementWithinSide(state, action.uuid, "backward");
+		case "move-to-front":
+			return reorderElementWithinSide(state, action.uuid, "to-front");
+		case "move-to-back":
+			return reorderElementWithinSide(state, action.uuid, "to-back");
 		default:
 			return state;
 	}
 };
+
+/**
+ * Reorder an element within its side only.
+ * The Map contains elements for all sides interleaved.
+ * This function moves the element relative to other elements on the same side,
+ * preserving the positions of elements on other sides.
+ */
+function reorderElementWithinSide(
+	state: ElementMap,
+	uuid: string,
+	operation: "forward" | "backward" | "to-front" | "to-back",
+): ElementMap {
+	const entries = Array.from(state.entries());
+	const element = state.get(uuid);
+	if (!element) return state;
+
+	const side = element.side;
+
+	// Get elements on the same side with their global indices
+	const sideEntries: Array<{
+		entry: [string, TextureEditorElementWithUuid];
+		globalIdx: number;
+	}> = [];
+	entries.forEach((entry, idx) => {
+		if (entry[1].side === side) {
+			sideEntries.push({ entry, globalIdx: idx });
+		}
+	});
+
+	// Find target element's position within side elements
+	const sideIdx = sideEntries.findIndex(({ entry }) => entry[0] === uuid);
+	if (sideIdx === -1) return state;
+
+	// Calculate new position within side
+	let newSideIdx: number;
+	switch (operation) {
+		case "forward":
+			newSideIdx = Math.min(sideIdx + 1, sideEntries.length - 1);
+			break;
+		case "backward":
+			newSideIdx = Math.max(sideIdx - 1, 0);
+			break;
+		case "to-front":
+			newSideIdx = sideEntries.length - 1;
+			break;
+		case "to-back":
+			newSideIdx = 0;
+			break;
+	}
+
+	if (newSideIdx === sideIdx) return state; // No change needed
+
+	// Remove element from current global position
+	const currentGlobalIdx = sideEntries[sideIdx].globalIdx;
+	const [removed] = entries.splice(currentGlobalIdx, 1);
+
+	// Calculate target global index (adjust for removal if target was after current)
+	let targetGlobalIdx = sideEntries[newSideIdx].globalIdx;
+	if (targetGlobalIdx > currentGlobalIdx) {
+		targetGlobalIdx--;
+	}
+
+	// Insert: after target if moving forward, at target position if moving backward
+	if (newSideIdx > sideIdx) {
+		entries.splice(targetGlobalIdx + 1, 0, removed);
+	} else {
+		entries.splice(targetGlobalIdx, 0, removed);
+	}
+
+	return new Map(entries);
+}
 
 export function createDefaultElements() {
 	const defaultElements: TextureEditorElement[] = [
@@ -366,6 +453,23 @@ export function TextureEditorContextProvider({
 		[],
 	);
 
+	const moveElementForward = useCallback(
+		(uuid: string) => dispatchElementsAction({ type: "move-forward", uuid }),
+		[],
+	);
+	const moveElementBackward = useCallback(
+		(uuid: string) => dispatchElementsAction({ type: "move-backward", uuid }),
+		[],
+	);
+	const moveElementToFront = useCallback(
+		(uuid: string) => dispatchElementsAction({ type: "move-to-front", uuid }),
+		[],
+	);
+	const moveElementToBack = useCallback(
+		(uuid: string) => dispatchElementsAction({ type: "move-to-back", uuid }),
+		[],
+	);
+
 	const selectedElement = useMemo(
 		() => (selectedElementId ? elements.get(selectedElementId) : undefined),
 		[selectedElementId, elements],
@@ -435,6 +539,10 @@ export function TextureEditorContextProvider({
 				removeElement,
 				selectedElement,
 				updateElement,
+				moveElementForward,
+				moveElementBackward,
+				moveElementToFront,
+				moveElementToBack,
 				center: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
 				size: { width: CANVAS_SIZE, height: CANVAS_SIZE },
 				setSelectedElementId,
