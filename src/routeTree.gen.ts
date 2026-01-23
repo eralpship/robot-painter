@@ -10,85 +10,104 @@
 
 // Import Routes
 
-import { Route as rootRoute } from "./routes/__root";
-import { Route as TextureEditorImport } from "./routes/texture-editor";
-import { Route as IndexImport } from "./routes/index";
+import { Route as rootRoute } from './routes/__root'
+import { Route as TextureEditorImport } from './routes/texture-editor'
+import { Route as ProjectsImport } from './routes/projects'
+import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
 
 const TextureEditorRoute = TextureEditorImport.update({
-	id: "/texture-editor",
-	path: "/texture-editor",
-	getParentRoute: () => rootRoute,
-} as any);
+  id: '/texture-editor',
+  path: '/texture-editor',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProjectsRoute = ProjectsImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
-	id: "/",
-	path: "/",
-	getParentRoute: () => rootRoute,
-} as any);
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
-	interface FileRoutesByPath {
-		"/": {
-			id: "/";
-			path: "/";
-			fullPath: "/";
-			preLoaderRoute: typeof IndexImport;
-			parentRoute: typeof rootRoute;
-		};
-		"/texture-editor": {
-			id: "/texture-editor";
-			path: "/texture-editor";
-			fullPath: "/texture-editor";
-			preLoaderRoute: typeof TextureEditorImport;
-			parentRoute: typeof rootRoute;
-		};
-	}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsImport
+      parentRoute: typeof rootRoute
+    }
+    '/texture-editor': {
+      id: '/texture-editor'
+      path: '/texture-editor'
+      fullPath: '/texture-editor'
+      preLoaderRoute: typeof TextureEditorImport
+      parentRoute: typeof rootRoute
+    }
+  }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-	"/": typeof IndexRoute;
-	"/texture-editor": typeof TextureEditorRoute;
+  '/': typeof IndexRoute
+  '/projects': typeof ProjectsRoute
+  '/texture-editor': typeof TextureEditorRoute
 }
 
 export interface FileRoutesByTo {
-	"/": typeof IndexRoute;
-	"/texture-editor": typeof TextureEditorRoute;
+  '/': typeof IndexRoute
+  '/projects': typeof ProjectsRoute
+  '/texture-editor': typeof TextureEditorRoute
 }
 
 export interface FileRoutesById {
-	__root__: typeof rootRoute;
-	"/": typeof IndexRoute;
-	"/texture-editor": typeof TextureEditorRoute;
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/projects': typeof ProjectsRoute
+  '/texture-editor': typeof TextureEditorRoute
 }
 
 export interface FileRouteTypes {
-	fileRoutesByFullPath: FileRoutesByFullPath;
-	fullPaths: "/" | "/texture-editor";
-	fileRoutesByTo: FileRoutesByTo;
-	to: "/" | "/texture-editor";
-	id: "__root__" | "/" | "/texture-editor";
-	fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/projects' | '/texture-editor'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/projects' | '/texture-editor'
+  id: '__root__' | '/' | '/projects' | '/texture-editor'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-	IndexRoute: typeof IndexRoute;
-	TextureEditorRoute: typeof TextureEditorRoute;
+  IndexRoute: typeof IndexRoute
+  ProjectsRoute: typeof ProjectsRoute
+  TextureEditorRoute: typeof TextureEditorRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-	IndexRoute: IndexRoute,
-	TextureEditorRoute: TextureEditorRoute,
-};
+  IndexRoute: IndexRoute,
+  ProjectsRoute: ProjectsRoute,
+  TextureEditorRoute: TextureEditorRoute,
+}
 
 export const routeTree = rootRoute
-	._addFileChildren(rootRouteChildren)
-	._addFileTypes<FileRouteTypes>();
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -97,11 +116,15 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/projects",
         "/texture-editor"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/projects": {
+      "filePath": "projects.tsx"
     },
     "/texture-editor": {
       "filePath": "texture-editor.tsx"
