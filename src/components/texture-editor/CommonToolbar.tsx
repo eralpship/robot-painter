@@ -40,6 +40,18 @@ export function CommonToolbar() {
 					</>
 				)}
 			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				onClick={() => {
+					navigate({
+						to: "/projects",
+						search: (prev) => prev,
+					});
+				}}
+			>
+				Projects
+			</Button>
 			<ColorPickerButton
 				label="Background"
 				color={ctx.backgroundColor}
