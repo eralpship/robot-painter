@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useProjects } from "@/hooks/useProjects";
+import { Button } from "@/components/ui/Button";
+import { Trash } from "lucide-react";
 
 export const Route = createFileRoute("/projects")({
 	component: Projects,
@@ -41,13 +43,10 @@ function Projects() {
 									Last modified: {formatDate(project.dateModified)}
 								</p>
 								{/* Align this to right side, and clicking it wont open the project and delete it instead */}
-								<button
-									type="button"
-									className="text-red-500 hover:text-red-400 transition-colors"
-								>
-									Delete (change to icon)
+								<Button className="text-red-500 hover:text-red-400 transition-colors">
 									{/* we must prompt before deleting */}
-								</button>
+									<Trash className="size=4 /" />
+								</Button>
 							</Link>
 						))}
 					</div>
