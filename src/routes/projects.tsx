@@ -21,7 +21,9 @@ function Projects() {
 	return (
 		<div className="min-h-screen w-screen bg-gray-900 text-white p-8">
 			<div className="max-w-4xl mx-auto">
-				<h1 className="text-3xl font-bold mb-8">Projects</h1>
+				<h1 className="text-3xl font-bold mb-8">Robot Painting Tool</h1>
+
+				<h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
 
 				{isLoading ? (
 					<p className="text-gray-400">Loading projects...</p>
@@ -38,6 +40,14 @@ function Projects() {
 								<p className="text-gray-400 text-sm mt-1">
 									Last modified: {formatDate(project.dateModified)}
 								</p>
+								{/* Align this to right side, and clicking it wont open the project and delete it instead */}
+								<button
+									type="button"
+									className="text-red-500 hover:text-red-400 transition-colors"
+								>
+									Delete (change to icon)
+									{/* we must prompt before deleting */}
+								</button>
 							</Link>
 						))}
 					</div>
