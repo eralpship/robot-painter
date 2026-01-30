@@ -4,8 +4,8 @@ import {
 	type ProjectExport,
 } from "@/schemas/project-export";
 
-const APP_NAME = "robot-painting-tool";
-const APP_VERSION = "1.0.0";
+const APP_NAME = __APP_NAME__;
+const APP_VERSION = __APP_VERSION__;
 
 /**
  * Exports a project as a JSON file download.
