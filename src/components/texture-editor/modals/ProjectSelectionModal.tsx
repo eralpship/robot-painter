@@ -22,6 +22,7 @@ interface ProjectSelectionModalProps {
 	invalidProjectId?: number;
 	recentProject?: { id: number; name: string } | null;
 	onLoadRecent: () => void;
+	onBrowseProjects: () => void;
 	onCreateProject: (name: string) => Promise<void>;
 }
 
@@ -44,6 +45,7 @@ export function ProjectSelectionModal({
 	invalidProjectId,
 	recentProject,
 	onLoadRecent,
+	onBrowseProjects,
 	onCreateProject,
 }: ProjectSelectionModalProps) {
 	const [name, setName] = useState("");
@@ -84,6 +86,16 @@ export function ProjectSelectionModal({
 						variant="outline"
 					>
 						Load "{recentProject.name}"
+					</Button>
+				)}
+
+				{reason !== "first-time" && (
+					<Button
+						onClick={onBrowseProjects}
+						disabled={isSubmitting}
+						variant="outline"
+					>
+						Browse All Projects
 					</Button>
 				)}
 
