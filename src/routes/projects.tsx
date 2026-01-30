@@ -1,10 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useProjects } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/Button";
-import { FolderPlus, Plus, Trash } from "lucide-react";
+import { Download, FolderPlus, Plus, Trash, Upload } from "lucide-react";
 import { createProject } from "@/utils/projectUtils";
 import { db } from "@/db/db";
+import { exportProject } from "@/utils/projectExport";
+import { parseImportFile, ImportError } from "@/utils/projectImport";
+import { useTextureEditorPersistence } from "@/hooks/useTextureEditorPersistence";
+import type { ProjectData } from "@/schemas/project-export";
 import {
 	Dialog,
 	DialogContent,
@@ -32,12 +36,20 @@ function formatDate(date: Date): string {
 function Projects() {
 	const { projects, isLoading } = useProjects();
 	const navigate = useNavigate();
+	const { createProjectFromImport } = useTextureEditorPersistence();
 	const [projectToDelete, setProjectToDelete] = useState<{
 		id: number;
 		name: string;
 	} | null>(null);
 	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 	const [newProjectName, setNewProjectName] = useState("");
+
+	// Import modal state
+	const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+	const [importProjectName, setImportProjectName] = useState("");
+	const [importError, setImportError] = useState<string | null>(null);
+	const [importedData, setImportedData] = useState<ProjectData | null>(null);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleDeleteClick = (
 		e: React.MouseEvent,
@@ -64,15 +76,79 @@ function Projects() {
 		navigate({ to: "/texture-editor", search: { "project-id": projectId } });
 	};
 
+	const handleExportClick = (e: React.MouseEvent, project: NonNullable<typeof projects>[number]) => {
+		e.preventDefault();
+		e.stopPropagation();
+		if (project.id !== undefined) {
+			exportProject(project);
+		}
+	};
+
+	const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		setImportError(null);
+		setImportedData(null);
+
+		try {
+			const data = await parseImportFile(file);
+			setImportedData(data);
+			// Suggest a name from the filename (strip extension and app prefix)
+			const suggestedName = file.name
+				.replace(/\.json$/i, "")
+				.replace(/^robot-painting-tool-/i, "")
+				.replace(/-\d{4}-\d{2}-\d{2}$/, "") // Remove date suffix
+				.replace(/-/g, " ");
+			setImportProjectName(suggestedName);
+		} catch (error) {
+			if (error instanceof ImportError) {
+				setImportError(error.message);
+			} else {
+				setImportError("Failed to read file");
+			}
+		}
+	};
+
+	const handleImportProject = async () => {
+		if (!importedData) return;
+
+		const name = importProjectName.trim() || "Imported Project";
+		const projectId = await createProjectFromImport(name, {
+			version: importedData.version,
+			backgroundColor: importedData.backgroundColor,
+			elements: importedData.elements,
+		});
+
+		closeImportModal();
+		navigate({ to: "/texture-editor", search: { "project-id": projectId } });
+	};
+
+	const closeImportModal = () => {
+		setIsImportModalOpen(false);
+		setImportProjectName("");
+		setImportError(null);
+		setImportedData(null);
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
+	};
+
 	return (
 		<div className="min-h-screen w-screen bg-gray-900 text-white p-8">
 			<div className="max-w-4xl mx-auto">
 				<div className="flex items-center justify-between mb-8">
 					<h1 className="text-3xl font-bold">Robot Painting Tool</h1>
-					<Button onClick={() => setIsCreateModalOpen(true)}>
-						<Plus className="size-4 mr-2" />
-						Create Project
-					</Button>
+					<div className="flex items-center gap-2">
+						<Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+							<Upload className="size-4 mr-2" />
+							Import Project
+						</Button>
+						<Button onClick={() => setIsCreateModalOpen(true)}>
+							<Plus className="size-4 mr-2" />
+							Create Project
+						</Button>
+					</div>
 				</div>
 
 				<h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
@@ -95,16 +171,26 @@ function Projects() {
 									</p>
 								</div>
 								{project.id !== undefined && (
-									<Button
-										variant="ghost"
-										size="sm"
-										className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
-										onClick={(e) =>
-											handleDeleteClick(e, project.id as number, project.name)
-										}
-									>
-										<Trash className="size-4" />
-									</Button>
+									<div className="flex items-center gap-1">
+										<Button
+											variant="ghost"
+											size="sm"
+											className="text-gray-400 hover:text-gray-300 hover:bg-gray-600"
+											onClick={(e) => handleExportClick(e, project)}
+										>
+											<Download className="size-4" />
+										</Button>
+										<Button
+											variant="ghost"
+											size="sm"
+											className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+											onClick={(e) =>
+												handleDeleteClick(e, project.id as number, project.name)
+											}
+										>
+											<Trash className="size-4" />
+										</Button>
+									</div>
 								)}
 							</Link>
 						))}
@@ -179,6 +265,59 @@ function Projects() {
 							Cancel
 						</Button>
 						<Button onClick={handleCreateProject}>Create</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog
+				open={isImportModalOpen}
+				onOpenChange={(open) => {
+					if (!open) closeImportModal();
+					else setIsImportModalOpen(true);
+				}}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Import Project</DialogTitle>
+						<DialogDescription>
+							Select a project file to import (.json)
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4">
+						<input
+							ref={fileInputRef}
+							type="file"
+							accept=".json"
+							onChange={handleFileSelect}
+							className="block w-full text-sm text-gray-400
+								file:mr-4 file:py-2 file:px-4
+								file:rounded-md file:border-0
+								file:text-sm file:font-medium
+								file:bg-gray-700 file:text-white
+								hover:file:bg-gray-600
+								cursor-pointer"
+						/>
+						{importError && (
+							<p className="text-red-500 text-sm">{importError}</p>
+						)}
+						{importedData && (
+							<Input
+								value={importProjectName}
+								onChange={(e) => setImportProjectName(e.target.value)}
+								placeholder="Project name"
+								onKeyDown={(e) => {
+									if (e.key === "Enter") handleImportProject();
+								}}
+							/>
+						)}
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={closeImportModal}>
+							Cancel
+						</Button>
+						<Button onClick={handleImportProject} disabled={!importedData}>
+							Import
+						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
