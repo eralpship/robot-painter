@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useProjects } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/Button";
-import { Trash } from "lucide-react";
+import { FolderPlus, Plus, Trash } from "lucide-react";
+import { createProject } from "@/utils/projectUtils";
 import { db } from "@/db/db";
 import {
 	Dialog,
@@ -12,6 +13,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/projects")({
 	component: Projects,
@@ -29,10 +31,13 @@ function formatDate(date: Date): string {
 
 function Projects() {
 	const { projects, isLoading } = useProjects();
+	const navigate = useNavigate();
 	const [projectToDelete, setProjectToDelete] = useState<{
 		id: number;
 		name: string;
 	} | null>(null);
+	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+	const [newProjectName, setNewProjectName] = useState("");
 
 	const handleDeleteClick = (
 		e: React.MouseEvent,
@@ -51,10 +56,24 @@ function Projects() {
 		}
 	};
 
+	const handleCreateProject = async () => {
+		const name = newProjectName.trim() || "Untitled Project";
+		const projectId = await createProject(name);
+		setIsCreateModalOpen(false);
+		setNewProjectName("");
+		navigate({ to: "/texture-editor", search: { "project-id": projectId } });
+	};
+
 	return (
 		<div className="min-h-screen w-screen bg-gray-900 text-white p-8">
 			<div className="max-w-4xl mx-auto">
-				<h1 className="text-3xl font-bold mb-8">Robot Painting Tool</h1>
+				<div className="flex items-center justify-between mb-8">
+					<h1 className="text-3xl font-bold">Robot Painting Tool</h1>
+					<Button onClick={() => setIsCreateModalOpen(true)}>
+						<Plus className="size-4 mr-2" />
+						Create Project
+					</Button>
+				</div>
 
 				<h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
 
@@ -91,9 +110,19 @@ function Projects() {
 						))}
 					</div>
 				) : (
-					<p className="text-gray-400">
-						No projects yet. Create your first project to get started.
-					</p>
+					<div className="flex flex-col items-center justify-center py-16 px-4">
+						<div className="bg-gray-800 rounded-lg p-8 text-center max-w-md">
+							<FolderPlus className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+							<h3 className="text-xl font-semibold mb-2">No projects yet</h3>
+							<p className="text-gray-400 mb-6">
+								Create your first project to get started
+							</p>
+							<Button onClick={() => setIsCreateModalOpen(true)}>
+								<Plus className="w-4 h-4 mr-2" />
+								Create Your First Project
+							</Button>
+						</div>
+					</div>
 				)}
 			</div>
 
@@ -116,6 +145,40 @@ function Projects() {
 						<Button variant="destructive" onClick={confirmDelete}>
 							Delete
 						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog
+				open={isCreateModalOpen}
+				onOpenChange={(open) => {
+					setIsCreateModalOpen(open);
+					if (!open) setNewProjectName("");
+				}}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Create New Project</DialogTitle>
+						<DialogDescription>
+							Enter a name for your new project.
+						</DialogDescription>
+					</DialogHeader>
+					<Input
+						value={newProjectName}
+						onChange={(e) => setNewProjectName(e.target.value)}
+						placeholder="Project name"
+						onKeyDown={(e) => {
+							if (e.key === "Enter") handleCreateProject();
+						}}
+					/>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setIsCreateModalOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button onClick={handleCreateProject}>Create</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
