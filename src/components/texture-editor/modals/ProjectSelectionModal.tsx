@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
 	DialogDescription,
-	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
@@ -69,6 +68,8 @@ export function ProjectSelectionModal({
 		}
 	};
 
+	const showQuickActions = reason !== "first-time";
+
 	return (
 		<UndismissableDialog open={open} className="z-[9999]">
 			<DialogHeader>
@@ -79,24 +80,38 @@ export function ProjectSelectionModal({
 			</DialogHeader>
 
 			<div className="grid gap-4">
-				{recentProject && (
-					<Button
-						onClick={onLoadRecent}
-						disabled={isSubmitting}
-						variant="outline"
-					>
-						Load "{recentProject.name}"
-					</Button>
+				{showQuickActions && (
+					<div className="grid gap-2">
+						{recentProject && (
+							<Button
+								onClick={onLoadRecent}
+								disabled={isSubmitting}
+								variant="outline"
+							>
+								Load "{recentProject.name}"
+							</Button>
+						)}
+						<Button
+							onClick={onBrowseProjects}
+							disabled={isSubmitting}
+							variant="outline"
+						>
+							Browse All Projects
+						</Button>
+					</div>
 				)}
 
-				{reason !== "first-time" && (
-					<Button
-						onClick={onBrowseProjects}
-						disabled={isSubmitting}
-						variant="outline"
-					>
-						Browse All Projects
-					</Button>
+				{showQuickActions && (
+					<div className="relative">
+						<div className="absolute inset-0 flex items-center">
+							<span className="w-full border-t" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-background px-2 text-muted-foreground">
+								or create a new project
+							</span>
+						</div>
+					</div>
 				)}
 
 				<div className="grid gap-2">
@@ -114,13 +129,11 @@ export function ProjectSelectionModal({
 					/>
 					{error && <p className="text-sm text-destructive">{error}</p>}
 				</div>
-			</div>
 
-			<DialogFooter>
 				<Button onClick={handleCreate} disabled={isSubmitting}>
-					{isSubmitting ? "..." : "Create Project"}
+					{isSubmitting ? "Creating..." : "Create Project"}
 				</Button>
-			</DialogFooter>
+			</div>
 		</UndismissableDialog>
 	);
 }
