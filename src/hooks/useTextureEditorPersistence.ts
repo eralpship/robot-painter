@@ -6,7 +6,7 @@ import { parseAndFilterElements } from "@/schemas/texture-editor-elements";
 
 const CURRENT_VERSION = 2;
 
-type PersistedState = {
+export type PersistedState = {
 	version: number;
 	backgroundColor: string;
 	elements: TextureEditorElementWithUuid[];
@@ -144,10 +144,35 @@ export function useTextureEditorPersistence() {
 		}
 	}, []);
 
+	const createProjectFromImport = useCallback(
+		async (name: string, persistedState: PersistedState): Promise<number> => {
+			try {
+				const json = JSON.stringify(persistedState);
+
+				const id = await db.textureProjects.add({
+					name,
+					json,
+					dateCreated: new Date(),
+					dateModified: new Date(),
+				});
+
+				return id as number;
+			} catch (error) {
+				console.error(
+					"[Persistence] Failed to create project from import:",
+					error,
+				);
+				throw error;
+			}
+		},
+		[],
+	);
+
 	return {
 		saveState,
 		loadState,
 		getMostRecentProject,
 		createProject,
+		createProjectFromImport,
 	};
 }
