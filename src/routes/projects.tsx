@@ -2,7 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { useProjects } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/Button";
-import { Download, FolderPlus, Plus, Trash, Upload } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
+import { Download, FolderPlus, Pencil, Plus, Trash, Upload } from "lucide-react";
 import { createProject } from "@/utils/projectUtils";
 import { db } from "@/db/db";
 import { exportProject } from "@/utils/projectExport";
@@ -36,7 +37,7 @@ function formatDate(date: Date): string {
 function Projects() {
 	const { projects, isLoading } = useProjects();
 	const navigate = useNavigate();
-	const { createProjectFromImport } = useTextureEditorPersistence();
+	const { createProjectFromImport, renameProject } = useTextureEditorPersistence();
 	const [projectToDelete, setProjectToDelete] = useState<{
 		id: number;
 		name: string;
@@ -50,6 +51,14 @@ function Projects() {
 	const [importError, setImportError] = useState<string | null>(null);
 	const [importedData, setImportedData] = useState<ProjectData | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	// Rename modal state
+	const [projectToRename, setProjectToRename] = useState<{
+		id: number;
+		name: string;
+	} | null>(null);
+	const [renameValue, setRenameValue] = useState("");
+	const [renameError, setRenameError] = useState<string | null>(null);
 
 	const handleDeleteClick = (
 		e: React.MouseEvent,
@@ -134,8 +143,47 @@ function Projects() {
 		}
 	};
 
+	const handleRenameClick = (
+		e: React.MouseEvent,
+		projectId: number,
+		projectName: string,
+	) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setProjectToRename({ id: projectId, name: projectName });
+		setRenameValue(projectName);
+		setRenameError(null);
+	};
+
+	const closeRenameModal = () => {
+		setProjectToRename(null);
+		setRenameValue("");
+		setRenameError(null);
+	};
+
+	const confirmRename = async () => {
+		if (!projectToRename) return;
+
+		const trimmed = renameValue.trim();
+		if (!trimmed) {
+			setRenameError("Project name cannot be empty");
+			return;
+		}
+		if (trimmed.length > 100) {
+			setRenameError("Project name must be 100 characters or less");
+			return;
+		}
+
+		try {
+			await renameProject(projectToRename.id, trimmed);
+			closeRenameModal();
+		} catch {
+			setRenameError("Failed to rename project");
+		}
+	};
+
 	return (
-		<div className="min-h-screen w-screen bg-gray-900 text-white p-8">
+		<PageContainer className="text-white p-8 overflow-auto">
 			<div className="max-w-4xl mx-auto">
 				<div className="flex items-center justify-between mb-8">
 					<h1 className="text-3xl font-bold">Robot Painting Tool</h1>
@@ -172,6 +220,16 @@ function Projects() {
 								</div>
 								{project.id !== undefined && (
 									<div className="flex items-center gap-1">
+										<Button
+											variant="ghost"
+											size="sm"
+											className="text-gray-400 hover:text-gray-300 hover:bg-gray-600"
+											onClick={(e) =>
+												handleRenameClick(e, project.id as number, project.name)
+											}
+										>
+											<Pencil className="size-4" />
+										</Button>
 										<Button
 											variant="ghost"
 											size="sm"
@@ -321,6 +379,43 @@ function Projects() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+
+			<Dialog
+				open={projectToRename !== null}
+				onOpenChange={(open) => {
+					if (!open) closeRenameModal();
+				}}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Rename Project</DialogTitle>
+						<DialogDescription>
+							Enter a new name for "{projectToRename?.name}"
+						</DialogDescription>
+					</DialogHeader>
+					<Input
+						value={renameValue}
+						onChange={(e) => {
+							setRenameValue(e.target.value);
+							setRenameError(null);
+						}}
+						placeholder="Project name"
+						maxLength={100}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") confirmRename();
+						}}
+					/>
+					{renameError && (
+						<p className="text-red-500 text-sm">{renameError}</p>
+					)}
+					<DialogFooter>
+						<Button variant="outline" onClick={closeRenameModal}>
+							Cancel
+						</Button>
+						<Button onClick={confirmRename}>Save</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</PageContainer>
 	);
 }

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FloatingCollapsibleWindow } from "../components/FloatingCollapsibleWindow";
+import { PageContainer } from "../components/PageContainer";
 import { RobotPreview } from "../components/RobotPreview";
 import { TextureEditorWrapper } from "../components/texture-editor/TextureEditorWrapper";
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
@@ -18,16 +19,16 @@ function TextureEditor() {
 	if (projectId === undefined) {
 		return (
 			<OverlayTextureCanvasProvider>
-				<div className="h-screen w-screen flex items-center justify-center bg-black">
+				<PageContainer className="flex items-center justify-center">
 					<TextureEditorWrapper mode="full" projectId={undefined} />
-				</div>
+				</PageContainer>
 			</OverlayTextureCanvasProvider>
 		);
 	}
 
 	return (
 		<OverlayTextureCanvasProvider>
-			<div className="h-screen w-screen">
+			<PageContainer>
 				<TextureEditorWrapper mode="full" projectId={projectId} />
 				<FloatingCollapsibleWindow
 					title="preview"
@@ -38,7 +39,7 @@ function TextureEditor() {
 				>
 					<RobotPreview />
 				</FloatingCollapsibleWindow>
-			</div>
+			</PageContainer>
 		</OverlayTextureCanvasProvider>
 	);
 }

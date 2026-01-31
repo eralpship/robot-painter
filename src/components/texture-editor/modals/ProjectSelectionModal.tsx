@@ -107,7 +107,7 @@ export function ProjectSelectionModal({
 							<span className="w-full border-t" />
 						</div>
 						<div className="relative flex justify-center text-xs uppercase">
-							<span className="bg-background px-2 text-muted-foreground">
+							<span className="bg-surface px-2 text-muted-foreground">
 								or create a new project
 							</span>
 						</div>

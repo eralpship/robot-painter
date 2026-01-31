@@ -12,6 +12,7 @@ import { PerspectiveCamera } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { Model, type ModelRef } from "../components/E-model";
 import { FloatingCollapsibleWindow } from "../components/FloatingCollapsibleWindow";
+import { PageContainer } from "../components/PageContainer";
 import { TextureEditorWrapper } from "../components/texture-editor/TextureEditorWrapper";
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
 import { TooltipProvider } from "../contexts/tooltip-context";
@@ -136,7 +137,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 	}, [autoRotate]);
 
 	return (
-		<div className="h-screen w-screen">
+		<PageContainer>
 			<Leva
 				theme={customLevaTheme}
 				collapsed={false}
@@ -190,7 +191,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 			>
 				<TextureEditorWrapper mode="basic" projectId={projectId} />
 			</FloatingCollapsibleWindow>
-		</div>
+		</PageContainer>
 	);
 }
 
@@ -203,9 +204,9 @@ function App() {
 		return (
 			<OverlayTextureCanvasProvider>
 				<TooltipProvider>
-					<div className="h-screen w-screen flex items-center justify-center bg-black">
+					<PageContainer className="flex items-center justify-center">
 						<TextureEditorWrapper mode="basic" projectId={undefined} />
-					</div>
+					</PageContainer>
 				</TooltipProvider>
 			</OverlayTextureCanvasProvider>
 		);

@@ -168,11 +168,32 @@ export function useTextureEditorPersistence() {
 		[],
 	);
 
+	const renameProject = useCallback(
+		async (projectId: number, newName: string): Promise<void> => {
+			try {
+				const trimmedName = newName.trim().slice(0, 100);
+				if (!trimmedName) {
+					throw new Error("Project name cannot be empty");
+				}
+
+				await db.textureProjects.update(projectId, {
+					name: trimmedName,
+					dateModified: new Date(),
+				});
+			} catch (error) {
+				console.error("[Persistence] Failed to rename project:", error);
+				throw error;
+			}
+		},
+		[],
+	);
+
 	return {
 		saveState,
 		loadState,
 		getMostRecentProject,
 		createProject,
 		createProjectFromImport,
+		renameProject,
 	};
 }
