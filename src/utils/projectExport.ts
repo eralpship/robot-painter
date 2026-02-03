@@ -27,7 +27,7 @@ export function exportProject(project: TextureProject): void {
 		},
 	};
 
-	const jsonString = JSON.stringify(exportData, null, 2);
+	const jsonString = JSON.stringify(exportData);
 	const blob = new Blob([jsonString], { type: "application/json" });
 	const url = URL.createObjectURL(blob);
 

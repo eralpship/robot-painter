@@ -70,7 +70,15 @@
       "Bash(npx biome:*)",
       "Bash(npx biome lint:*)",
       "Bash(ls:*)",
-      "mcp__context7__query-docs"
+      "mcp__context7__query-docs",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nadd project list view to /projects page\n\n- Create useProjects hook to fetch projects ordered by dateModified\n- Display project cards with name and last modified date\n- Link to texture editor with project-id parameter\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd shared createProject utility function\n\nCreate reusable createProject function in src/utils/projectUtils.ts\nthat encapsulates project creation logic:\n- Creates default elements using createDefaultElements\n- Builds PersistedState with version 2 and white background\n- Saves to db.textureProjects with timestamps\n- Returns new project ID\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Browse Projects option to ProjectSelectionModal\n\n- Add onBrowseProjects callback prop\n- Add \"Browse All Projects\" button shown when reason is ''no-selection'' or ''not-found''\n- Button styled as outline/secondary variant, positioned between Load Recent and Create New\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(head:*)",
+      "mcp__chrome-devtools__upload_file",
+      "mcp__acp__Edit",
+      "mcp__acp__Bash"
     ],
     "deny": [],
     "ask": []

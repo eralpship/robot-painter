@@ -1,5 +1,6 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
+	Download,
 	FolderPlus,
 	PaintBucket,
 	Paintbrush,
@@ -10,13 +11,25 @@ import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
+import { db } from "@/db/db";
+import { exportProject } from "@/utils/projectExport";
 import { NewProjectModal } from "./modals/NewProjectModal";
 
 export function CommonToolbar() {
 	const ctx = useContext(TextureEditorContext);
 	const navigate = useNavigate();
+	const search = useSearch({ strict: false });
+	const projectId = search["project-id"];
 	const [isCreatingProject, setIsCreatingProject] = useState(false);
 	const [newProjectOpen, setNewProjectOpen] = useState(false);
+
+	const handleExport = async () => {
+		if (!projectId) return;
+		const project = await db.textureProjects.get(projectId);
+		if (project) {
+			exportProject(project);
+		}
+	};
 
 	return (
 		<>
@@ -87,6 +100,15 @@ export function CommonToolbar() {
 			>
 				<FolderPlus className="size-4" />
 				{isCreatingProject ? "Creating..." : "New Project"}
+			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				onClick={handleExport}
+				disabled={!projectId}
+			>
+				<Download className="size-4" />
+				Export
 			</Button>
 			<NewProjectModal
 				open={newProjectOpen}

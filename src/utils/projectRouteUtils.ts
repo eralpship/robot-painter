@@ -30,13 +30,12 @@ export function validateProjectSearch(
 }
 
 /**
- * Navigate to a project by ID with the appropriate path for the current mode.
+ * Navigate to a project by ID. Always opens the robot editor (/).
  */
 export function navigateToProject(
 	navigate: NavigateFn,
-	mode: TexureEditorMode,
+	_mode: TexureEditorMode,
 	projectId: number,
 ): void {
-	const path = mode === "full" ? "/texture-editor" : "/";
-	navigate({ to: path, search: { "project-id": projectId } });
+	navigate({ to: "/", search: { "project-id": projectId } });
 }

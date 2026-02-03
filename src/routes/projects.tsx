@@ -3,7 +3,14 @@ import { useState, useRef } from "react";
 import { useProjects } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/Button";
 import { PageContainer } from "@/components/PageContainer";
-import { Download, FolderPlus, Pencil, Plus, Trash, Upload } from "lucide-react";
+import {
+	Download,
+	FolderPlus,
+	Pencil,
+	Plus,
+	Trash,
+	Upload,
+} from "lucide-react";
 import { createProject } from "@/utils/projectUtils";
 import { db } from "@/db/db";
 import { exportProject } from "@/utils/projectExport";
@@ -37,7 +44,8 @@ function formatDate(date: Date): string {
 function Projects() {
 	const { projects, isLoading } = useProjects();
 	const navigate = useNavigate();
-	const { createProjectFromImport, renameProject } = useTextureEditorPersistence();
+	const { createProjectFromImport, renameProject } =
+		useTextureEditorPersistence();
 	const [projectToDelete, setProjectToDelete] = useState<{
 		id: number;
 		name: string;
@@ -82,10 +90,13 @@ function Projects() {
 		const projectId = await createProject(name);
 		setIsCreateModalOpen(false);
 		setNewProjectName("");
-		navigate({ to: "/texture-editor", search: { "project-id": projectId } });
+		navigate({ to: "/", search: { "project-id": projectId } });
 	};
 
-	const handleExportClick = (e: React.MouseEvent, project: NonNullable<typeof projects>[number]) => {
+	const handleExportClick = (
+		e: React.MouseEvent,
+		project: NonNullable<typeof projects>[number],
+	) => {
 		e.preventDefault();
 		e.stopPropagation();
 		if (project.id !== undefined) {
@@ -130,7 +141,7 @@ function Projects() {
 		});
 
 		closeImportModal();
-		navigate({ to: "/texture-editor", search: { "project-id": projectId } });
+		navigate({ to: "/", search: { "project-id": projectId } });
 	};
 
 	const closeImportModal = () => {
@@ -188,7 +199,10 @@ function Projects() {
 				<div className="flex items-center justify-between mb-8">
 					<h1 className="text-3xl font-bold">Robot Painting Tool</h1>
 					<div className="flex items-center gap-2">
-						<Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+						<Button
+							variant="outline"
+							onClick={() => setIsImportModalOpen(true)}
+						>
 							<Upload className="size-4 mr-2" />
 							Import Project
 						</Button>
@@ -208,7 +222,7 @@ function Projects() {
 						{projects.map((project) => (
 							<Link
 								key={project.id}
-								to="/texture-editor"
+								to="/"
 								search={{ "project-id": project.id }}
 								className="flex items-center justify-between p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
 							>
@@ -405,9 +419,7 @@ function Projects() {
 							if (e.key === "Enter") confirmRename();
 						}}
 					/>
-					{renameError && (
-						<p className="text-red-500 text-sm">{renameError}</p>
-					)}
+					{renameError && <p className="text-red-500 text-sm">{renameError}</p>}
 					<DialogFooter>
 						<Button variant="outline" onClick={closeRenameModal}>
 							Cancel
