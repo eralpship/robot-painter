@@ -78,7 +78,11 @@
       "Bash(head:*)",
       "mcp__chrome-devtools__upload_file",
       "mcp__acp__Edit",
-      "mcp__acp__Bash"
+      "mcp__acp__Bash",
+      "WebFetch(domain:github.com)",
+      "Bash(uvx blender-mcp:*)",
+      "Bash(uvx:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []
