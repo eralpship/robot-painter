@@ -1,8 +1,11 @@
+import { X } from "lucide-react";
 import { useContext } from "react";
+import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { AddElementToolbar } from "./AddElementToolbar";
 import { CommonToolbar } from "./CommonToolbar";
 import { ElementToolbar } from "./ElementToolbar";
+import { PolygonToolbar } from "./PolygonToolbar";
 import { RectangleToolbar } from "./RectangleToolbar";
 import { SideSelector } from "./SideSelector";
 import { TextToolbar } from "./TextToolbar";
@@ -14,16 +17,33 @@ export function Toolbar() {
 			<div className="text-xs text-foreground-subtle flex flex-wrap flex-row items-start justify-start gap-2">
 				<CommonToolbar />
 				<SideSelector />
-				{ctx.mode === "full" ? (
-					<>
-						<AddElementToolbar />
-						{ctx.selectedElement ? <ElementToolbar /> : null}
-						{ctx.selectedElement?.type === "text" ? <TextToolbar /> : null}
-						{ctx.selectedElement?.type === "rectangle" ? (
-							<RectangleToolbar />
-						) : null}
-					</>
-				) : null}
+				{ctx.mode === "full"
+					? ctx.isDrawingPolygon
+						? (
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => ctx.cancelPolygonDrawing()}
+								>
+									<X className="size-4" /> Cancel Drawing
+								</Button>
+							)
+						: (
+								<>
+									<AddElementToolbar />
+									{ctx.selectedElement ? <ElementToolbar /> : null}
+									{ctx.selectedElement?.type === "text" ? (
+										<TextToolbar />
+									) : null}
+									{ctx.selectedElement?.type === "rectangle" ? (
+										<RectangleToolbar />
+									) : null}
+									{ctx.selectedElement?.type === "polygon" ? (
+										<PolygonToolbar />
+									) : null}
+								</>
+							)
+					: null}
 			</div>
 		</div>
 	);

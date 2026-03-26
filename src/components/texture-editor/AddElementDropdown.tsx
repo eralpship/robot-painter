@@ -1,4 +1,4 @@
-import { Image, Plus, Square, Type } from "lucide-react";
+import { Image, Pentagon, Plus, Square, Type } from "lucide-react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -155,6 +155,14 @@ export function AddElementDropdown() {
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleAddRectangle}>
 					<Square className="size-4" /> Rectangle
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					onClick={() => {
+						ctx.setSelectedElementId(undefined);
+						ctx.setIsDrawingPolygon(true);
+					}}
+				>
+					<Pentagon className="size-4" /> Polygon
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

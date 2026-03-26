@@ -43,11 +43,19 @@ const rectangleElementSchema = baseElementSchema.extend({
 	color: z.string(),
 });
 
+// Polygon element schema
+const polygonElementSchema = baseElementSchema.extend({
+	type: z.literal("polygon"),
+	points: z.array(z.object({ x: z.number(), y: z.number() })).min(3),
+	color: z.string(),
+});
+
 // Combined element schema (discriminated union)
 export const textureEditorElementSchema = z.discriminatedUnion("type", [
 	textElementSchema,
 	imageElementSchema,
 	rectangleElementSchema,
+	polygonElementSchema,
 ]);
 
 // Array of elements schema

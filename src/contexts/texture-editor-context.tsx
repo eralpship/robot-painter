@@ -54,6 +54,11 @@ type _TextureEditorRectangleElement = {
 	height: number;
 	color: string;
 };
+type _TextureEditorPolygonElement = {
+	type: "polygon";
+	points: Array<{ x: number; y: number }>;
+	color: string;
+};
 export type TextureEditorElementPatch = Partial<
 	{
 		transform: CanonicalTransform;
@@ -62,6 +67,7 @@ export type TextureEditorElementPatch = Partial<
 		| Omit<_TextureEditorImageElement, "type">
 		| Omit<_TextureEditorTextElement, "type">
 		| Omit<_TextureEditorRectangleElement, "type">
+		| Omit<_TextureEditorPolygonElement, "type">
 	)
 >;
 
@@ -70,6 +76,7 @@ type TextureEditorElement = _BaseTextureEditorElement &
 		| _TextureEditorImageElement
 		| _TextureEditorTextElement
 		| _TextureEditorRectangleElement
+		| _TextureEditorPolygonElement
 	);
 export type TextureEditorElementWithUuid = TextureEditorElement & {
 	uuid: string;
@@ -100,6 +107,12 @@ type TextureEditorContextType = {
 	projectModal: ProjectModalState;
 	setProjectModal: (state: ProjectModalState) => void;
 	showProjectCreatedModal: (projectId: number, projectName: string) => void;
+	isDrawingPolygon: boolean;
+	setIsDrawingPolygon: (drawing: boolean) => void;
+	polygonDrawingVertices: Array<{ x: number; y: number }>;
+	addPolygonVertex: (point: { x: number; y: number }) => void;
+	finishPolygonDrawing: () => void;
+	cancelPolygonDrawing: () => void;
 };
 
 export const TextureEditorContext = createContext<TextureEditorContextType>(
@@ -502,6 +515,72 @@ export function TextureEditorContextProvider({
 		[],
 	);
 
+	// Polygon drawing mode state
+	const [isDrawingPolygon, setIsDrawingPolygon] = useState(false);
+	const [polygonDrawingVertices, setPolygonDrawingVertices] = useState<
+		Array<{ x: number; y: number }>
+	>([]);
+
+	const addPolygonVertex = useCallback((point: { x: number; y: number }) => {
+		setPolygonDrawingVertices((prev) => [...prev, point]);
+	}, []);
+
+	const finishPolygonDrawing = useCallback(() => {
+		if (polygonDrawingVertices.length < 3) return;
+
+		// Remove last vertex if it's very close to second-to-last (spurious double-click)
+		let vertices = [...polygonDrawingVertices];
+		if (vertices.length > 3) {
+			const last = vertices[vertices.length - 1];
+			const secondLast = vertices[vertices.length - 2];
+			if (Math.hypot(last.x - secondLast.x, last.y - secondLast.y) < 10) {
+				vertices = vertices.slice(0, -1);
+			}
+		}
+
+		// Compute centroid
+		const centroidX =
+			vertices.reduce((sum, v) => sum + v.x, 0) / vertices.length;
+		const centroidY =
+			vertices.reduce((sum, v) => sum + v.y, 0) / vertices.length;
+
+		// Normalize points relative to centroid
+		const normalizedPoints = vertices.map((v) => ({
+			x: v.x - centroidX,
+			y: v.y - centroidY,
+		}));
+
+		addElement({
+			type: "polygon",
+			points: normalizedPoints,
+			color: "#3b82f6",
+			transform: {
+				centerX: centroidX,
+				centerY: centroidY,
+				rotation: 0,
+				scaleX: 1,
+				scaleY: 1,
+			},
+			side,
+		});
+
+		setIsDrawingPolygon(false);
+		setPolygonDrawingVertices([]);
+	}, [polygonDrawingVertices, addElement, side]);
+
+	const cancelPolygonDrawing = useCallback(() => {
+		setIsDrawingPolygon(false);
+		setPolygonDrawingVertices([]);
+	}, []);
+
+	// Cancel polygon drawing when side changes
+	// biome-ignore lint/correctness/useExhaustiveDependencies: cancel drawing on side change
+	useEffect(() => {
+		if (isDrawingPolygon) {
+			cancelPolygonDrawing();
+		}
+	}, [side]);
+
 	// Auto-sync to IndexedDB when state changes (only after load completes)
 	useEffect(() => {
 		// Skip auto-save until initial load is complete
@@ -554,6 +633,12 @@ export function TextureEditorContextProvider({
 				projectModal,
 				setProjectModal,
 				showProjectCreatedModal,
+				isDrawingPolygon,
+				setIsDrawingPolygon,
+				polygonDrawingVertices,
+				addPolygonVertex,
+				finishPolygonDrawing,
+				cancelPolygonDrawing,
 			}}
 		>
 			{children}

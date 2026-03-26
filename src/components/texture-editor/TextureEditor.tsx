@@ -144,13 +144,76 @@ export function TextureEditor({
 	}, [hidden, editorCtx]);
 
 	const elementRefs = useRef<
-		Map<string, SVGTextElement | SVGImageElement | SVGRectElement>
+		Map<
+			string,
+			SVGTextElement | SVGImageElement | SVGRectElement | SVGPolygonElement
+		>
 	>(new Map());
 
 	const [moveableKey, setMoveableKey] = useState("not-selected");
 
+	// Convert screen coordinates to SVG viewBox coordinates
+	const clientToSVGPoint = useCallback(
+		(clientX: number, clientY: number): { x: number; y: number } => {
+			if (!svgRef.current) return { x: 0, y: 0 };
+			const point = svgRef.current.createSVGPoint();
+			point.x = clientX;
+			point.y = clientY;
+			const ctm = svgRef.current.getScreenCTM()?.inverse();
+			if (!ctm) return { x: 0, y: 0 };
+			const svgPoint = point.matrixTransform(ctm);
+			return { x: svgPoint.x, y: svgPoint.y };
+		},
+		[],
+	);
+
+	// Polygon drawing: click to place vertex
+	const handleSvgClick = useCallback(
+		(e: React.MouseEvent<SVGSVGElement>) => {
+			if (!editorCtx.isDrawingPolygon) return;
+
+			const point = clientToSVGPoint(e.clientX, e.clientY);
+
+			// Close polygon if clicking near the first vertex
+			if (editorCtx.polygonDrawingVertices.length >= 3) {
+				const first = editorCtx.polygonDrawingVertices[0];
+				if (Math.hypot(point.x - first.x, point.y - first.y) < 15) {
+					editorCtx.finishPolygonDrawing();
+					return;
+				}
+			}
+
+			editorCtx.addPolygonVertex(point);
+		},
+		[editorCtx, clientToSVGPoint],
+	);
+
+	// Polygon drawing: double-click to close
+	const handleSvgDoubleClick = useCallback(
+		(_e: React.MouseEvent<SVGSVGElement>) => {
+			if (!editorCtx.isDrawingPolygon) return;
+			if (editorCtx.polygonDrawingVertices.length >= 3) {
+				editorCtx.finishPolygonDrawing();
+			}
+		},
+		[editorCtx],
+	);
+
+	// Escape to cancel polygon drawing
+	useEffect(() => {
+		if (!editorCtx.isDrawingPolygon) return;
+		const handler = (e: KeyboardEvent) => {
+			if (e.key === "Escape") editorCtx.cancelPolygonDrawing();
+		};
+		window.addEventListener("keydown", handler);
+		return () => window.removeEventListener("keydown", handler);
+	}, [editorCtx.isDrawingPolygon, editorCtx.cancelPolygonDrawing]);
+
 	const handleSvgMouseDown = useCallback<MouseEventHandler<SVGSVGElement>>(
 		(e) => {
+			// Don't handle selection during polygon drawing
+			if (editorCtx.isDrawingPolygon) return;
+
 			const target = e.target as SVGElement;
 
 			// Check if the clicked element is a selectable element (text/image)
@@ -248,9 +311,15 @@ export function TextureEditor({
 					width: "100%",
 					height: "100%",
 					userSelect: "none",
-					cursor: "default",
+					cursor: editorCtx.isDrawingPolygon ? "crosshair" : "default",
 				}}
 				onMouseDown={handleSvgMouseDown}
+				onClick={handleSvgClick}
+				onDoubleClick={handleSvgDoubleClick}
+				onKeyDown={(e) => {
+					if (e.key === "Escape" && editorCtx.isDrawingPolygon)
+						editorCtx.cancelPolygonDrawing();
+				}}
 				aria-label={`Texture editor canvas for ${side} side`}
 			>
 				<title>{`Texture editor canvas for ${side} side`}</title>
@@ -357,10 +426,55 @@ export function TextureEditor({
 									style={{ cursor: "pointer" }}
 								/>
 							);
+						case "polygon":
+							return (
+								<polygon
+									ref={(el) => {
+										if (el) {
+											elementRefs.current.set(uuid, el);
+										} else {
+											elementRefs.current.delete(uuid);
+										}
+									}}
+									id={uuid}
+									key={uuid}
+									className="texture-element-selectable"
+									points={element.points
+										.map((p) => `${p.x},${p.y}`)
+										.join(" ")}
+									fill={element.color}
+									transform={toSVGTransform(element.transform)}
+									style={{ cursor: "pointer" }}
+								/>
+							);
 						default:
 							return null;
 					}
 				})}
+				{/* Polygon drawing preview */}
+				{editorCtx.isDrawingPolygon &&
+					editorCtx.polygonDrawingVertices.length > 0 && (
+						<g style={{ pointerEvents: "none" }}>
+							<polyline
+								points={editorCtx.polygonDrawingVertices
+									.map((v) => `${v.x},${v.y}`)
+									.join(" ")}
+								fill="none"
+								stroke="#3b82f6"
+								strokeWidth={2}
+								strokeDasharray="6,3"
+							/>
+							{editorCtx.polygonDrawingVertices.map((v, i) => (
+								<circle
+									key={`polygon-vertex-${i}-${v.x}-${v.y}`}
+									cx={v.x}
+									cy={v.y}
+									r={4}
+									fill={i === 0 ? "#ef4444" : "#3b82f6"}
+								/>
+							))}
+						</g>
+					)}
 				{/* Stencil overlay renders last (on top) - only stencil visible, pointer-events: none */}
 				<g className="stencil-overlay" style={{ pointerEvents: "none" }}>
 					<StencilSvg style={{ width: "100%", height: "100%" }} />
@@ -371,15 +485,22 @@ export function TextureEditor({
 				ref={moveableRef}
 				container={containerRef.current}
 				target={
-					editorCtx.selectedElement?.uuid
-						? elementRefs.current.get(editorCtx.selectedElement.uuid) || null
-						: null
+					editorCtx.isDrawingPolygon
+						? null
+						: editorCtx.selectedElement?.uuid
+							? elementRefs.current.get(
+									editorCtx.selectedElement.uuid,
+								) || null
+							: null
 				}
 				svgOrigin="50% 50%"
 				scalable
 				draggable
 				rotatable
-				keepRatio={editorCtx.selectedElement?.type !== "rectangle"}
+				keepRatio={
+					editorCtx.selectedElement?.type !== "rectangle" &&
+					editorCtx.selectedElement?.type !== "polygon"
+				}
 				onDragStart={(e) => {
 					const uuid = e.target.getAttribute("id");
 					const element = uuid ? editorCtx.elements.get(uuid) : null;
