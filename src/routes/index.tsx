@@ -210,21 +210,43 @@ function AppContent({ projectId }: { projectId?: number }) {
 	);
 }
 
+function LandingPage() {
+	return (
+		<PageContainer className="flex items-center justify-center">
+			<div className="max-w-xl w-full text-center space-y-8 p-8">
+				<div className="space-y-3">
+					<h1 className="text-4xl font-bold text-white">Robot Painter</h1>
+					<p className="text-lg text-gray-400">
+						Design and customize your own Starship delivery robot. Add text,
+						images, shapes, and colors to create unique robot skins.
+					</p>
+				</div>
+				<div className="flex flex-col gap-3 items-center">
+					<a
+						href="/projects"
+						className="inline-flex items-center justify-center rounded-md bg-white text-black font-medium px-6 py-3 hover:bg-gray-200 transition-colors w-64"
+					>
+						Get Started
+					</a>
+					<a
+						href="/projects"
+						className="inline-flex items-center justify-center rounded-md border border-gray-600 text-gray-300 font-medium px-6 py-3 hover:bg-gray-800 transition-colors w-64"
+					>
+						Browse Projects
+					</a>
+				</div>
+			</div>
+		</PageContainer>
+	);
+}
+
 function App() {
 	const search = Route.useSearch();
 	const projectId = search["project-id"];
 
-	// If no projectId, show only the project selection modal (no 3D model)
+	// No project selected — show landing page
 	if (projectId === undefined) {
-		return (
-			<OverlayTextureCanvasProvider>
-				<TooltipProvider>
-					<PageContainer className="flex items-center justify-center">
-						<TextureEditorWrapper mode="basic" projectId={undefined} />
-					</PageContainer>
-				</TooltipProvider>
-			</OverlayTextureCanvasProvider>
-		);
+		return <LandingPage />;
 	}
 
 	return (
