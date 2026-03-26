@@ -381,6 +381,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 	return (
 		<group ref={group} {...props} dispose={null}>
 			<mesh
+				castShadow
 				name="robot"
 				geometry={nodes.robot.geometry}
 				material={materials.body}
@@ -543,6 +544,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 
 				{/* Wheels */}
 				<mesh
+					castShadow
 					name="wheel_front_left"
 					onClick={handleOuterWheelClick}
 					geometry={nodes.wheel_front_left.geometry}
@@ -551,6 +553,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					rotation={[0.14, 0, 0]}
 				/>
 				<mesh
+					castShadow
 					name="wheel_front_right"
 					onClick={handleOuterWheelClick}
 					geometry={nodes.wheel_front_right.geometry}

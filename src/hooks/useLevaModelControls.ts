@@ -36,8 +36,6 @@ export function useLevaModelControls(
 	const setAutoRotate = useModelStore((s) => s.setAutoRotate);
 	const setFov = useModelStore((s) => s.setFov);
 	const setAmbientLight = useModelStore((s) => s.setAmbientLight);
-	const setBackgroundIntensity = useModelStore((s) => s.setBackgroundIntensity);
-	const setBackgroundBlur = useModelStore((s) => s.setBackgroundBlur);
 	const setEnvironmentIntensity = useModelStore(
 		(s) => s.setEnvironmentIntensity,
 	);
@@ -245,22 +243,6 @@ export function useLevaModelControls(
 				min: 0,
 				step: 0.1,
 				onChange: setAmbientLight,
-			},
-			backgroundIntensity: {
-				value: MODEL_DEFAULTS.backgroundIntensity,
-				label: "Background Intensity",
-				max: 1,
-				min: 0,
-				step: 0.01,
-				onChange: setBackgroundIntensity,
-			},
-			backgroundBlur: {
-				value: MODEL_DEFAULTS.backgroundBlur,
-				label: "Background Blur",
-				max: 1,
-				min: 0,
-				step: 0.01,
-				onChange: setBackgroundBlur,
 			},
 			environmentIntensity: {
 				value: MODEL_DEFAULTS.environmentIntensity,

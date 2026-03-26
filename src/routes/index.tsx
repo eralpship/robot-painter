@@ -1,13 +1,9 @@
-import {
-	ContactShadows,
-	Environment,
-	Html,
-	OrbitControls,
-} from "@react-three/drei";
+import { Environment, Html, OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { createFileRoute } from "@tanstack/react-router";
 import { Leva } from "leva";
 import { Suspense, useCallback, useEffect, useRef } from "react";
+import * as THREE from "three";
 import { PerspectiveCamera } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { Model, type ModelRef } from "../components/E-model";
@@ -21,8 +17,6 @@ import {
 	MODEL_DEFAULTS,
 	useAmbientLight,
 	useAutoRotate,
-	useBackgroundBlur,
-	useBackgroundIntensity,
 	useEnvironmentIntensity,
 	useFov,
 } from "../stores/model-store";
@@ -54,10 +48,17 @@ const CameraController = () => {
 	return null;
 };
 
-// EnvironmentWrapper reads from store
+// SceneBackground sets a solid color background
+const SceneBackground = () => {
+	const { scene } = useThree();
+	useEffect(() => {
+		scene.background = new THREE.Color("#1a1a2e");
+	}, [scene]);
+	return null;
+};
+
+// EnvironmentWrapper reads from store — HDR for reflections only, not background
 const EnvironmentWrapper = () => {
-	const backgroundIntensity = useBackgroundIntensity();
-	const backgroundBlur = useBackgroundBlur();
 	const environmentIntensity = useEnvironmentIntensity();
 
 	return (
@@ -70,9 +71,6 @@ const EnvironmentWrapper = () => {
 		>
 			<Environment
 				files="/kiara_1_dawn_1k.hdr"
-				background
-				blur={backgroundBlur}
-				backgroundIntensity={backgroundIntensity}
 				environmentIntensity={environmentIntensity}
 				resolution={256}
 			/>
@@ -145,25 +143,42 @@ function AppContent({ projectId }: { projectId?: number }) {
 			/>
 			<Canvas
 				className="h-screen w-screen"
+				shadows
 				camera={{
 					position: [40, 30, 40],
 					fov: MODEL_DEFAULTS.fov,
 				}}
 			>
 				<CameraController />
+				<SceneBackground />
 				<EnvironmentWrapper />
 				<AmbientLightWrapper />
 
-				{/* Simple contact shadow */}
-				<ContactShadows
-					position={[0, -2.9, 0]}
-					opacity={2.5}
-					scale={180}
-					blur={2}
-					far={100}
-					resolution={256}
-					color="#000000"
+				{/* Shadow-casting directional light */}
+				<directionalLight
+					castShadow
+					position={[15, 20, 15]}
+					intensity={1.5}
+					shadow-mapSize-width={1024}
+					shadow-mapSize-height={1024}
+					shadow-camera-near={0.1}
+					shadow-camera-far={60}
+					shadow-camera-left={-15}
+					shadow-camera-right={15}
+					shadow-camera-top={15}
+					shadow-camera-bottom={-15}
+					shadow-bias={-0.001}
 				/>
+
+				{/* Ground plane to receive shadows */}
+				<mesh
+					receiveShadow
+					rotation={[-Math.PI / 2, 0, 0]}
+					position={[0, -3, 0]}
+				>
+					<planeGeometry args={[200, 200]} />
+					<shadowMaterial transparent opacity={0.3} />
+				</mesh>
 
 				{/* Model - simplified, no callback props needed */}
 				<Model ref={modelRef} position={[0, -3, 0]} scale={1} />
