@@ -13,8 +13,7 @@
     "format": "biome format src --write",
     "format:check": "biome format src",
     "check": "biome check src",
-    "check:fix": "biome check src --write",
-    "svg:clippaths": "node scripts/generate-svg-clippaths.js"
+    "check:fix": "biome check src --write"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
