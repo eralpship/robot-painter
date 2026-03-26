@@ -248,13 +248,18 @@ export function TextureEditor({
 					width: "100%",
 					height: "100%",
 					userSelect: "none",
-					backgroundColor: editorCtx.backgroundColor,
 					cursor: "default",
 				}}
 				onMouseDown={handleSvgMouseDown}
 				aria-label={`Texture editor canvas for ${side} side`}
 			>
 				<title>{`Texture editor canvas for ${side} side`}</title>
+				{/* Background color rect inside SVG to avoid Safari subpixel gap */}
+				<rect
+					width={CANVAS_SIZE}
+					height={CANVAS_SIZE}
+					fill={editorCtx.backgroundColor}
+				/>
 				{/* CSS to control stencil visibility in background vs overlay layers */}
 				<style>{`
 					.stencil-background [inkscape\\:label="stencil"] { display: none !important; }
