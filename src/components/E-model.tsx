@@ -37,6 +37,7 @@ type GLTFResult = GLTF & {
 		robot: THREE.Mesh;
 		lid: THREE.Mesh;
 		lid_inside: THREE.Mesh;
+		strip: THREE.Mesh;
 		"rocker-bogie": THREE.Mesh;
 		wheel_back_left: THREE.Mesh;
 		wheel_back_right: THREE.Mesh;
@@ -44,6 +45,7 @@ type GLTFResult = GLTF & {
 		wheel_middle_right: THREE.Mesh;
 		wheel_front_left: THREE.Mesh;
 		wheel_front_right: THREE.Mesh;
+		Basket: THREE.Mesh;
 		body_back: THREE.Mesh;
 		body_front: THREE.Mesh;
 		body_inside: THREE.Mesh;
@@ -55,10 +57,11 @@ type GLTFResult = GLTF & {
 		body: THREE.MeshStandardMaterial;
 		Lid: THREE.MeshStandardMaterial;
 		"body inside light": THREE.MeshStandardMaterial;
+		"body inside dark": THREE.MeshStandardMaterial;
+		strip: THREE.MeshStandardMaterial;
 		wheel: THREE.MeshPhysicalMaterial;
 		Back: THREE.MeshStandardMaterial;
 		Front: THREE.MeshStandardMaterial;
-		"body inside dark": THREE.MeshStandardMaterial;
 		Left: THREE.MeshStandardMaterial;
 		Right: THREE.MeshStandardMaterial;
 	};
@@ -395,7 +398,13 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					<mesh
 						name="lid_inside"
 						geometry={nodes.lid_inside.geometry}
-						material={materials["body inside light"]}
+						material={materials["body inside dark"]}
+					/>
+					<mesh
+						name="strip"
+						geometry={nodes.strip.geometry}
+						material={materials.strip}
+						position={[0, -858.427, 0]}
 					/>
 				</mesh>
 
@@ -514,12 +523,22 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					material={materials.Right}
 				/>
 
+				{/* Basket */}
+				<mesh
+					name="Basket"
+					geometry={nodes.Basket.geometry}
+					material={materials["body inside light"]}
+					position={[0, 0, -628]}
+					rotation={[-Math.PI / 2, 0, 0]}
+					scale={270.73}
+				/>
+
 				{/* Body inside */}
 				<mesh
 					name="body_inside"
 					geometry={nodes.body_inside.geometry}
 					material={materials["body inside dark"]}
-					position={[0, 0, -1.723]}
+					position={[0, 110.314, -625.656]}
 				/>
 
 				{/* Wheels */}
@@ -529,6 +548,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					geometry={nodes.wheel_front_left.geometry}
 					material={materials.wheel}
 					position={[-322.374, 348.386, -139.723]}
+					rotation={[0.14, 0, 0]}
 				/>
 				<mesh
 					name="wheel_front_right"
@@ -536,13 +556,14 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					geometry={nodes.wheel_front_right.geometry}
 					material={materials.wheel}
 					position={[322.257, 348.386, -139.723]}
-					rotation={[-Math.PI, 0, -Math.PI]}
+					rotation={[-3.002, 0, Math.PI]}
 				/>
 				<mesh
 					name="rocker-bogie"
 					geometry={nodes["rocker-bogie"].geometry}
 					material={materials.body}
 					position={[0.008, -89.078, -141.649]}
+					rotation={[-0.013, 0, 0]}
 				>
 					<mesh
 						name="wheel_back_left"
@@ -550,6 +571,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 						geometry={nodes.wheel_back_left.geometry}
 						material={materials.wheel}
 						position={[-322.382, -143.059, 1.926]}
+						rotation={[-Math.PI / 6, 0, 0]}
 					/>
 					<mesh
 						name="wheel_back_right"
@@ -557,7 +579,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 						geometry={nodes.wheel_back_right.geometry}
 						material={materials.wheel}
 						position={[322.249, -143.059, 1.926]}
-						rotation={[-Math.PI, 0, -Math.PI]}
+						rotation={[-Math.PI / 6, 0, Math.PI]}
 					/>
 					<mesh
 						onClick={handleMiddleWheelClick}
