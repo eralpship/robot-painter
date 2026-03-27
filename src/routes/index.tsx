@@ -133,8 +133,8 @@ function AppContent({ projectId }: { projectId?: number }) {
 				<SceneBackground />
 				<SoftShadows size={15} samples={16} focus={0.5} />
 				<AmbientLightWrapper />
-				{/* Fill light from the opposite side */}
-				<directionalLight position={[-10, 8, -10]} intensity={0.8} />
+				{/* Hemisphere light: sky color from above, ground bounce from below */}
+				<hemisphereLight args={["#b1c4e0", "#3d3024", 0.6]} />
 
 				{/* Shadow-casting directional light */}
 				<directionalLight
