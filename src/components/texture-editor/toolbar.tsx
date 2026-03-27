@@ -112,7 +112,7 @@ export function Toolbar() {
 								})
 							}
 						>
-							<ExternalLink className="size-4 shrink-0" /> Open Editor
+							<ExternalLink className="size-4 shrink-0" /> More
 						</Button>
 					</div>
 				)}
