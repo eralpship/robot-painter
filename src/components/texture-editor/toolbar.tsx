@@ -44,18 +44,18 @@ export function Toolbar() {
 			<div className="flex flex-col gap-2 p-2 text-xs">
 				<SideSelector />
 
-				{ctx.mode === "full" &&
-					(ctx.isDrawingPolygon ? (
-						<Button
-							variant="outline"
-							size="sm"
-							className="w-full"
-							onClick={() => ctx.cancelPolygonDrawing()}
-						>
-							<X className="size-4" /> Cancel
-						</Button>
-					) : (
-						<>
+				{ctx.isDrawingPolygon ? (
+					<Button
+						variant="outline"
+						size="sm"
+						className="w-full"
+						onClick={() => ctx.cancelPolygonDrawing()}
+					>
+						<X className="size-4" /> Cancel
+					</Button>
+				) : (
+					<>
+						{ctx.mode === "full" && (
 							<ToolbarGroup title="Add">
 								<AddElementToolbar />
 								<Button
@@ -69,32 +69,33 @@ export function Toolbar() {
 									<ClipboardPaste className="size-4" /> Paste
 								</Button>
 							</ToolbarGroup>
+						)}
 
-							{ctx.selectedElement && (
-								<ToolbarGroup title="Element">
-									<ElementToolbar />
-								</ToolbarGroup>
-							)}
+						{ctx.selectedElement && (
+							<ToolbarGroup title="Element">
+								<ElementToolbar />
+							</ToolbarGroup>
+						)}
 
-							{ctx.selectedElement?.type === "text" && (
-								<ToolbarGroup title="Text">
-									<TextToolbar />
-								</ToolbarGroup>
-							)}
+						{ctx.selectedElement?.type === "text" && (
+							<ToolbarGroup title="Text">
+								<TextToolbar />
+							</ToolbarGroup>
+						)}
 
-							{ctx.selectedElement?.type === "rectangle" && (
-								<ToolbarGroup title="Shape">
-									<RectangleToolbar />
-								</ToolbarGroup>
-							)}
+						{ctx.selectedElement?.type === "rectangle" && (
+							<ToolbarGroup title="Shape">
+								<RectangleToolbar />
+							</ToolbarGroup>
+						)}
 
-							{ctx.selectedElement?.type === "polygon" && (
-								<ToolbarGroup title="Shape">
-									<PolygonToolbar />
-								</ToolbarGroup>
-							)}
-						</>
-					))}
+						{ctx.selectedElement?.type === "polygon" && (
+							<ToolbarGroup title="Shape">
+								<PolygonToolbar />
+							</ToolbarGroup>
+						)}
+					</>
+				)}
 			</div>
 		</div>
 	);
