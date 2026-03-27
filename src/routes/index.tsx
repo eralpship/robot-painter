@@ -134,13 +134,13 @@ function AppContent({ projectId }: { projectId?: number }) {
 				<SoftShadows size={15} samples={16} focus={0.5} />
 				<AmbientLightWrapper />
 				{/* Fill light from the opposite side */}
-				<directionalLight position={[-10, 8, -10]} intensity={0.4} />
+				<directionalLight position={[-10, 8, -10]} intensity={0.8} />
 
 				{/* Shadow-casting directional light */}
 				<directionalLight
 					castShadow
 					position={[15, 20, 15]}
-					intensity={1.5}
+					intensity={2}
 					shadow-mapSize-width={2048}
 					shadow-mapSize-height={2048}
 					shadow-camera-near={0.1}
