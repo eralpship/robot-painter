@@ -43,6 +43,7 @@ export function useLevaModelControls(
 	const setDirectionalLightHeight = useModelStore(
 		(s) => s.setDirectionalLightHeight,
 	);
+	const setUnlit = useModelStore((s) => s.setUnlit);
 
 	// Lighting controls
 	const [, setLighting] = useControls("Robot Lights", () => ({
@@ -271,6 +272,11 @@ export function useLevaModelControls(
 				max: 100,
 				step: 0.5,
 				onChange: setDirectionalLightHeight,
+			},
+			unlit: {
+				value: MODEL_DEFAULTS.unlit,
+				label: "Unlit",
+				onChange: setUnlit,
 			},
 		}),
 		{ collapsed: true },
