@@ -340,7 +340,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			[toggleBogieToTarget],
 		);
 
-		// Wrapper that replaces pointLight with an emissive glow sphere (no illumination)
+		// Wrapper that renders a glow sphere (no illumination on other objects)
 		// plus an invisible hitbox for click interaction
 		const ClickableLight = ({
 			children,
@@ -352,32 +352,33 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			const scale = (children.props.scale as number) ?? 30;
 			const color = children.props.color as string | undefined;
 			const intensity = (children.props.intensity as number) ?? 0;
+			const isOn = intensity > 0;
 
 			return (
 				<>
-					{/* Emissive glow sphere — visible but doesn't illuminate other objects */}
-					<mesh name={name} position={position} scale={scale * 0.5}>
-						<sphereGeometry args={[1, 16, 16]} />
-						<meshBasicMaterial
-							color={color ?? "#ffffff"}
-							transparent
-							opacity={Math.min(intensity / 20, 1)}
-						/>
-					</mesh>
+					{/* Glow sphere — additive blending for bright light look */}
+					{isOn && (
+						<mesh name={name} position={position} scale={scale * 0.4}>
+							<sphereGeometry args={[1, 16, 16]} />
+							<meshBasicMaterial
+								color={color ?? "#ffffff"}
+								transparent
+								opacity={1}
+								depthWrite={false}
+								blending={THREE.AdditiveBlending}
+							/>
+						</mesh>
+					)}
 					{/* Invisible hitbox for click interaction */}
 					<mesh
 						name={`${name}_hitbox`}
 						position={position}
 						scale={scale}
+						visible={false}
 						onClick={interactive ? handleHitboxClick : undefined}
 					>
 						<sphereGeometry args={[1, 16, 16]} />
-						<meshBasicMaterial
-							color="red"
-							transparent
-							opacity={0.5}
-							visible={false}
-						/>
+						<meshBasicMaterial />
 					</mesh>
 				</>
 			);
