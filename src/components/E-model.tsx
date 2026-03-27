@@ -379,16 +379,15 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							/>
 						</mesh>
 					)}
-					{/* Invisible hitbox for click interaction */}
+					{/* Transparent hitbox for click interaction */}
 					<mesh
 						name={`${name}_hitbox`}
 						position={position}
 						scale={scale}
-						visible={false}
 						onClick={interactive ? handleHitboxClick : undefined}
 					>
 						<sphereGeometry args={[1, 16, 16]} />
-						<meshBasicMaterial />
+						<meshBasicMaterial transparent opacity={0} depthWrite={false} />
 					</mesh>
 				</>
 			);
