@@ -35,7 +35,7 @@ function TextureEditor() {
 				<TextureEditorWrapper mode="full" projectId={projectId} showTitleBar />
 				<FloatingCollapsibleWindow
 					title="preview"
-					x={12}
+					x={152}
 					y={48}
 					width={300}
 					height={260}
