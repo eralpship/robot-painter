@@ -5,6 +5,16 @@ import ReactDOM from "react-dom/client";
 import { routeTree } from "./routeTree.gen";
 
 import "@fontsource-variable/inter";
+import "@fontsource/roboto";
+import "@fontsource/open-sans";
+import "@fontsource/montserrat";
+import "@fontsource/oswald";
+import "@fontsource/playfair-display";
+import "@fontsource/raleway";
+import "@fontsource/poppins";
+import "@fontsource/lato";
+import "@fontsource/inter";
+import "@fontsource/permanent-marker";
 import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
 import { initImageMagick } from "./utils/image-compression";

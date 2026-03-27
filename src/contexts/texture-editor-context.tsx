@@ -47,6 +47,7 @@ type _TextureEditorTextElement = {
 	text: string;
 	color: string;
 	fontSize: number;
+	fontFamily?: string;
 };
 type _TextureEditorRectangleElement = {
 	type: "rectangle";

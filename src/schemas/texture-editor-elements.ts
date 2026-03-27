@@ -25,6 +25,7 @@ const textElementSchema = baseElementSchema.extend({
 	text: z.string(),
 	color: z.string(),
 	fontSize: z.number().positive(),
+	fontFamily: z.string().optional(),
 });
 
 // Image element schema

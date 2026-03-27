@@ -358,6 +358,7 @@ export function TextureEditor({
 									xmlSpace="preserve"
 									style={{
 										fontFamily:
+											element.fontFamily ||
 											'-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen"',
 										fontWeight: "bold",
 										fontSize: `${element.fontSize}px`,

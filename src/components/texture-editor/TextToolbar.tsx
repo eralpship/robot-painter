@@ -6,6 +6,20 @@ import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { ChangeTextModal } from "./modals/ChangeTextModal";
 import { FontSizeModal } from "./modals/FontSizeModal";
 
+const AVAILABLE_FONTS = [
+	{ value: "", label: "System Default" },
+	{ value: "Inter", label: "Inter" },
+	{ value: "Roboto", label: "Roboto" },
+	{ value: "Open Sans", label: "Open Sans" },
+	{ value: "Montserrat", label: "Montserrat" },
+	{ value: "Poppins", label: "Poppins" },
+	{ value: "Lato", label: "Lato" },
+	{ value: "Raleway", label: "Raleway" },
+	{ value: "Oswald", label: "Oswald" },
+	{ value: "Playfair Display", label: "Playfair Display" },
+	{ value: "Permanent Marker", label: "Permanent Marker" },
+];
+
 export function TextToolbar() {
 	const ctx = useContext(TextureEditorContext);
 	const [changeTextOpen, setChangeTextOpen] = useState(false);
@@ -105,6 +119,28 @@ export function TextToolbar() {
 				disabled={!selectedTextElement}
 				icon={Palette}
 			/>
+			<select
+				className="h-8 rounded-md border border-border bg-surface px-2 text-xs text-foreground"
+				value={selectedTextElement?.fontFamily ?? ""}
+				onChange={(e) => {
+					if (selectedTextElement) {
+						ctx.updateElement(selectedTextElement.uuid, {
+							fontFamily: e.target.value || undefined,
+						});
+					}
+				}}
+				disabled={!selectedTextElement}
+			>
+				{AVAILABLE_FONTS.map((font) => (
+					<option
+						key={font.value}
+						value={font.value}
+						style={{ fontFamily: font.value || "inherit" }}
+					>
+						{font.label}
+					</option>
+				))}
+			</select>
 		</>
 	);
 }
