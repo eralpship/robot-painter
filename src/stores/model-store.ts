@@ -10,7 +10,8 @@ export const MODEL_DEFAULTS = {
 	bogieTarget: 0.5,
 	autoRotate: true,
 	fov: 20,
-	ambientLight: 1.5,
+	ambientLight: 10,
+	directionalLight: 20,
 } as const;
 
 interface ModelState {
@@ -29,6 +30,7 @@ interface ModelState {
 
 	// Environment
 	ambientLight: number;
+	directionalLight: number;
 }
 
 interface ModelActions {
@@ -48,6 +50,7 @@ interface ModelActions {
 
 	// Environment actions
 	setAmbientLight: (intensity: number) => void;
+	setDirectionalLight: (intensity: number) => void;
 
 	// Bulk reset
 	resetToDefaults: () => void;
@@ -80,6 +83,8 @@ export const useModelStore = create<ModelStore>()(
 
 				// Environment actions
 				setAmbientLight: (intensity) => set({ ambientLight: intensity }),
+				setDirectionalLight: (intensity) =>
+					set({ directionalLight: intensity }),
 
 				// Bulk reset
 				resetToDefaults: () => set(MODEL_DEFAULTS),
@@ -103,3 +108,5 @@ export const useLidOpen = () => useModelStore((s) => s.lidOpen);
 export const useAutoRotate = () => useModelStore((s) => s.autoRotate);
 export const useFov = () => useModelStore((s) => s.fov);
 export const useAmbientLight = () => useModelStore((s) => s.ambientLight);
+export const useDirectionalLight = () =>
+	useModelStore((s) => s.directionalLight);

@@ -17,6 +17,7 @@ import {
 	MODEL_DEFAULTS,
 	useAmbientLight,
 	useAutoRotate,
+	useDirectionalLight,
 	useFov,
 } from "../stores/model-store";
 import { validateProjectSearch } from "../utils/projectRouteUtils";
@@ -60,6 +61,28 @@ const SceneBackground = () => {
 const AmbientLightWrapper = () => {
 	const ambientLight = useAmbientLight();
 	return <ambientLight intensity={ambientLight} />;
+};
+
+// DirectionalLightWrapper reads intensity from store
+const DirectionalLightWrapper = () => {
+	const intensity = useDirectionalLight();
+	return (
+		<directionalLight
+			castShadow
+			position={[15, 20, 15]}
+			intensity={intensity}
+			shadow-mapSize-width={2048}
+			shadow-mapSize-height={2048}
+			shadow-camera-near={0.1}
+			shadow-camera-far={60}
+			shadow-camera-left={-10}
+			shadow-camera-right={10}
+			shadow-camera-top={10}
+			shadow-camera-bottom={-10}
+			shadow-bias={0}
+			shadow-normalBias={0.02}
+		/>
+	);
 };
 
 function AppContent({ projectId }: { projectId?: number }) {
@@ -134,22 +157,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 				<AmbientLightWrapper />
 				{/* Hemisphere light: sky color from above, ground bounce from below */}
 
-				{/* Shadow-casting directional light */}
-				<directionalLight
-					castShadow
-					position={[15, 20, 15]}
-					intensity={20}
-					shadow-mapSize-width={2048}
-					shadow-mapSize-height={2048}
-					shadow-camera-near={0.1}
-					shadow-camera-far={60}
-					shadow-camera-left={-10}
-					shadow-camera-right={10}
-					shadow-camera-top={10}
-					shadow-camera-bottom={-10}
-					shadow-bias={0}
-					shadow-normalBias={0.02}
-				/>
+				<DirectionalLightWrapper />
 
 				{/* Ground plane to receive shadows */}
 				<mesh

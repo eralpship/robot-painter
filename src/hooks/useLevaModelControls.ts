@@ -36,6 +36,7 @@ export function useLevaModelControls(
 	const setAutoRotate = useModelStore((s) => s.setAutoRotate);
 	const setFov = useModelStore((s) => s.setFov);
 	const setAmbientLight = useModelStore((s) => s.setAmbientLight);
+	const setDirectionalLight = useModelStore((s) => s.setDirectionalLight);
 
 	// Lighting controls
 	const [, setLighting] = useControls("Lighting", () => ({
@@ -236,10 +237,18 @@ export function useLevaModelControls(
 			ambientLight: {
 				value: MODEL_DEFAULTS.ambientLight,
 				label: "Ambient Light",
-				max: 2,
+				max: 100,
 				min: 0,
 				step: 0.1,
 				onChange: setAmbientLight,
+			},
+			directionalLight: {
+				value: MODEL_DEFAULTS.directionalLight,
+				label: "Directional Light",
+				max: 100,
+				min: 0,
+				step: 0.1,
+				onChange: setDirectionalLight,
 			},
 		}),
 		{ collapsed: true },
