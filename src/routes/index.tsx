@@ -116,7 +116,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 		<PageContainer>
 			<Leva
 				theme={customLevaTheme}
-				collapsed={true}
+				collapsed={{ collapsed: true, onChange: () => {} }}
 				titleBar={{ title: "Options", filter: false }}
 			/>
 			<Canvas
