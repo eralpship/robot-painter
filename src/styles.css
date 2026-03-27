@@ -105,6 +105,11 @@
 		@apply font-mono;
 	}
 
+	html,
+	body {
+		background-color: var(--color-page-background);
+	}
+
 	/* Tailwind v4 cursor fix - restore pointer cursor for buttons */
 	button:not(:disabled),
 	[role="button"]:not(:disabled) {

@@ -50,11 +50,14 @@ const CameraController = () => {
 	return null;
 };
 
-// SceneBackground sets a solid color background
+// SceneBackground reads from CSS --color-page-background variable
 const SceneBackground = () => {
 	const { scene } = useThree();
 	useEffect(() => {
-		scene.background = new THREE.Color("#1a1a2e");
+		const color = getComputedStyle(document.documentElement)
+			.getPropertyValue("--color-page-background")
+			.trim();
+		scene.background = new THREE.Color(color || "#1a1a2e");
 	}, [scene]);
 	return null;
 };
