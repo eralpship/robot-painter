@@ -398,7 +398,8 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					name="robot"
 					geometry={nodes.robot.geometry}
 					material={materials.body}
-					rotation={[Math.PI / 2, 0, 0]}
+					position={[0, 0.451, -0.148]}
+					rotation={[1.697, 0, 0]}
 					scale={0.01}
 				>
 					{/* Lid */}
@@ -578,7 +579,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 						geometry={nodes.wheel_front_left.geometry}
 						material={materials.wheel}
 						position={[-322.374, 348.386, -139.723]}
-						rotation={[0.14, 0, 0]}
 					/>
 					<mesh
 						castShadow
@@ -588,7 +588,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 						geometry={nodes.wheel_front_right.geometry}
 						material={materials.wheel}
 						position={[322.257, 348.386, -139.723]}
-						rotation={[-3.002, 0, Math.PI]}
+						rotation={[-Math.PI, 0, -Math.PI]}
 					/>
 					<mesh
 						castShadow
@@ -597,7 +597,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 						geometry={nodes["rocker-bogie"].geometry}
 						material={materials.body}
 						position={[0.008, -89.078, -141.649]}
-						rotation={[-0.013, 0, 0]}
+						rotation={[-Math.PI / 6, 0, 0]}
 					>
 						<mesh
 							castShadow
@@ -607,7 +607,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							geometry={nodes.wheel_back_left.geometry}
 							material={materials.wheel}
 							position={[-322.382, -143.059, 1.926]}
-							rotation={[-Math.PI / 6, 0, 0]}
 						/>
 						<mesh
 							castShadow
@@ -617,7 +616,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							geometry={nodes.wheel_back_right.geometry}
 							material={materials.wheel}
 							position={[322.249, -143.059, 1.926]}
-							rotation={[-Math.PI / 6, 0, Math.PI]}
+							rotation={[-Math.PI, 0, -Math.PI]}
 						/>
 						<mesh
 							castShadow
