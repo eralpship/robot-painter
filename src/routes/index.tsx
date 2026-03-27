@@ -18,7 +18,7 @@ function LandingPage() {
 				</div>
 				<div className="flex flex-col gap-3 items-center">
 					<Link
-						to="/projects"
+						to="/robot-editor"
 						className="inline-flex items-center justify-center rounded-md bg-white text-black font-medium px-6 py-3 hover:bg-gray-200 transition-colors w-64"
 					>
 						Get Started
