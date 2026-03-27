@@ -68,8 +68,10 @@ type GLTFResult = GLTF & {
 	animations: GLTFAction[];
 };
 
-// Simplified props - no more callbacks or initial values needed
-type ModelProps = React.ComponentProps<"group">;
+type ModelProps = React.ComponentProps<"group"> & {
+	interactive?: boolean;
+	lightsOff?: boolean;
+};
 
 export interface ModelRef {
 	touchFlag: () => void;
@@ -88,7 +90,8 @@ loadingManager.setURLModifier((url) => {
 	return url;
 });
 
-export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
+export const Model = forwardRef<ModelRef, ModelProps>(
+	({ interactive = true, lightsOff = false, ...props }, ref) => {
 	const group = React.useRef<THREE.Group>(null);
 	const flagRef = useRef<THREE.Mesh>(null);
 
@@ -107,10 +110,13 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 	const textures = useContext(OverlayTextureContext);
 
 	// Read state from Zustand store (only for rendering, not for animation)
-	const headlightIntensity = useHeadlightIntensity();
-	const taillightIntensity = useTaillightIntensity();
+	const storeHeadlightIntensity = useHeadlightIntensity();
+	const storeTaillightIntensity = useTaillightIntensity();
 	const taillightColor = useTaillightColor();
 	const lidOpen = useLidOpen();
+
+	const headlightIntensity = lightsOff ? 0 : storeHeadlightIntensity;
+	const taillightIntensity = lightsOff ? 0 : storeTaillightIntensity;
 
 	// Get store actions
 	const setHeadlightIntensity = useModelStore((s) => s.setHeadlightIntensity);
@@ -183,9 +189,10 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 		output: [0, Math.PI / 6, 0],
 	});
 
-	// Animation frame - handle tooltips
+	// Animation frame - handle tooltips (only when interactive)
 	useFrame(() => {
-		// Handle raycasting for tooltips
+		if (!interactive) return;
+
 		raycaster.setFromCamera(mouse, camera);
 		const intersects = raycaster.intersectObjects(
 			group.current?.children || [],
@@ -362,7 +369,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					name={`${name}_hitbox`}
 					position={position}
 					scale={scale}
-					onClick={handleHitboxClick}
+					onClick={interactive ? handleHitboxClick : undefined}
 				>
 					<sphereGeometry args={[1, 16, 16]} />
 					<meshBasicMaterial
@@ -394,7 +401,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					geometry={nodes.lid.geometry}
 					material={materials.Lid}
 					position={[0, 447.187, -637.429]}
-					onClick={handleLidClick}
+					onClick={interactive ? handleLidClick : undefined}
 				>
 					<mesh
 						name="lid_inside"
@@ -499,7 +506,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					material={materials.body}
 					position={[-301.249, 198.68, -535.916]}
 					rotation-x={interpolatedRotation}
-					onClick={handleFlagClick}
+					onClick={interactive ? handleFlagClick : undefined}
 				/>
 
 				{/* Body sides */}
@@ -546,7 +553,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 				<mesh
 					castShadow
 					name="wheel_front_left"
-					onClick={handleOuterWheelClick}
+					onClick={interactive ? handleOuterWheelClick : undefined}
 					geometry={nodes.wheel_front_left.geometry}
 					material={materials.wheel}
 					position={[-322.374, 348.386, -139.723]}
@@ -555,7 +562,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 				<mesh
 					castShadow
 					name="wheel_front_right"
-					onClick={handleOuterWheelClick}
+					onClick={interactive ? handleOuterWheelClick : undefined}
 					geometry={nodes.wheel_front_right.geometry}
 					material={materials.wheel}
 					position={[322.257, 348.386, -139.723]}
@@ -570,7 +577,7 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 				>
 					<mesh
 						name="wheel_back_left"
-						onClick={handleOuterWheelClick}
+						onClick={interactive ? handleOuterWheelClick : undefined}
 						geometry={nodes.wheel_back_left.geometry}
 						material={materials.wheel}
 						position={[-322.382, -143.059, 1.926]}
@@ -578,21 +585,21 @@ export const Model = forwardRef<ModelRef, ModelProps>((props, ref) => {
 					/>
 					<mesh
 						name="wheel_back_right"
-						onClick={handleOuterWheelClick}
+						onClick={interactive ? handleOuterWheelClick : undefined}
 						geometry={nodes.wheel_back_right.geometry}
 						material={materials.wheel}
 						position={[322.249, -143.059, 1.926]}
 						rotation={[-Math.PI / 6, 0, Math.PI]}
 					/>
 					<mesh
-						onClick={handleMiddleWheelClick}
+						onClick={interactive ? handleMiddleWheelClick : undefined}
 						name="wheel_middle_left"
 						geometry={nodes.wheel_middle_left.geometry}
 						material={materials.wheel}
 						position={[-322.382, 139.349, 1.926]}
 					/>
 					<mesh
-						onClick={handleMiddleWheelClick}
+						onClick={interactive ? handleMiddleWheelClick : undefined}
 						name="wheel_middle_right"
 						geometry={nodes.wheel_middle_right.geometry}
 						material={materials.wheel}
