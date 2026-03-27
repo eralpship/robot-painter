@@ -252,10 +252,14 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
 			materials.body.metalness = 0.3;
 			materials.body.roughness = 0.35;
-			materials.body.shadowSide = THREE.DoubleSide;
 
-			// Make side/lid materials block light from both sides in shadow map
-			for (const mat of sideMaterials) {
+			// Make all materials block light from both sides in shadow map
+			const allShadowMaterials = [
+				materials.body,
+				materials.wheel,
+				...sideMaterials,
+			];
+			for (const mat of allShadowMaterials) {
 				mat.shadowSide = THREE.DoubleSide;
 			}
 		}, [
