@@ -2,12 +2,19 @@ import { ALargeSmall, Palette, TextCursorInput } from "lucide-react";
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { ChangeTextModal } from "./modals/ChangeTextModal";
 import { FontSizeModal } from "./modals/FontSizeModal";
 
 const AVAILABLE_FONTS = [
-	{ value: "", label: "System Default" },
+	{ value: "system-default", label: "System Default" },
 	{ value: "Inter", label: "Inter" },
 	{ value: "Roboto", label: "Roboto" },
 	{ value: "Open Sans", label: "Open Sans" },
@@ -119,28 +126,33 @@ export function TextToolbar() {
 				disabled={!selectedTextElement}
 				icon={Palette}
 			/>
-			<select
-				className="h-8 rounded-md border border-border bg-surface px-2 text-xs text-foreground"
-				value={selectedTextElement?.fontFamily ?? ""}
-				onChange={(e) => {
+			<Select
+				value={selectedTextElement?.fontFamily || "system-default"}
+				onValueChange={(value) => {
 					if (selectedTextElement) {
 						ctx.updateElement(selectedTextElement.uuid, {
-							fontFamily: e.target.value || undefined,
+							fontFamily:
+								value === "system-default" ? undefined : value,
 						});
 					}
 				}}
 				disabled={!selectedTextElement}
 			>
-				{AVAILABLE_FONTS.map((font) => (
-					<option
-						key={font.value}
-						value={font.value}
-						style={{ fontFamily: font.value || "inherit" }}
-					>
-						{font.label}
-					</option>
-				))}
-			</select>
+				<SelectTrigger size="sm" className="w-auto">
+					<SelectValue placeholder="Font" />
+				</SelectTrigger>
+				<SelectContent>
+					{AVAILABLE_FONTS.map((font) => (
+						<SelectItem
+							key={font.value}
+							value={font.value}
+							style={{ fontFamily: font.value === "system-default" ? "inherit" : font.value }}
+						>
+							{font.label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
 		</>
 	);
 }
