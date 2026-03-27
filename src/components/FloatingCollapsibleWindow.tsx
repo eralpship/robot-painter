@@ -19,8 +19,9 @@ export function FloatingCollapsibleWindow({
 	y: number;
 	width: number;
 	height: number;
+	defaultCollapsed?: boolean;
 }) {
-	const [isCollapsed, setIsCollapsed] = useState(false);
+	const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed ?? false);
 	const [size, setSize] = useState({
 		width: defaultWidth,
 		height: defaultHeight,

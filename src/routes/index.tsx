@@ -116,7 +116,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 		<PageContainer>
 			<Leva
 				theme={customLevaTheme}
-				collapsed={false}
+				collapsed={true}
 				titleBar={{ title: "Options", filter: false }}
 			/>
 			<Canvas
@@ -140,7 +140,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 				<directionalLight
 					castShadow
 					position={[15, 20, 15]}
-					intensity={2}
+					intensity={20}
 					shadow-mapSize-width={2048}
 					shadow-mapSize-height={2048}
 					shadow-camera-near={0.1}
@@ -186,6 +186,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 				y={10}
 				width={306}
 				height={384}
+				defaultCollapsed
 			>
 				<TextureEditorWrapper mode="basic" projectId={projectId} />
 			</FloatingCollapsibleWindow>
