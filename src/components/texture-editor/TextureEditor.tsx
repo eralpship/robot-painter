@@ -177,6 +177,18 @@ export function TextureEditor({
 	>(new Map());
 
 	const [moveableKey, setMoveableKey] = useState("not-selected");
+	const isManipulatingRef = useRef(false);
+
+	// Update Moveable frame when selected element changes (text, font, color, etc.)
+	// but not during active manipulation (drag/rotate/scale)
+	useEffect(() => {
+		if (!editorCtx.selectedElement || isManipulatingRef.current) return;
+		// Use rAF to let SVG re-render first, then update Moveable bounds
+		const rafId = requestAnimationFrame(() => {
+			moveableRef.current?.updateRect();
+		});
+		return () => cancelAnimationFrame(rafId);
+	}, [editorCtx.selectedElement]);
 
 	// Convert screen coordinates to SVG viewBox coordinates
 	const clientToSVGPoint = useCallback(
@@ -289,6 +301,7 @@ export function TextureEditor({
 
 	const handleOnMoveableActionEnd = useCallback(
 		(target: SVGElement | HTMLElement) => {
+			isManipulatingRef.current = false;
 			const uuid = target.getAttribute("id");
 			if (!uuid) {
 				console.warn("[TextureEditor] No UUID found on target element");
@@ -540,6 +553,7 @@ export function TextureEditor({
 					editorCtx.selectedElement?.type !== "polygon"
 				}
 				onDragStart={(e) => {
+					isManipulatingRef.current = true;
 					const uuid = e.target.getAttribute("id");
 					const element = uuid ? editorCtx.elements.get(uuid) : null;
 					if (element) {
@@ -558,6 +572,7 @@ export function TextureEditor({
 					}
 				}}
 				onRotateStart={(e) => {
+					isManipulatingRef.current = true;
 					const uuid = e.target.getAttribute("id");
 					const element = uuid ? editorCtx.elements.get(uuid) : null;
 					if (element) {
@@ -577,6 +592,7 @@ export function TextureEditor({
 					}
 				}}
 				onScaleStart={(e) => {
+					isManipulatingRef.current = true;
 					const uuid = e.target.getAttribute("id");
 					const element = uuid ? editorCtx.elements.get(uuid) : null;
 					if (element) {
