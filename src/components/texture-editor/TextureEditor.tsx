@@ -225,6 +225,17 @@ export function TextureEditor({
 		[editorCtx],
 	);
 
+	// Backspace/Delete to remove selected element (ignoreInputs prevents firing in text fields)
+	useHotkey(
+		"Backspace",
+		() => {
+			if (editorCtx.selectedElement) {
+				editorCtx.removeElement(editorCtx.selectedElement.uuid);
+			}
+		},
+		{ enabled: !!editorCtx.selectedElement, ignoreInputs: true },
+	);
+
 	// Escape to cancel polygon drawing or deselect element
 	useHotkey(
 		"Escape",
