@@ -23,7 +23,6 @@ import {
 	useDirectionalLightAngle,
 	useDirectionalLightHeight,
 	useFov,
-	useUnlit,
 } from "../stores/model-store";
 import { validateProjectSearch } from "../utils/projectRouteUtils";
 
@@ -122,7 +121,6 @@ function RobotEditorContent() {
 
 	// Read autoRotate from store
 	const autoRotate = useAutoRotate();
-	const unlit = useUnlit();
 
 	const handleInteraction = useCallback(() => {
 		lastInteractionTimeRef.current = Date.now();
@@ -202,7 +200,7 @@ function RobotEditorContent() {
 						<shadowMaterial transparent opacity={0.3} />
 					</mesh>
 
-					<Model ref={modelRef} position={[0, -3, 0]} scale={1} unlit={unlit} />
+					<Model ref={modelRef} position={[0, -3, 0]} scale={1} />
 
 					<OrbitControls
 						ref={cameraControlsRef}
