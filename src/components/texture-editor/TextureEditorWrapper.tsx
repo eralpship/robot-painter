@@ -1,13 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useContext } from "react";
 import { createPortal } from "react-dom";
-import { TitleBar } from "@/components/TitleBar";
 import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
-import {
-	TextureEditorContext,
-	TextureEditorContextProvider,
-	type TexureEditorMode,
-} from "@/contexts/texture-editor-context";
+import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { navigateToProject } from "@/utils/projectRouteUtils";
 import { ProjectCreatedModal } from "./modals/ProjectCreatedModal";
 import { ProjectSelectionModal } from "./modals/ProjectSelectionModal";
@@ -137,21 +132,10 @@ function TextureEditorContent() {
 	);
 }
 
-export function TextureEditorWrapper({
-	mode,
-	projectId,
-	showTitleBar = false,
-}: {
-	mode: TexureEditorMode;
-	projectId?: number;
-	showTitleBar?: boolean;
-}) {
+export function TextureEditorWrapper() {
 	return (
 		<div className="h-full w-full flex flex-col min-h-0">
-			<TextureEditorContextProvider mode={mode} projectId={projectId}>
-				{showTitleBar && <TitleBar />}
-				<TextureEditorContent />
-			</TextureEditorContextProvider>
+			<TextureEditorContent />
 		</div>
 	);
 }

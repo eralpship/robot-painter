@@ -9,8 +9,10 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { Model, type ModelRef } from "../components/E-model";
 import { FloatingCollapsibleWindow } from "../components/FloatingCollapsibleWindow";
 import { PageContainer } from "../components/PageContainer";
+import { TitleBar } from "../components/TitleBar";
 import { TextureEditorWrapper } from "../components/texture-editor/TextureEditorWrapper";
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
+import { TextureEditorContextProvider } from "../contexts/texture-editor-context";
 import { TooltipProvider } from "../contexts/tooltip-context";
 import { useLevaModelControls } from "../hooks/useLevaModelControls";
 import {
@@ -107,7 +109,7 @@ const DirectionalLightWrapper = () => {
 	);
 };
 
-function RobotEditorContent({ projectId }: { projectId: number }) {
+function RobotEditorContent() {
 	const inactivityTimeout = 5_000;
 	const hasInteractedRef = useRef(false);
 	const lastInteractionTimeRef = useRef(Date.now());
@@ -158,65 +160,68 @@ function RobotEditorContent({ projectId }: { projectId: number }) {
 	}, [autoRotate]);
 
 	return (
-		<PageContainer>
+		<>
 			<Leva
 				theme={customLevaTheme}
 				collapsed
 				titleBar={{ title: "Options", filter: false }}
 			/>
-			<Canvas
-				className="h-screen w-screen"
-				shadows
-				dpr={[1, 2]}
-				gl={{ antialias: true }}
-				camera={{
-					position: [40, 30, 40],
-					fov: MODEL_DEFAULTS.fov,
-				}}
-			>
-				<CameraController />
-				<SceneBackground />
-				<AmbientLightWrapper />
-
-				<DirectionalLightWrapper />
-
-				{/* Ground plane to receive shadows */}
-				<mesh
-					receiveShadow
-					rotation={[-Math.PI / 2, 0, 0]}
-					position={[0, -3, 0]}
+			<TitleBar />
+			<div className="flex-1 min-h-0 relative">
+				<Canvas
+					className="h-full w-full"
+					shadows
+					dpr={[1, 2]}
+					gl={{ antialias: true }}
+					camera={{
+						position: [40, 30, 40],
+						fov: MODEL_DEFAULTS.fov,
+					}}
 				>
-					<planeGeometry args={[200, 200]} />
-					<shadowMaterial transparent opacity={0.3} />
-				</mesh>
+					<CameraController />
+					<SceneBackground />
+					<AmbientLightWrapper />
 
-				<Model ref={modelRef} position={[0, -3, 0]} scale={1} />
+					<DirectionalLightWrapper />
 
-				<OrbitControls
-					ref={cameraControlsRef}
-					makeDefault
-					minPolarAngle={0}
-					maxPolarAngle={1.55}
-					minDistance={10}
-					maxDistance={200}
-					minAzimuthAngle={-Number.POSITIVE_INFINITY}
-					maxAzimuthAngle={Number.POSITIVE_INFINITY}
-					autoRotate={autoRotate}
-					autoRotateSpeed={2}
-					onStart={handleInteraction}
-				/>
-			</Canvas>
-			<FloatingCollapsibleWindow
-				title="Texture Editor"
-				x={10}
-				y={10}
-				width={440}
-				height={350}
-				defaultCollapsed
-			>
-				<TextureEditorWrapper mode="basic" projectId={projectId} showTitleBar />
-			</FloatingCollapsibleWindow>
-		</PageContainer>
+					{/* Ground plane to receive shadows */}
+					<mesh
+						receiveShadow
+						rotation={[-Math.PI / 2, 0, 0]}
+						position={[0, -3, 0]}
+					>
+						<planeGeometry args={[200, 200]} />
+						<shadowMaterial transparent opacity={0.3} />
+					</mesh>
+
+					<Model ref={modelRef} position={[0, -3, 0]} scale={1} />
+
+					<OrbitControls
+						ref={cameraControlsRef}
+						makeDefault
+						minPolarAngle={0}
+						maxPolarAngle={1.55}
+						minDistance={10}
+						maxDistance={200}
+						minAzimuthAngle={-Number.POSITIVE_INFINITY}
+						maxAzimuthAngle={Number.POSITIVE_INFINITY}
+						autoRotate={autoRotate}
+						autoRotateSpeed={2}
+						onStart={handleInteraction}
+					/>
+				</Canvas>
+				<FloatingCollapsibleWindow
+					title="Texture Editor"
+					x={10}
+					y={10}
+					width={440}
+					height={350}
+					defaultCollapsed
+				>
+					<TextureEditorWrapper />
+				</FloatingCollapsibleWindow>
+			</div>
+		</>
 	);
 }
 
@@ -227,9 +232,14 @@ function RobotEditor() {
 		return (
 			<OverlayTextureCanvasProvider>
 				<TooltipProvider>
-					<PageContainer className="flex items-center justify-center">
-						<TextureEditorWrapper mode="basic" projectId={undefined} />
-					</PageContainer>
+					<TextureEditorContextProvider mode="basic" projectId={undefined}>
+						<PageContainer className="flex flex-col">
+							<TitleBar />
+							<div className="flex-1 flex items-center justify-center">
+								<TextureEditorWrapper />
+							</div>
+						</PageContainer>
+					</TextureEditorContextProvider>
 				</TooltipProvider>
 			</OverlayTextureCanvasProvider>
 		);
@@ -238,7 +248,11 @@ function RobotEditor() {
 	return (
 		<OverlayTextureCanvasProvider>
 			<TooltipProvider>
-				<RobotEditorContent projectId={projectId} />
+				<TextureEditorContextProvider mode="basic" projectId={projectId}>
+					<PageContainer className="flex flex-col">
+						<RobotEditorContent />
+					</PageContainer>
+				</TextureEditorContextProvider>
 			</TooltipProvider>
 		</OverlayTextureCanvasProvider>
 	);
