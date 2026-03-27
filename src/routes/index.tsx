@@ -1,4 +1,4 @@
-import { OrbitControls, SoftShadows } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { createFileRoute } from "@tanstack/react-router";
 import { Leva } from "leva";
