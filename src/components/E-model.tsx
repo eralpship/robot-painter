@@ -77,15 +77,23 @@ export interface ModelRef {
 	touchFlag: () => void;
 }
 
+const TEXTURE_PLACEHOLDERS = [
+	"/front.png",
+	"/back.png",
+	"/left.png",
+	"/right.png",
+	"/lid.png",
+];
 const loadingManager = new THREE.LoadingManager();
 loadingManager.setURLModifier((url) => {
-	if (
-		["/front.png", "/back.png", "/left.png", "/right.png", "/lid.png"].includes(
-			url,
-		)
-	) {
+	if (TEXTURE_PLACEHOLDERS.includes(url)) {
 		const img = createBlankTexture("transparent");
 		return img.src;
+	}
+	// Cache-bust model assets (bin, png, etc.) with app version
+	if (url.startsWith("/") || url.startsWith("e-model")) {
+		const separator = url.includes("?") ? "&" : "?";
+		return `${url}${separator}v=${__APP_VERSION__}`;
 	}
 	return url;
 });
@@ -97,7 +105,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
 		const { nodes, materials, animations } = useLoader(
 			GLTFLoader,
-			"/e-model.gltf",
+			`/e-model.gltf?v=${__APP_VERSION__}`,
 			(loader) => {
 				loader.manager = loadingManager;
 			},

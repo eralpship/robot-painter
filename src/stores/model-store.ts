@@ -11,7 +11,6 @@ export const MODEL_DEFAULTS = {
 	autoRotate: true,
 	fov: 20,
 	ambientLight: 0.4,
-	environmentIntensity: 0.5,
 } as const;
 
 interface ModelState {
@@ -30,7 +29,6 @@ interface ModelState {
 
 	// Environment
 	ambientLight: number;
-	environmentIntensity: number;
 }
 
 interface ModelActions {
@@ -50,7 +48,6 @@ interface ModelActions {
 
 	// Environment actions
 	setAmbientLight: (intensity: number) => void;
-	setEnvironmentIntensity: (intensity: number) => void;
 
 	// Bulk reset
 	resetToDefaults: () => void;
@@ -83,8 +80,6 @@ export const useModelStore = create<ModelStore>()(
 
 				// Environment actions
 				setAmbientLight: (intensity) => set({ ambientLight: intensity }),
-				setEnvironmentIntensity: (intensity) =>
-					set({ environmentIntensity: intensity }),
 
 				// Bulk reset
 				resetToDefaults: () => set(MODEL_DEFAULTS),
@@ -108,5 +103,3 @@ export const useLidOpen = () => useModelStore((s) => s.lidOpen);
 export const useAutoRotate = () => useModelStore((s) => s.autoRotate);
 export const useFov = () => useModelStore((s) => s.fov);
 export const useAmbientLight = () => useModelStore((s) => s.ambientLight);
-export const useEnvironmentIntensity = () =>
-	useModelStore((s) => s.environmentIntensity);

@@ -1,13 +1,8 @@
-import {
-	Environment,
-	Html,
-	OrbitControls,
-	SoftShadows,
-} from "@react-three/drei";
+import { OrbitControls, SoftShadows } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { createFileRoute } from "@tanstack/react-router";
 import { Leva } from "leva";
-import { Suspense, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { PerspectiveCamera } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -22,7 +17,6 @@ import {
 	MODEL_DEFAULTS,
 	useAmbientLight,
 	useAutoRotate,
-	useEnvironmentIntensity,
 	useFov,
 } from "../stores/model-store";
 import { validateProjectSearch } from "../utils/projectRouteUtils";
@@ -60,27 +54,6 @@ const SceneBackground = () => {
 		scene.background = new THREE.Color("#1a1a2e");
 	}, [scene]);
 	return null;
-};
-
-// EnvironmentWrapper reads from store — HDR for reflections only, not background
-const EnvironmentWrapper = () => {
-	const environmentIntensity = useEnvironmentIntensity();
-
-	return (
-		<Suspense
-			fallback={
-				<Html center>
-					<div style={{ color: "white", fontSize: "24px" }}>Loading...</div>
-				</Html>
-			}
-		>
-			<Environment
-				files="/kiara_1_dawn_1k.hdr"
-				environmentIntensity={environmentIntensity}
-				resolution={256}
-			/>
-		</Suspense>
-	);
 };
 
 // AmbientLightWrapper reads from store
@@ -159,8 +132,9 @@ function AppContent({ projectId }: { projectId?: number }) {
 				<CameraController />
 				<SceneBackground />
 				<SoftShadows size={15} samples={16} focus={0.5} />
-				<EnvironmentWrapper />
 				<AmbientLightWrapper />
+				{/* Fill light from the opposite side */}
+				<directionalLight position={[-10, 8, -10]} intensity={0.4} />
 
 				{/* Shadow-casting directional light */}
 				<directionalLight

@@ -36,9 +36,6 @@ export function useLevaModelControls(
 	const setAutoRotate = useModelStore((s) => s.setAutoRotate);
 	const setFov = useModelStore((s) => s.setFov);
 	const setAmbientLight = useModelStore((s) => s.setAmbientLight);
-	const setEnvironmentIntensity = useModelStore(
-		(s) => s.setEnvironmentIntensity,
-	);
 
 	// Lighting controls
 	const [, setLighting] = useControls("Lighting", () => ({
@@ -243,14 +240,6 @@ export function useLevaModelControls(
 				min: 0,
 				step: 0.1,
 				onChange: setAmbientLight,
-			},
-			environmentIntensity: {
-				value: MODEL_DEFAULTS.environmentIntensity,
-				label: "Environment Intensity",
-				max: 1,
-				min: 0,
-				step: 0.01,
-				onChange: setEnvironmentIntensity,
 			},
 		}),
 		{ collapsed: true },
