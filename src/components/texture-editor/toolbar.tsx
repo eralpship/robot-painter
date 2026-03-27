@@ -5,12 +5,30 @@ import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { AddElementToolbar } from "./AddElementToolbar";
-import { CommonToolbar } from "./CommonToolbar";
 import { ElementToolbar } from "./ElementToolbar";
 import { PolygonToolbar } from "./PolygonToolbar";
 import { RectangleToolbar } from "./RectangleToolbar";
 import { SideSelector } from "./SideSelector";
 import { TextToolbar } from "./TextToolbar";
+
+function ToolbarGroup({
+	title,
+	children,
+}: {
+	title?: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<div className="flex flex-col gap-1 w-full">
+			{title && (
+				<span className="text-[9px] uppercase tracking-wider text-foreground-subtle/60 px-1">
+					{title}
+				</span>
+			)}
+			<div className="flex flex-col gap-1 w-full">{children}</div>
+		</div>
+	);
+}
 
 export function Toolbar() {
 	const ctx = useContext(TextureEditorContext);
@@ -22,42 +40,61 @@ export function Toolbar() {
 	});
 
 	return (
-		<div className="p-2 bg-surface border-b border-border flex gap-2 items-center w-full box-border relative">
-			<div className="text-xs text-foreground-subtle flex flex-wrap flex-row items-start justify-start gap-2">
-				<CommonToolbar />
+		<div className="w-[140px] shrink-0 bg-surface border-r border-border overflow-y-auto overflow-x-hidden">
+			<div className="flex flex-col gap-2 p-2 text-xs">
 				<SideSelector />
-				{ctx.mode === "full" ? (
-					ctx.isDrawingPolygon ? (
+
+				{ctx.mode === "full" &&
+					(ctx.isDrawingPolygon ? (
 						<Button
 							variant="outline"
 							size="sm"
+							className="w-full"
 							onClick={() => ctx.cancelPolygonDrawing()}
 						>
-							<X className="size-4" /> Cancel Drawing
+							<X className="size-4" /> Cancel
 						</Button>
 					) : (
 						<>
-							<AddElementToolbar />
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => ctx.pasteElement()}
-								disabled={!ctx.clipboardElement}
-								title={`Paste (${formatForDisplay("Mod+V")})`}
-							>
-								<ClipboardPaste className="size-4" /> Paste
-							</Button>
-							{ctx.selectedElement ? <ElementToolbar /> : null}
-							{ctx.selectedElement?.type === "text" ? <TextToolbar /> : null}
-							{ctx.selectedElement?.type === "rectangle" ? (
-								<RectangleToolbar />
-							) : null}
-							{ctx.selectedElement?.type === "polygon" ? (
-								<PolygonToolbar />
-							) : null}
+							<ToolbarGroup title="Add">
+								<AddElementToolbar />
+								<Button
+									variant="outline"
+									size="sm"
+									className="w-full justify-start"
+									onClick={() => ctx.pasteElement()}
+									disabled={!ctx.clipboardElement}
+									title={`Paste (${formatForDisplay("Mod+V")})`}
+								>
+									<ClipboardPaste className="size-4" /> Paste
+								</Button>
+							</ToolbarGroup>
+
+							{ctx.selectedElement && (
+								<ToolbarGroup title="Element">
+									<ElementToolbar />
+								</ToolbarGroup>
+							)}
+
+							{ctx.selectedElement?.type === "text" && (
+								<ToolbarGroup title="Text">
+									<TextToolbar />
+								</ToolbarGroup>
+							)}
+
+							{ctx.selectedElement?.type === "rectangle" && (
+								<ToolbarGroup title="Shape">
+									<RectangleToolbar />
+								</ToolbarGroup>
+							)}
+
+							{ctx.selectedElement?.type === "polygon" && (
+								<ToolbarGroup title="Shape">
+									<PolygonToolbar />
+								</ToolbarGroup>
+							)}
 						</>
-					)
-				) : null}
+					))}
 			</div>
 		</div>
 	);

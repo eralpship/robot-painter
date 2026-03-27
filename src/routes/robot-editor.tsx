@@ -210,11 +210,11 @@ function RobotEditorContent({ projectId }: { projectId: number }) {
 				title="Texture Editor"
 				x={10}
 				y={10}
-				width={306}
-				height={384}
+				width={440}
+				height={350}
 				defaultCollapsed
 			>
-				<TextureEditorWrapper mode="basic" projectId={projectId} />
+				<TextureEditorWrapper mode="basic" projectId={projectId} showTitleBar />
 			</FloatingCollapsibleWindow>
 		</PageContainer>
 	);

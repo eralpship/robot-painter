@@ -13,9 +13,9 @@ import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { db } from "@/db/db";
 import { exportProject } from "@/utils/projectExport";
-import { NewProjectModal } from "./modals/NewProjectModal";
+import { NewProjectModal } from "./texture-editor/modals/NewProjectModal";
 
-export function CommonToolbar() {
+export function TitleBar() {
 	const ctx = useContext(TextureEditorContext);
 	const navigate = useNavigate();
 	const search = useSearch({ strict: false });
@@ -32,7 +32,14 @@ export function CommonToolbar() {
 	};
 
 	return (
-		<>
+		<div className="bg-surface border-b border-border flex items-center gap-1 px-2 py-1 w-full shrink-0">
+			<ColorPickerButton
+				label="Background"
+				color={ctx.backgroundColor}
+				onChange={ctx.setBackgroundColor}
+				debounceMs={100}
+				icon={PaintBucket}
+			/>
 			<Button
 				variant="outline"
 				size="sm"
@@ -56,22 +63,10 @@ export function CommonToolbar() {
 			<Button
 				variant="outline"
 				size="sm"
-				onClick={() => {
-					navigate({
-						to: "/projects",
-						search: (prev) => prev,
-					});
-				}}
+				onClick={() => navigate({ to: "/projects" })}
 			>
 				Projects
 			</Button>
-			<ColorPickerButton
-				label="Background"
-				color={ctx.backgroundColor}
-				onChange={ctx.setBackgroundColor}
-				debounceMs={100}
-				icon={PaintBucket}
-			/>
 			<Button
 				variant="outline"
 				size="sm"
@@ -90,25 +85,21 @@ export function CommonToolbar() {
 			<Button
 				variant="outline"
 				size="sm"
-				onClick={() => {
-					if (!isCreatingProject) {
-						setNewProjectOpen(true);
-					}
-				}}
-				className={isCreatingProject ? "opacity-50" : ""}
-				disabled={isCreatingProject}
+				onClick={handleExport}
+				disabled={!projectId}
 			>
-				<FolderPlus className="size-4" />
-				{isCreatingProject ? "Creating..." : "New Project"}
+				<Download className="size-4" /> Export
 			</Button>
 			<Button
 				variant="outline"
 				size="sm"
-				onClick={handleExport}
-				disabled={!projectId}
+				onClick={() => {
+					if (!isCreatingProject) setNewProjectOpen(true);
+				}}
+				disabled={isCreatingProject}
 			>
-				<Download className="size-4" />
-				Export
+				<FolderPlus className="size-4" />
+				{isCreatingProject ? "Creating..." : "New Project"}
 			</Button>
 			<NewProjectModal
 				open={newProjectOpen}
@@ -121,16 +112,13 @@ export function CommonToolbar() {
 						ctx.showProjectCreatedModal(newProjectId, sanitizedName);
 						setNewProjectOpen(false);
 					} catch (error) {
-						console.error(
-							"[CommonToolbar] Failed to create new project:",
-							error,
-						);
+						console.error("[TitleBar] Failed to create project:", error);
 						setNewProjectOpen(false);
 					} finally {
 						setIsCreatingProject(false);
 					}
 				}}
 			/>
-		</>
+		</div>
 	);
 }

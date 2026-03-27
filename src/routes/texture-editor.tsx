@@ -15,12 +15,15 @@ function TextureEditor() {
 	const search = Route.useSearch();
 	const projectId = search["project-id"];
 
-	// If no projectId, show only the project selection modal (no preview)
 	if (projectId === undefined) {
 		return (
 			<OverlayTextureCanvasProvider>
-				<PageContainer className="flex items-center justify-center">
-					<TextureEditorWrapper mode="full" projectId={undefined} />
+				<PageContainer className="flex flex-col">
+					<TextureEditorWrapper
+						mode="full"
+						projectId={undefined}
+						showTitleBar
+					/>
 				</PageContainer>
 			</OverlayTextureCanvasProvider>
 		);
@@ -28,8 +31,8 @@ function TextureEditor() {
 
 	return (
 		<OverlayTextureCanvasProvider>
-			<PageContainer>
-				<TextureEditorWrapper mode="full" projectId={projectId} />
+			<PageContainer className="flex flex-col">
+				<TextureEditorWrapper mode="full" projectId={projectId} showTitleBar />
 				<FloatingCollapsibleWindow
 					title="preview"
 					x={12}

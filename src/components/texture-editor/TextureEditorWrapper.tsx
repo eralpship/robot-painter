@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useContext } from "react";
 import { createPortal } from "react-dom";
+import { TitleBar } from "@/components/TitleBar";
 import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
 import {
 	TextureEditorContext,
@@ -129,23 +130,26 @@ function TextureEditorContent() {
 
 	// Normal rendering when project is loaded
 	return (
-		<>
+		<div className="flex flex-row h-full w-full min-h-0">
 			<Toolbar />
 			<BackdropWithDeselect />
-		</>
+		</div>
 	);
 }
 
 export function TextureEditorWrapper({
 	mode,
 	projectId,
+	showTitleBar = false,
 }: {
 	mode: TexureEditorMode;
 	projectId?: number;
+	showTitleBar?: boolean;
 }) {
 	return (
-		<div className="h-full w-full grid grid-rows-[auto_1fr] grid-cols-1">
+		<div className="h-full w-full flex flex-col min-h-0">
 			<TextureEditorContextProvider mode={mode} projectId={projectId}>
+				{showTitleBar && <TitleBar />}
 				<TextureEditorContent />
 			</TextureEditorContextProvider>
 		</div>
