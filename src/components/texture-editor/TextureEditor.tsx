@@ -113,6 +113,17 @@ export function TextureEditor({
 	const svgRef = useRef<SVGSVGElement>(null);
 	const moveableRef = useRef<Moveable>(null);
 
+	// Update Moveable frame on container resize
+	useEffect(() => {
+		const container = containerRef.current;
+		if (!container) return;
+		const observer = new ResizeObserver(() => {
+			moveableRef.current?.updateRect();
+		});
+		observer.observe(container);
+		return () => observer.disconnect();
+	}, []);
+
 	const hidden = editorCtx.side !== side;
 
 	const updateTexture = useCallback(() => {
