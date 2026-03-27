@@ -2,6 +2,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
 	Download,
 	FolderPlus,
+	Home,
 	PaintBucket,
 	Paintbrush,
 	Undo2,
@@ -32,7 +33,10 @@ export function TitleBar() {
 	};
 
 	return (
-		<div className="bg-surface border-b border-border flex items-center gap-1 px-2 py-1 w-full shrink-0">
+		<div className="bg-surface border-b border-border flex items-center gap-1 px-2 py-1 w-full shrink-0 overflow-x-auto overflow-y-hidden">
+			<Button variant="outline" size="sm" onClick={() => navigate({ to: "/" })}>
+				<Home className="size-4" />
+			</Button>
 			<ColorPickerButton
 				label="Background"
 				color={ctx.backgroundColor}
