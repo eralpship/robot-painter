@@ -159,15 +159,15 @@ function AppContent({ projectId }: { projectId?: number }) {
 					castShadow
 					position={[15, 20, 15]}
 					intensity={1.5}
-					shadow-mapSize-width={1024}
-					shadow-mapSize-height={1024}
+					shadow-mapSize-width={2048}
+					shadow-mapSize-height={2048}
 					shadow-camera-near={0.1}
 					shadow-camera-far={60}
-					shadow-camera-left={-15}
-					shadow-camera-right={15}
-					shadow-camera-top={15}
-					shadow-camera-bottom={-15}
-					shadow-bias={-0.001}
+					shadow-camera-left={-10}
+					shadow-camera-right={10}
+					shadow-camera-top={10}
+					shadow-camera-bottom={-10}
+					shadow-bias={-0.0005}
 				/>
 
 				{/* Ground plane to receive shadows */}
