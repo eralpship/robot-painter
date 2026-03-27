@@ -3,7 +3,7 @@
  * in serialized SVGs (which lose access to page CSS fonts).
  */
 
-// Cache: font-family -> base64 @font-face CSS
+// Cache: "family|weight|style" -> base64 @font-face CSS
 const fontCache = new Map<string, string>();
 let initialized = false;
 
@@ -36,7 +36,12 @@ export async function initFontCache(): Promise<void> {
 			.getPropertyValue("font-family")
 			.replace(/['"]/g, "")
 			.trim();
-		if (!family || fontCache.has(family)) continue;
+		if (!family) continue;
+
+		const fontWeight = rule.style.getPropertyValue("font-weight") || "400";
+		const fontStyle = rule.style.getPropertyValue("font-style") || "normal";
+		const cacheKey = `${family}|${fontWeight}|${fontStyle}`;
+		if (fontCache.has(cacheKey)) continue;
 
 		const srcValue = rule.style.getPropertyValue("src");
 		// Extract the first url() from the src
@@ -59,13 +64,9 @@ export async function initFontCache(): Promise<void> {
 								? "font/woff"
 								: "font/ttf";
 					const dataUri = `data:${mimeType};base64,${base64}`;
-					const fontWeight =
-						rule.style.getPropertyValue("font-weight") || "400";
-					const fontStyle =
-						rule.style.getPropertyValue("font-style") || "normal";
 
 					const css = `@font-face { font-family: '${family}'; font-weight: ${fontWeight}; font-style: ${fontStyle}; src: url('${dataUri}') format('${format}'); }`;
-					fontCache.set(family, css);
+					fontCache.set(cacheKey, css);
 				})
 				.catch(() => {
 					// Font fetch failed — skip silently
@@ -78,13 +79,15 @@ export async function initFontCache(): Promise<void> {
 
 /**
  * Get embedded @font-face CSS for a list of font families.
- * Returns a string of @font-face rules with base64-embedded font data.
+ * Returns all cached weights/styles for each family.
  */
 export function getEmbeddedFontCSS(fontFamilies: string[]): string {
 	const rules: string[] = [];
-	for (const family of fontFamilies) {
-		const css = fontCache.get(family);
-		if (css) rules.push(css);
+	for (const [key, css] of fontCache) {
+		const family = key.split("|")[0];
+		if (fontFamilies.includes(family)) {
+			rules.push(css);
+		}
 	}
 	return rules.join("\n");
 }
