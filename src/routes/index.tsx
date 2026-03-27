@@ -18,6 +18,7 @@ import {
 	useAmbientLight,
 	useAutoRotate,
 	useDirectionalLight,
+	useDirectionalLightAngle,
 	useFov,
 } from "../stores/model-store";
 import { validateProjectSearch } from "../utils/projectRouteUtils";
@@ -63,13 +64,18 @@ const AmbientLightWrapper = () => {
 	return <ambientLight intensity={ambientLight} />;
 };
 
-// DirectionalLightWrapper reads intensity from store
+// DirectionalLightWrapper reads intensity and angle from store
 const DirectionalLightWrapper = () => {
 	const intensity = useDirectionalLight();
+	const angle = useDirectionalLightAngle();
+	const rad = (angle * Math.PI) / 180;
+	const radius = 20;
+	const x = Math.sin(rad) * radius;
+	const z = Math.cos(rad) * radius;
 	return (
 		<directionalLight
 			castShadow
-			position={[15, 20, 15]}
+			position={[x, 20, z]}
 			intensity={intensity}
 			shadow-mapSize-width={2048}
 			shadow-mapSize-height={2048}

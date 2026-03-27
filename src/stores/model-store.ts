@@ -12,6 +12,7 @@ export const MODEL_DEFAULTS = {
 	fov: 20,
 	ambientLight: 10,
 	directionalLight: 20,
+	directionalLightAngle: 45,
 } as const;
 
 interface ModelState {
@@ -31,6 +32,7 @@ interface ModelState {
 	// Environment
 	ambientLight: number;
 	directionalLight: number;
+	directionalLightAngle: number;
 }
 
 interface ModelActions {
@@ -51,6 +53,7 @@ interface ModelActions {
 	// Environment actions
 	setAmbientLight: (intensity: number) => void;
 	setDirectionalLight: (intensity: number) => void;
+	setDirectionalLightAngle: (angle: number) => void;
 
 	// Bulk reset
 	resetToDefaults: () => void;
@@ -85,6 +88,8 @@ export const useModelStore = create<ModelStore>()(
 				setAmbientLight: (intensity) => set({ ambientLight: intensity }),
 				setDirectionalLight: (intensity) =>
 					set({ directionalLight: intensity }),
+				setDirectionalLightAngle: (angle) =>
+					set({ directionalLightAngle: angle }),
 
 				// Bulk reset
 				resetToDefaults: () => set(MODEL_DEFAULTS),
@@ -110,3 +115,5 @@ export const useFov = () => useModelStore((s) => s.fov);
 export const useAmbientLight = () => useModelStore((s) => s.ambientLight);
 export const useDirectionalLight = () =>
 	useModelStore((s) => s.directionalLight);
+export const useDirectionalLightAngle = () =>
+	useModelStore((s) => s.directionalLightAngle);

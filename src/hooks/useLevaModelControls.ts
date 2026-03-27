@@ -37,6 +37,9 @@ export function useLevaModelControls(
 	const setFov = useModelStore((s) => s.setFov);
 	const setAmbientLight = useModelStore((s) => s.setAmbientLight);
 	const setDirectionalLight = useModelStore((s) => s.setDirectionalLight);
+	const setDirectionalLightAngle = useModelStore(
+		(s) => s.setDirectionalLightAngle,
+	);
 
 	// Lighting controls
 	const [, setLighting] = useControls("Lighting", () => ({
@@ -249,6 +252,14 @@ export function useLevaModelControls(
 				min: 0,
 				step: 0.1,
 				onChange: setDirectionalLight,
+			},
+			directionalLightAngle: {
+				value: MODEL_DEFAULTS.directionalLightAngle,
+				label: "Light Angle",
+				min: 0,
+				max: 360,
+				step: 1,
+				onChange: setDirectionalLightAngle,
 			},
 		}),
 		{ collapsed: true },
