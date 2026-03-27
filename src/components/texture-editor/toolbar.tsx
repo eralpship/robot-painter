@@ -5,6 +5,7 @@ import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { AddElementToolbar } from "./AddElementToolbar";
+import { ElementOrderDropdown } from "./ElementOrderDropdown";
 import { ElementToolbar } from "./ElementToolbar";
 import { PolygonToolbar } from "./PolygonToolbar";
 import { RectangleToolbar } from "./RectangleToolbar";
@@ -61,22 +62,20 @@ export function Toolbar() {
 							</ToolbarGroup>
 						)}
 
-						<Button
-							variant="outline"
-							size="sm"
-							className="w-full justify-start"
-							onClick={() => ctx.pasteElement()}
-							disabled={!ctx.clipboardElement}
-							title={`Paste (${formatForDisplay("Mod+V")})`}
-						>
-							<ClipboardPaste className="size-4" /> Paste
-						</Button>
-
-						{ctx.selectedElement && (
-							<ToolbarGroup title="Element">
-								<ElementToolbar />
-							</ToolbarGroup>
-						)}
+						<ToolbarGroup title="Element">
+							<Button
+								variant="outline"
+								size="sm"
+								className="w-full justify-start"
+								onClick={() => ctx.pasteElement()}
+								disabled={!ctx.clipboardElement}
+								title={`Paste (${formatForDisplay("Mod+V")})`}
+							>
+								<ClipboardPaste className="size-4" /> Paste
+							</Button>
+							<ElementToolbar />
+							<ElementOrderDropdown />
+						</ToolbarGroup>
 
 						{ctx.selectedElement?.type === "text" && (
 							<ToolbarGroup title="Text">
