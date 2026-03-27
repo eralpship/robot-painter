@@ -29,7 +29,7 @@
 
 	/* === App Background Colors === */
 	--color-background: oklch(0.42 0.05 320); /* Main app background */
-	--color-page-background: #000000; /* Page/route container background */
+	--color-page-background: #1a1a2e; /* Page/route container background */
 	--color-surface: #181c20; /* Toolbar, panels */
 	--color-surface-elevated: #292d39; /* Window headers, elevated surfaces */
 	--color-overlay: rgba(0, 0, 0, 0.8); /* Tooltips, modals */
