@@ -116,7 +116,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 		<PageContainer>
 			<Leva
 				theme={customLevaTheme}
-				collapsed={{ collapsed: true, onChange: () => {} }}
+				collapsed
 				titleBar={{ title: "Options", filter: false }}
 			/>
 			<Canvas
@@ -131,10 +131,8 @@ function AppContent({ projectId }: { projectId?: number }) {
 			>
 				<CameraController />
 				<SceneBackground />
-				<SoftShadows size={15} samples={16} focus={0.5} />
 				<AmbientLightWrapper />
 				{/* Hemisphere light: sky color from above, ground bounce from below */}
-				<hemisphereLight args={["#b1c4e0", "#3d3024", 0.6]} />
 
 				{/* Shadow-casting directional light */}
 				<directionalLight
