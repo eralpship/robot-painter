@@ -362,7 +362,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							position={position}
 							intensity={intensity}
 							decay={2}
-							distance={scale * 3}
+							distance={scale}
 							color={color}
 						/>
 					)}
