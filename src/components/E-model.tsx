@@ -221,18 +221,14 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
 		// Material setup
 		useEffect(() => {
-			materials.wheel.metalness = 0.3;
-			materials.wheel.roughness = 0.7;
+			// Wheel material — matched to Blender's Principled BSDF values
+			materials.wheel.metalness = 0.93;
+			materials.wheel.roughness = 0.76;
+			materials.wheel.specularIntensity = 0.15;
+			materials.wheel.clearcoat = 0;
+			materials.wheel.sheen = 0;
+			materials.wheel.ior = 1.5;
 			materials.wheel.envMapIntensity = 0.4;
-			materials.wheel.clearcoat = 0.2;
-			materials.wheel.clearcoatRoughness = 0.6;
-			materials.wheel.reflectivity = 0.25;
-			materials.wheel.specularIntensity = 0.6;
-			materials.wheel.ior = 1.6;
-			materials.wheel.sheen = 0.3;
-			materials.wheel.sheenRoughness = 0.7;
-			materials.wheel.sheenColor = new THREE.Color(0x2a2a2a);
-			materials.wheel.normalScale = new THREE.Vector2(2.5, 2.5);
 
 			// Side materials with transparency
 			const sideMaterials = [
