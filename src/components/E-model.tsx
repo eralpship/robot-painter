@@ -389,6 +389,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			<group ref={group} {...props} dispose={null}>
 				<mesh
 					castShadow
+					receiveShadow
 					name="robot"
 					geometry={nodes.robot.geometry}
 					material={materials.body}
@@ -398,6 +399,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					{/* Lid */}
 					<mesh
 						castShadow
+						receiveShadow
 						name="lid"
 						geometry={nodes.lid.geometry}
 						material={materials.Lid}
@@ -502,6 +504,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
 					<animated.mesh
 						castShadow
+						receiveShadow
 						ref={flagRef}
 						name="robot_flag_new"
 						geometry={nodes.robot_flag_new.geometry}
@@ -514,24 +517,28 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					{/* Body sides */}
 					<mesh
 						castShadow
+						receiveShadow
 						name="body_back"
 						geometry={nodes.body_back.geometry}
 						material={materials.Back}
 					/>
 					<mesh
 						castShadow
+						receiveShadow
 						name="body_front"
 						geometry={nodes.body_front.geometry}
 						material={materials.Front}
 					/>
 					<mesh
 						castShadow
+						receiveShadow
 						name="body_left"
 						geometry={nodes.body_left.geometry}
 						material={materials.Left}
 					/>
 					<mesh
 						castShadow
+						receiveShadow
 						name="body_right"
 						geometry={nodes.body_right.geometry}
 						material={materials.Right}
@@ -558,6 +565,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					{/* Wheels */}
 					<mesh
 						castShadow
+						receiveShadow
 						name="wheel_front_left"
 						onClick={interactive ? handleOuterWheelClick : undefined}
 						geometry={nodes.wheel_front_left.geometry}
@@ -567,6 +575,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					/>
 					<mesh
 						castShadow
+						receiveShadow
 						name="wheel_front_right"
 						onClick={interactive ? handleOuterWheelClick : undefined}
 						geometry={nodes.wheel_front_right.geometry}
@@ -576,6 +585,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					/>
 					<mesh
 						castShadow
+						receiveShadow
 						name="rocker-bogie"
 						geometry={nodes["rocker-bogie"].geometry}
 						material={materials.body}
@@ -584,6 +594,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					>
 						<mesh
 							castShadow
+							receiveShadow
 							name="wheel_back_left"
 							onClick={interactive ? handleOuterWheelClick : undefined}
 							geometry={nodes.wheel_back_left.geometry}
@@ -593,6 +604,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 						/>
 						<mesh
 							castShadow
+							receiveShadow
 							name="wheel_back_right"
 							onClick={interactive ? handleOuterWheelClick : undefined}
 							geometry={nodes.wheel_back_right.geometry}
@@ -602,6 +614,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 						/>
 						<mesh
 							castShadow
+							receiveShadow
 							onClick={interactive ? handleMiddleWheelClick : undefined}
 							name="wheel_middle_left"
 							geometry={nodes.wheel_middle_left.geometry}
@@ -610,6 +623,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 						/>
 						<mesh
 							castShadow
+							receiveShadow
 							onClick={interactive ? handleMiddleWheelClick : undefined}
 							name="wheel_middle_right"
 							geometry={nodes.wheel_middle_right.geometry}
