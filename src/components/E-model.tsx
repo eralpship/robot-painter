@@ -246,6 +246,10 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			// Strip is too reflective — increase roughness for smoother look
 			materials.strip.roughness = 0.7;
 
+			// Darken basket interior so details are visible
+			materials["body inside light"].color.setHex(0x999999);
+			materials["body inside light"].roughness = 0.9;
+
 			// All materials need DoubleSide shadows to prevent light leaking
 			const allMaterials = [
 				materials.body,
