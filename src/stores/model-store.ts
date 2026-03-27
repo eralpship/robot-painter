@@ -10,7 +10,7 @@ export const MODEL_DEFAULTS = {
 	bogieTarget: 0.5,
 	autoRotate: true,
 	fov: 20,
-	ambientLight: 0.8,
+	ambientLight: 1.5,
 } as const;
 
 interface ModelState {
