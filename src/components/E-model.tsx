@@ -397,6 +397,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 				>
 					{/* Lid */}
 					<mesh
+						castShadow
 						name="lid"
 						geometry={nodes.lid.geometry}
 						material={materials.Lid}
@@ -500,6 +501,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					</ClickableLight>
 
 					<animated.mesh
+						castShadow
 						ref={flagRef}
 						name="robot_flag_new"
 						geometry={nodes.robot_flag_new.geometry}
@@ -511,21 +513,25 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
 					{/* Body sides */}
 					<mesh
+						castShadow
 						name="body_back"
 						geometry={nodes.body_back.geometry}
 						material={materials.Back}
 					/>
 					<mesh
+						castShadow
 						name="body_front"
 						geometry={nodes.body_front.geometry}
 						material={materials.Front}
 					/>
 					<mesh
+						castShadow
 						name="body_left"
 						geometry={nodes.body_left.geometry}
 						material={materials.Left}
 					/>
 					<mesh
+						castShadow
 						name="body_right"
 						geometry={nodes.body_right.geometry}
 						material={materials.Right}
@@ -569,6 +575,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 						rotation={[-3.002, 0, Math.PI]}
 					/>
 					<mesh
+						castShadow
 						name="rocker-bogie"
 						geometry={nodes["rocker-bogie"].geometry}
 						material={materials.body}
@@ -576,6 +583,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 						rotation={[-0.013, 0, 0]}
 					>
 						<mesh
+							castShadow
 							name="wheel_back_left"
 							onClick={interactive ? handleOuterWheelClick : undefined}
 							geometry={nodes.wheel_back_left.geometry}
@@ -584,6 +592,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							rotation={[-Math.PI / 6, 0, 0]}
 						/>
 						<mesh
+							castShadow
 							name="wheel_back_right"
 							onClick={interactive ? handleOuterWheelClick : undefined}
 							geometry={nodes.wheel_back_right.geometry}
@@ -592,6 +601,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							rotation={[-Math.PI / 6, 0, Math.PI]}
 						/>
 						<mesh
+							castShadow
 							onClick={interactive ? handleMiddleWheelClick : undefined}
 							name="wheel_middle_left"
 							geometry={nodes.wheel_middle_left.geometry}
@@ -599,6 +609,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							position={[-322.382, 139.349, 1.926]}
 						/>
 						<mesh
+							castShadow
 							onClick={interactive ? handleMiddleWheelClick : undefined}
 							name="wheel_middle_right"
 							geometry={nodes.wheel_middle_right.geometry}
