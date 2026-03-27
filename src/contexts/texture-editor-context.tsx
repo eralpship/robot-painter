@@ -107,6 +107,10 @@ type TextureEditorContextType = {
 	projectModal: ProjectModalState;
 	setProjectModal: (state: ProjectModalState) => void;
 	showProjectCreatedModal: (projectId: number, projectName: string) => void;
+	clipboardElement: TextureEditorElement | null;
+	copyElement: (uuid: string) => void;
+	pasteElement: () => void;
+	duplicateElement: (uuid: string) => void;
 	isDrawingPolygon: boolean;
 	setIsDrawingPolygon: (drawing: boolean) => void;
 	polygonDrawingVertices: Array<{ x: number; y: number }>;
@@ -494,6 +498,52 @@ export function TextureEditorContextProvider({
 		setSelectedElementId(undefined);
 	}, []);
 
+	// Copy/paste clipboard
+	const [clipboardElement, setClipboardElement] =
+		useState<TextureEditorElement | null>(null);
+
+	const copyElement = useCallback(
+		(uuid: string) => {
+			const el = elements.get(uuid);
+			if (!el) return;
+			const { uuid: _uuid, ...rest } = el;
+			setClipboardElement(rest);
+		},
+		[elements],
+	);
+
+	const pasteElement = useCallback(() => {
+		if (!clipboardElement) return;
+		const offset = 30;
+		addElement({
+			...clipboardElement,
+			side,
+			transform: {
+				...clipboardElement.transform,
+				centerX: clipboardElement.transform.centerX + offset,
+				centerY: clipboardElement.transform.centerY + offset,
+			},
+		});
+	}, [clipboardElement, addElement, side]);
+
+	const duplicateElement = useCallback(
+		(uuid: string) => {
+			const el = elements.get(uuid);
+			if (!el) return;
+			const { uuid: _uuid, ...rest } = el;
+			const offset = 30;
+			addElement({
+				...rest,
+				transform: {
+					...rest.transform,
+					centerX: rest.transform.centerX + offset,
+					centerY: rest.transform.centerY + offset,
+				},
+			});
+		},
+		[elements, addElement],
+	);
+
 	const createNewProject = useCallback(
 		async (name: string): Promise<number> => {
 			try {
@@ -633,6 +683,10 @@ export function TextureEditorContextProvider({
 				projectModal,
 				setProjectModal,
 				showProjectCreatedModal,
+				clipboardElement,
+				copyElement,
+				pasteElement,
+				duplicateElement,
 				isDrawingPolygon,
 				setIsDrawingPolygon,
 				polygonDrawingVertices,
