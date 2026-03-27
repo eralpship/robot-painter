@@ -1,0 +1,10 @@
+declare module "@fontsource/roboto";
+declare module "@fontsource/open-sans";
+declare module "@fontsource/montserrat";
+declare module "@fontsource/oswald";
+declare module "@fontsource/playfair-display";
+declare module "@fontsource/raleway";
+declare module "@fontsource/poppins";
+declare module "@fontsource/lato";
+declare module "@fontsource/inter";
+declare module "@fontsource/permanent-marker";
