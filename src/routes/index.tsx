@@ -76,13 +76,13 @@ const DirectionalLightWrapper = () => {
 	const x = Math.sin(rad) * radius;
 	const z = Math.cos(rad) * radius;
 
-	// Point the light at the robot (0, -1, 0) regardless of position
+	// Point the light at the robot center
 	useEffect(() => {
 		if (lightRef.current) {
 			lightRef.current.target.position.set(0, -1, 0);
 			lightRef.current.target.updateMatrixWorld();
 		}
-	}, [x, z, height]);
+	}, []);
 
 	return (
 		<directionalLight
