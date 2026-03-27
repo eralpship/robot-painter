@@ -12,6 +12,7 @@ export function FloatingCollapsibleWindow({
 	y: defaultY,
 	width: defaultWidth,
 	height: defaultHeight,
+	defaultCollapsed,
 }: {
 	title: string;
 	children?: React.ReactNode;
