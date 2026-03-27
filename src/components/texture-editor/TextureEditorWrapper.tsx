@@ -50,7 +50,7 @@ function BackdropWithDeselect() {
 	return (
 		<div
 			id="texture-editor-wrapper-backdrop"
-			className="min-h-0 flex items-center justify-center relative checkered-background @container-[size]"
+			className="flex-1 min-h-0 min-w-0 flex items-center justify-center relative checkered-background @container-[size]"
 			onMouseDown={handleBackdropClick}
 			role="application"
 		>
@@ -125,7 +125,7 @@ function TextureEditorContent() {
 
 	// Normal rendering when project is loaded
 	return (
-		<div className="flex flex-row h-full w-full min-h-0">
+		<div className="flex flex-row flex-1 h-full w-full min-h-0">
 			<Toolbar />
 			<BackdropWithDeselect />
 		</div>
@@ -134,7 +134,7 @@ function TextureEditorContent() {
 
 export function TextureEditorWrapper() {
 	return (
-		<div className="h-full w-full flex flex-col min-h-0">
+		<div className="h-full w-full flex-1 flex flex-col min-h-0">
 			<TextureEditorContent />
 		</div>
 	);
