@@ -3,8 +3,8 @@
  * in serialized SVGs (which lose access to page CSS fonts).
  */
 
-// Cache: "family|weight|style" -> base64 @font-face CSS
-const fontCache = new Map<string, string>();
+// Cache: stores all @font-face CSS rules grouped by family name
+const fontCache = new Map<string, string[]>();
 let initialized = false;
 
 /**
@@ -40,11 +40,9 @@ export async function initFontCache(): Promise<void> {
 
 		const fontWeight = rule.style.getPropertyValue("font-weight") || "400";
 		const fontStyle = rule.style.getPropertyValue("font-style") || "normal";
-		const cacheKey = `${family}|${fontWeight}|${fontStyle}`;
-		if (fontCache.has(cacheKey)) continue;
+		const unicodeRange = rule.style.getPropertyValue("unicode-range") || "";
 
 		const srcValue = rule.style.getPropertyValue("src");
-		// Extract the first url() from the src
 		const urlMatch = srcValue.match(/url\(["']?([^"')]+)["']?\)/);
 		if (!urlMatch) continue;
 
@@ -64,9 +62,16 @@ export async function initFontCache(): Promise<void> {
 								? "font/woff"
 								: "font/ttf";
 					const dataUri = `data:${mimeType};base64,${base64}`;
+					const rangePart = unicodeRange
+						? ` unicode-range: ${unicodeRange};`
+						: "";
 
-					const css = `@font-face { font-family: '${family}'; font-weight: ${fontWeight}; font-style: ${fontStyle}; src: url('${dataUri}') format('${format}'); }`;
-					fontCache.set(cacheKey, css);
+					const css = `@font-face { font-family: '${family}'; font-weight: ${fontWeight}; font-style: ${fontStyle}; src: url('${dataUri}') format('${format}');${rangePart} }`;
+
+					if (!fontCache.has(family)) {
+						fontCache.set(family, []);
+					}
+					fontCache.get(family)?.push(css);
 				})
 				.catch(() => {
 					// Font fetch failed — skip silently
@@ -79,14 +84,14 @@ export async function initFontCache(): Promise<void> {
 
 /**
  * Get embedded @font-face CSS for a list of font families.
- * Returns all cached weights/styles for each family.
+ * Returns all cached subsets and weights for each family.
  */
 export function getEmbeddedFontCSS(fontFamilies: string[]): string {
 	const rules: string[] = [];
-	for (const [key, css] of fontCache) {
-		const family = key.split("|")[0];
-		if (fontFamilies.includes(family)) {
-			rules.push(css);
+	for (const family of fontFamilies) {
+		const familyRules = fontCache.get(family);
+		if (familyRules) {
+			rules.push(...familyRules);
 		}
 	}
 	return rules.join("\n");
