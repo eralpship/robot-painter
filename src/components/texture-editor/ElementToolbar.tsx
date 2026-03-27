@@ -1,6 +1,6 @@
 import { formatForDisplay } from "@tanstack/hotkeys";
 import { useHotkeys } from "@tanstack/react-hotkeys";
-import { ClipboardPaste, Copy, CopyPlus, Trash2 } from "lucide-react";
+import { Copy, CopyPlus, Trash2 } from "lucide-react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
@@ -15,11 +15,6 @@ export function ElementToolbar() {
 				if (ctx.selectedElement) ctx.copyElement(ctx.selectedElement.uuid);
 			},
 			options: { preventDefault: true, enabled: !!ctx.selectedElement },
-		},
-		{
-			hotkey: "Mod+V",
-			callback: () => ctx.pasteElement(),
-			options: { preventDefault: true, enabled: !!ctx.clipboardElement },
 		},
 		{
 			hotkey: "Mod+D",
@@ -45,15 +40,6 @@ export function ElementToolbar() {
 				title={`Copy (${formatForDisplay("Mod+C")})`}
 			>
 				<Copy className="size-4" /> Copy
-			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				onClick={() => ctx.pasteElement()}
-				disabled={!ctx.clipboardElement}
-				title={`Paste (${formatForDisplay("Mod+V")})`}
-			>
-				<ClipboardPaste className="size-4" /> Paste
 			</Button>
 			<Button
 				variant="outline"
