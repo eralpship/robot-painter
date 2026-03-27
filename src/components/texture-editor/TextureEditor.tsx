@@ -11,6 +11,7 @@ import {
 	OverlayTextureContext,
 	type OverlayTextureSides,
 } from "../../contexts/overlay-texture-canvas-context";
+import { getEmbeddedFontCSS } from "../../utils/font-embed";
 import StencilUvSvgBack from "./back.svg?react";
 import StencilUvSvgFront from "./front.svg?react";
 import StencilUvSvgLeft from "./left.svg?react";
@@ -65,6 +66,30 @@ function serializeSvg(
 	const styleElements = clone.querySelectorAll("style");
 	for (const style of styleElements) {
 		style.remove();
+	}
+
+	// Embed fonts used by text elements so they render in the Image context
+	const textElements = clone.querySelectorAll("text");
+	const usedFonts = new Set<string>();
+	for (const textEl of textElements) {
+		const fontFamily = textEl.style.fontFamily;
+		if (fontFamily) {
+			// Extract the first font name (strip fallbacks and quotes)
+			const primaryFont = fontFamily.split(",")[0].trim().replace(/['"]/g, "");
+			if (primaryFont) usedFonts.add(primaryFont);
+		}
+	}
+
+	if (usedFonts.size > 0) {
+		const fontCSS = getEmbeddedFontCSS(Array.from(usedFonts));
+		if (fontCSS) {
+			const styleEl = clone.ownerDocument.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"style",
+			);
+			styleEl.textContent = fontCSS;
+			clone.insertBefore(styleEl, clone.firstChild);
+		}
 	}
 
 	return new XMLSerializer().serializeToString(clone);

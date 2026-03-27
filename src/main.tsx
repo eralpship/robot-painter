@@ -17,6 +17,7 @@ import "@fontsource/inter";
 import "@fontsource/permanent-marker";
 import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
+import { initFontCache } from "./utils/font-embed";
 import { initImageMagick } from "./utils/image-compression";
 
 // Expose test helpers on window for chrome-devtools testing
@@ -25,6 +26,13 @@ import "./test-helpers";
 // Initialize ImageMagick WASM early
 initImageMagick().catch((err) => {
 	console.error("[ImageMagick] Failed to initialize:", err);
+});
+
+// Initialize font cache for SVG embedding (after fonts are loaded)
+document.fonts.ready.then(() => {
+	initFontCache().catch((err) => {
+		console.error("[FontEmbed] Failed to initialize:", err);
+	});
 });
 
 // Create a new router instance
