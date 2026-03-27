@@ -340,7 +340,8 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			[toggleBogieToTarget],
 		);
 
-		// Wrapper component that adds a clickable hitbox to a light
+		// Wrapper that replaces pointLight with an emissive glow sphere (no illumination)
+		// plus an invisible hitbox for click interaction
 		const ClickableLight = ({
 			children,
 		}: {
@@ -349,10 +350,21 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			const position = children.props.position as [number, number, number];
 			const name = children.props.name as string;
 			const scale = (children.props.scale as number) ?? 30;
+			const color = children.props.color as string | undefined;
+			const intensity = (children.props.intensity as number) ?? 0;
 
 			return (
 				<>
-					{children}
+					{/* Emissive glow sphere — visible but doesn't illuminate other objects */}
+					<mesh name={name} position={position} scale={scale * 0.5}>
+						<sphereGeometry args={[1, 16, 16]} />
+						<meshBasicMaterial
+							color={color ?? "#ffffff"}
+							transparent
+							opacity={Math.min(intensity / 20, 1)}
+						/>
+					</mesh>
+					{/* Invisible hitbox for click interaction */}
 					<mesh
 						name={`${name}_hitbox`}
 						position={position}
@@ -413,7 +425,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							name="headlight_left"
 							intensity={headlightIntensity}
 							decay={2}
-							distance={150}
 							color={headlightColor}
 							position={[-235.912, 385.374, -301.501]}
 							rotation={[-Math.PI, 0, 0]}
@@ -425,7 +436,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							name="headlight_right"
 							intensity={headlightIntensity}
 							decay={2}
-							distance={150}
 							color={headlightColor}
 							position={[241.584, 386.931, -299.362]}
 							rotation={[-Math.PI, 0, 0]}
@@ -439,7 +449,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							name="tail_light_middle_left"
 							intensity={taillightIntensity}
 							decay={2}
-							distance={100}
 							color={taillightColor}
 							position={[38.204, -384.368, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
@@ -451,7 +460,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							name="tail_light_middle_middle"
 							intensity={taillightIntensity}
 							decay={2}
-							distance={100}
 							color={taillightColor}
 							position={[-0.018, -384.368, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
@@ -463,7 +471,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							name="tail_light_middle_right"
 							intensity={taillightIntensity}
 							decay={2}
-							distance={100}
 							color={taillightColor}
 							position={[-47.829, -384.368, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
@@ -477,7 +484,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							name="tail_light_right"
 							intensity={taillightIntensity}
 							decay={2}
-							distance={100}
 							color={taillightColor}
 							position={[-248.999, -326.223, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
@@ -489,7 +495,6 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							name="tail_light_left"
 							intensity={taillightIntensity}
 							decay={2}
-							distance={100}
 							color={taillightColor}
 							position={[250.51, -326.223, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
