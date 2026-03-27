@@ -437,7 +437,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							intensity={headlightIntensity}
 							decay={2}
 							color={headlightColor}
-							position={[-235.912, 385.374, -301.501]}
+							position={[-238.748, 426.153, -300.432]}
 							rotation={[-Math.PI, 0, 0]}
 							scale={30}
 						/>
@@ -448,7 +448,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							intensity={headlightIntensity}
 							decay={2}
 							color={headlightColor}
-							position={[241.584, 386.931, -299.362]}
+							position={[238.748, 426.153, -300.432]}
 							rotation={[-Math.PI, 0, 0]}
 							scale={30}
 						/>
@@ -461,7 +461,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							intensity={taillightIntensity}
 							decay={2}
 							color={taillightColor}
-							position={[38.204, -384.368, -602.573]}
+							position={[43.017, -414.368, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
 							scale={25}
 						/>
@@ -472,7 +472,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							intensity={taillightIntensity}
 							decay={2}
 							color={taillightColor}
-							position={[-0.018, -384.368, -602.573]}
+							position={[0, -414.368, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
 							scale={25}
 						/>
@@ -483,7 +483,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							intensity={taillightIntensity}
 							decay={2}
 							color={taillightColor}
-							position={[-47.829, -384.368, -602.573]}
+							position={[-43.017, -414.368, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
 							scale={25}
 						/>
@@ -496,7 +496,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							intensity={taillightIntensity}
 							decay={2}
 							color={taillightColor}
-							position={[-248.999, -326.223, -602.573]}
+							position={[-249.754, -356.223, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
 							scale={25}
 						/>
@@ -507,7 +507,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							intensity={taillightIntensity}
 							decay={2}
 							color={taillightColor}
-							position={[250.51, -326.223, -602.573]}
+							position={[249.754, -356.223, -602.573]}
 							rotation={[-Math.PI, 0, 0]}
 							scale={25}
 						/>
