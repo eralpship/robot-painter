@@ -10,10 +10,10 @@ export const MODEL_DEFAULTS = {
 	bogieTarget: 0.5,
 	autoRotate: true,
 	fov: 20,
-	ambientLight: 10,
-	directionalLight: 20,
+	ambientLight: 2,
+	directionalLight: 4,
 	directionalLightAngle: 45,
-	directionalLightHeight: 20,
+	directionalLightHeight: 15,
 } as const;
 
 interface ModelState {
