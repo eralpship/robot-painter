@@ -533,6 +533,55 @@
 						"node":25,
 						"path":"rotation"
 					}
+				},
+				{
+					"sampler":2,
+					"target":{
+						"node":17,
+						"path":"rotation"
+					}
+				},
+				{
+					"sampler":3,
+					"target":{
+						"node":13,
+						"path":"rotation"
+					}
+				},
+				{
+					"sampler":4,
+					"target":{
+						"node":14,
+						"path":"rotation"
+					}
+				},
+				{
+					"sampler":5,
+					"target":{
+						"node":23,
+						"path":"translation"
+					}
+				},
+				{
+					"sampler":6,
+					"target":{
+						"node":23,
+						"path":"rotation"
+					}
+				},
+				{
+					"sampler":7,
+					"target":{
+						"node":24,
+						"path":"translation"
+					}
+				},
+				{
+					"sampler":8,
+					"target":{
+						"node":24,
+						"path":"rotation"
+					}
 				}
 			],
 			"name":"rocker",
@@ -546,6 +595,41 @@
 					"input":75,
 					"interpolation":"LINEAR",
 					"output":77
+				},
+				{
+					"input":75,
+					"interpolation":"LINEAR",
+					"output":78
+				},
+				{
+					"input":75,
+					"interpolation":"LINEAR",
+					"output":79
+				},
+				{
+					"input":75,
+					"interpolation":"LINEAR",
+					"output":80
+				},
+				{
+					"input":75,
+					"interpolation":"LINEAR",
+					"output":81
+				},
+				{
+					"input":75,
+					"interpolation":"LINEAR",
+					"output":82
+				},
+				{
+					"input":75,
+					"interpolation":"LINEAR",
+					"output":83
+				},
+				{
+					"input":75,
+					"interpolation":"LINEAR",
+					"output":84
 				}
 			]
 		},
@@ -567,125 +651,6 @@
 				}
 			],
 			"name":"open lid",
-			"samplers":[
-				{
-					"input":75,
-					"interpolation":"LINEAR",
-					"output":78
-				},
-				{
-					"input":75,
-					"interpolation":"LINEAR",
-					"output":79
-				}
-			]
-		},
-		{
-			"channels":[
-				{
-					"sampler":0,
-					"target":{
-						"node":17,
-						"path":"rotation"
-					}
-				}
-			],
-			"name":"rocker",
-			"samplers":[
-				{
-					"input":75,
-					"interpolation":"LINEAR",
-					"output":80
-				}
-			]
-		},
-		{
-			"channels":[
-				{
-					"sampler":0,
-					"target":{
-						"node":13,
-						"path":"rotation"
-					}
-				}
-			],
-			"name":"rocker",
-			"samplers":[
-				{
-					"input":75,
-					"interpolation":"LINEAR",
-					"output":81
-				}
-			]
-		},
-		{
-			"channels":[
-				{
-					"sampler":0,
-					"target":{
-						"node":14,
-						"path":"rotation"
-					}
-				}
-			],
-			"name":"rocker",
-			"samplers":[
-				{
-					"input":75,
-					"interpolation":"LINEAR",
-					"output":82
-				}
-			]
-		},
-		{
-			"channels":[
-				{
-					"sampler":0,
-					"target":{
-						"node":23,
-						"path":"translation"
-					}
-				},
-				{
-					"sampler":1,
-					"target":{
-						"node":23,
-						"path":"rotation"
-					}
-				}
-			],
-			"name":"rocker",
-			"samplers":[
-				{
-					"input":75,
-					"interpolation":"LINEAR",
-					"output":83
-				},
-				{
-					"input":75,
-					"interpolation":"LINEAR",
-					"output":84
-				}
-			]
-		},
-		{
-			"channels":[
-				{
-					"sampler":0,
-					"target":{
-						"node":24,
-						"path":"translation"
-					}
-				},
-				{
-					"sampler":1,
-					"target":{
-						"node":24,
-						"path":"rotation"
-					}
-				}
-			],
-			"name":"rocker",
 			"samplers":[
 				{
 					"input":75,
@@ -1956,7 +1921,7 @@
 			"bufferView":78,
 			"componentType":5126,
 			"count":40,
-			"type":"VEC3"
+			"type":"VEC4"
 		},
 		{
 			"bufferView":79,
@@ -1974,7 +1939,7 @@
 			"bufferView":81,
 			"componentType":5126,
 			"count":40,
-			"type":"VEC4"
+			"type":"VEC3"
 		},
 		{
 			"bufferView":82,
@@ -2475,23 +2440,23 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":480,
+			"byteLength":640,
 			"byteOffset":96988
 		},
 		{
 			"buffer":0,
 			"byteLength":640,
-			"byteOffset":97468
+			"byteOffset":97628
 		},
 		{
 			"buffer":0,
 			"byteLength":640,
-			"byteOffset":98108
+			"byteOffset":98268
 		},
 		{
 			"buffer":0,
-			"byteLength":640,
-			"byteOffset":98748
+			"byteLength":480,
+			"byteOffset":98908
 		},
 		{
 			"buffer":0,
