@@ -225,10 +225,18 @@ export function TextureEditor({
 		[editorCtx],
 	);
 
-	// Escape to cancel polygon drawing
-	useHotkey("Escape", () => editorCtx.cancelPolygonDrawing(), {
-		enabled: editorCtx.isDrawingPolygon,
-	});
+	// Escape to cancel polygon drawing or deselect element
+	useHotkey(
+		"Escape",
+		() => {
+			if (editorCtx.isDrawingPolygon) {
+				editorCtx.cancelPolygonDrawing();
+			} else if (editorCtx.selectedElement) {
+				editorCtx.setSelectedElementId(undefined);
+			}
+		},
+		{ enabled: editorCtx.isDrawingPolygon || !!editorCtx.selectedElement },
+	);
 
 	const handleSvgMouseDown = useCallback<MouseEventHandler<SVGSVGElement>>(
 		(e) => {
