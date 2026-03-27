@@ -340,8 +340,8 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			[toggleBogieToTarget],
 		);
 
-		// Wrapper that renders a glow sphere (no illumination on other objects)
-		// plus an invisible hitbox for click interaction
+		// Wrapper that renders a real pointLight with limited range
+		// plus a glow sphere and invisible hitbox for interaction
 		const ClickableLight = ({
 			children,
 		}: {
@@ -356,9 +356,19 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
 			return (
 				<>
-					{/* Glow sphere — additive blending for bright light look */}
+					{/* Real point light with tight range — illuminates nearby surface only */}
 					{isOn && (
-						<mesh name={name} position={position} scale={scale * 0.4}>
+						<pointLight
+							position={position}
+							intensity={intensity}
+							decay={2}
+							distance={scale * 3}
+							color={color}
+						/>
+					)}
+					{/* Small glow sphere for visual indicator */}
+					{isOn && (
+						<mesh name={name} position={position} scale={scale * 0.3}>
 							<sphereGeometry args={[1, 16, 16]} />
 							<meshBasicMaterial
 								color={color ?? "#ffffff"}
