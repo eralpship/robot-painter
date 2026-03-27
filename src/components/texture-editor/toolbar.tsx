@@ -1,6 +1,7 @@
 import { formatForDisplay } from "@tanstack/hotkeys";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { ClipboardPaste, X } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { ClipboardPaste, ExternalLink, X } from "lucide-react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
@@ -33,6 +34,7 @@ function ToolbarGroup({
 
 export function Toolbar() {
 	const ctx = useContext(TextureEditorContext);
+	const navigate = useNavigate();
 
 	// Paste hotkey always active when clipboard has content (regardless of selection)
 	useHotkey("Mod+V", () => ctx.pasteElement(), {
@@ -95,6 +97,24 @@ export function Toolbar() {
 							</ToolbarGroup>
 						)}
 					</>
+				)}
+
+				{ctx.mode === "basic" && (
+					<div className="mt-auto pt-2 border-t border-border">
+						<Button
+							variant="outline"
+							size="sm"
+							className="w-full justify-start"
+							onClick={() =>
+								navigate({
+									to: "/texture-editor",
+									search: (prev) => prev,
+								})
+							}
+						>
+							<ExternalLink className="size-4" /> More Options
+						</Button>
+					</div>
 				)}
 			</div>
 		</div>
