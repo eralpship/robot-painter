@@ -256,7 +256,11 @@ export function TextureEditor({
 				editorCtx.removeElement(editorCtx.selectedElement.uuid);
 			}
 		},
-		{ enabled: !!editorCtx.selectedElement, ignoreInputs: true },
+		{
+			enabled: !!editorCtx.selectedElement,
+			ignoreInputs: true,
+			conflictBehavior: "allow",
+		},
 	);
 
 	// Escape to cancel polygon drawing or deselect element
@@ -269,7 +273,10 @@ export function TextureEditor({
 				editorCtx.setSelectedElementId(undefined);
 			}
 		},
-		{ enabled: editorCtx.isDrawingPolygon || !!editorCtx.selectedElement },
+		{
+			enabled: editorCtx.isDrawingPolygon || !!editorCtx.selectedElement,
+			conflictBehavior: "allow",
+		},
 	);
 
 	const handleSvgMouseDown = useCallback<MouseEventHandler<SVGSVGElement>>(
