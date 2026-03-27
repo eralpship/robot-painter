@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
-	textureEditorElementsArraySchema,
 	type TextureEditorElementSchema,
+	textureEditorElementsArraySchema,
 } from "./texture-editor-elements";
 
 // Current export format version

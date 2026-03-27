@@ -1,8 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useRef } from "react";
-import { useProjects } from "@/hooks/useProjects";
-import { Button } from "@/components/ui/Button";
-import { PageContainer } from "@/components/PageContainer";
 import {
 	Download,
 	FolderPlus,
@@ -11,12 +7,9 @@ import {
 	Trash,
 	Upload,
 } from "lucide-react";
-import { createProject } from "@/utils/projectUtils";
-import { db } from "@/db/db";
-import { exportProject } from "@/utils/projectExport";
-import { parseImportFile, ImportError } from "@/utils/projectImport";
-import { useTextureEditorPersistence } from "@/hooks/useTextureEditorPersistence";
-import type { ProjectData } from "@/schemas/project-export";
+import { useRef, useState } from "react";
+import { PageContainer } from "@/components/PageContainer";
+import { Button } from "@/components/ui/Button";
 import {
 	Dialog,
 	DialogContent,
@@ -26,6 +19,13 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { db } from "@/db/db";
+import { useProjects } from "@/hooks/useProjects";
+import { useTextureEditorPersistence } from "@/hooks/useTextureEditorPersistence";
+import type { ProjectData } from "@/schemas/project-export";
+import { exportProject } from "@/utils/projectExport";
+import { ImportError, parseImportFile } from "@/utils/projectImport";
+import { createProject } from "@/utils/projectUtils";
 
 export const Route = createFileRoute("/projects")({
 	component: Projects,

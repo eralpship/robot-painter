@@ -17,7 +17,13 @@ export function RobotPreview() {
 			<directionalLight position={[0, 10, 5]} intensity={0.8} />
 			<directionalLight position={[-3, -3, -3]} intensity={0.4} />
 			<directionalLight position={[3, -2, 3]} intensity={0.3} />
-			<Model ref={modelRef} position={[0, -3.5, 0]} scale={1} interactive={false} lightsOff />
+			<Model
+				ref={modelRef}
+				position={[0, -3.5, 0]}
+				scale={1}
+				interactive={false}
+				lightsOff
+			/>
 			<OrbitControls
 				makeDefault
 				enableZoom={true}

@@ -1,7 +1,7 @@
 import {
-	projectExportSchema,
 	CURRENT_EXPORT_VERSION,
 	type ProjectData,
+	projectExportSchema,
 } from "@/schemas/project-export";
 
 export class ImportError extends Error {
@@ -28,7 +28,7 @@ export async function parseImportFile(file: File): Promise<ProjectData> {
 		if (firstIssue?.path.includes("exportVersion")) {
 			const parsed = json as { exportVersion?: unknown };
 			throw new ImportError(
-				`Version mismatch: file has version ${parsed.exportVersion}, expected ${CURRENT_EXPORT_VERSION}`
+				`Version mismatch: file has version ${parsed.exportVersion}, expected ${CURRENT_EXPORT_VERSION}`,
 			);
 		}
 		throw new ImportError(`Invalid project file: ${firstIssue?.message}`);

@@ -501,9 +501,7 @@ export function TextureEditor({
 									id={uuid}
 									key={uuid}
 									className="texture-element-selectable"
-									points={element.points
-										.map((p) => `${p.x},${p.y}`)
-										.join(" ")}
+									points={element.points.map((p) => `${p.x},${p.y}`).join(" ")}
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
 									style={{ cursor: "pointer" }}
@@ -550,9 +548,7 @@ export function TextureEditor({
 					editorCtx.isDrawingPolygon
 						? null
 						: editorCtx.selectedElement?.uuid
-							? elementRefs.current.get(
-									editorCtx.selectedElement.uuid,
-								) || null
+							? elementRefs.current.get(editorCtx.selectedElement.uuid) || null
 							: null
 				}
 				svgOrigin="50% 50%"

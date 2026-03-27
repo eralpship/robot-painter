@@ -19,8 +19,7 @@ export function ElementToolbar() {
 		{
 			hotkey: "Mod+D",
 			callback: () => {
-				if (ctx.selectedElement)
-					ctx.duplicateElement(ctx.selectedElement.uuid);
+				if (ctx.selectedElement) ctx.duplicateElement(ctx.selectedElement.uuid);
 			},
 			options: { preventDefault: true, enabled: !!ctx.selectedElement },
 		},

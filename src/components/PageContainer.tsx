@@ -5,11 +5,12 @@ interface PageContainerProps {
 	className?: string;
 }
 
-export function PageContainer({ children, className = "" }: PageContainerProps) {
+export function PageContainer({
+	children,
+	className = "",
+}: PageContainerProps) {
 	return (
-		<div
-			className={`h-screen w-screen bg-page-background ${className}`.trim()}
-		>
+		<div className={`h-screen w-screen bg-page-background ${className}`.trim()}>
 			{children}
 		</div>
 	);

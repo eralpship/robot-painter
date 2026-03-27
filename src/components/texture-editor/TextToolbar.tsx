@@ -131,8 +131,7 @@ export function TextToolbar() {
 				onValueChange={(value) => {
 					if (selectedTextElement) {
 						ctx.updateElement(selectedTextElement.uuid, {
-							fontFamily:
-								value === "system-default" ? undefined : value,
+							fontFamily: value === "system-default" ? undefined : value,
 						});
 					}
 				}}
@@ -146,7 +145,10 @@ export function TextToolbar() {
 						<SelectItem
 							key={font.value}
 							value={font.value}
-							style={{ fontFamily: font.value === "system-default" ? "inherit" : font.value }}
+							style={{
+								fontFamily:
+									font.value === "system-default" ? "inherit" : font.value,
+							}}
 						>
 							{font.label}
 						</SelectItem>

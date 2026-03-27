@@ -26,42 +26,38 @@ export function Toolbar() {
 			<div className="text-xs text-foreground-subtle flex flex-wrap flex-row items-start justify-start gap-2">
 				<CommonToolbar />
 				<SideSelector />
-				{ctx.mode === "full"
-					? ctx.isDrawingPolygon
-						? (
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => ctx.cancelPolygonDrawing()}
-								>
-									<X className="size-4" /> Cancel Drawing
-								</Button>
-							)
-						: (
-								<>
-									<AddElementToolbar />
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => ctx.pasteElement()}
-										disabled={!ctx.clipboardElement}
-										title={`Paste (${formatForDisplay("Mod+V")})`}
-									>
-										<ClipboardPaste className="size-4" /> Paste
-									</Button>
-									{ctx.selectedElement ? <ElementToolbar /> : null}
-									{ctx.selectedElement?.type === "text" ? (
-										<TextToolbar />
-									) : null}
-									{ctx.selectedElement?.type === "rectangle" ? (
-										<RectangleToolbar />
-									) : null}
-									{ctx.selectedElement?.type === "polygon" ? (
-										<PolygonToolbar />
-									) : null}
-								</>
-							)
-					: null}
+				{ctx.mode === "full" ? (
+					ctx.isDrawingPolygon ? (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => ctx.cancelPolygonDrawing()}
+						>
+							<X className="size-4" /> Cancel Drawing
+						</Button>
+					) : (
+						<>
+							<AddElementToolbar />
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => ctx.pasteElement()}
+								disabled={!ctx.clipboardElement}
+								title={`Paste (${formatForDisplay("Mod+V")})`}
+							>
+								<ClipboardPaste className="size-4" /> Paste
+							</Button>
+							{ctx.selectedElement ? <ElementToolbar /> : null}
+							{ctx.selectedElement?.type === "text" ? <TextToolbar /> : null}
+							{ctx.selectedElement?.type === "rectangle" ? (
+								<RectangleToolbar />
+							) : null}
+							{ctx.selectedElement?.type === "polygon" ? (
+								<PolygonToolbar />
+							) : null}
+						</>
+					)
+				) : null}
 			</div>
 		</div>
 	);

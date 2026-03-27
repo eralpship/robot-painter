@@ -91,7 +91,7 @@ function TextureEditorContent() {
 							navigateToProject(navigate, mode, projectModal.recentProject.id);
 						}
 					}}
-					onBrowseProjects={() => navigate({ to: '/projects' })}
+					onBrowseProjects={() => navigate({ to: "/projects" })}
 					onCreateProject={async (name) => {
 						try {
 							const newId = await createNewProject(name);
