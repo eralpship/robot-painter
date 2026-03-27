@@ -1,31 +1,35 @@
+import { formatForDisplay } from "@tanstack/hotkeys";
+import { useHotkeys } from "@tanstack/react-hotkeys";
 import { ClipboardPaste, Copy, CopyPlus, Trash2 } from "lucide-react";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 
 export function ElementToolbar() {
 	const ctx = useContext(TextureEditorContext);
 
-	// Keyboard shortcuts for copy/paste/duplicate
-	useEffect(() => {
-		const handler = (e: KeyboardEvent) => {
-			const mod = e.metaKey || e.ctrlKey;
-			if (!mod) return;
-
-			if (e.key === "c" && ctx.selectedElement) {
-				e.preventDefault();
-				ctx.copyElement(ctx.selectedElement.uuid);
-			} else if (e.key === "v" && ctx.clipboardElement) {
-				e.preventDefault();
-				ctx.pasteElement();
-			} else if (e.key === "d" && ctx.selectedElement) {
-				e.preventDefault();
-				ctx.duplicateElement(ctx.selectedElement.uuid);
-			}
-		};
-		window.addEventListener("keydown", handler);
-		return () => window.removeEventListener("keydown", handler);
-	}, [ctx]);
+	useHotkeys([
+		{
+			hotkey: "Mod+C",
+			callback: () => {
+				if (ctx.selectedElement) ctx.copyElement(ctx.selectedElement.uuid);
+			},
+			options: { preventDefault: true, enabled: !!ctx.selectedElement },
+		},
+		{
+			hotkey: "Mod+V",
+			callback: () => ctx.pasteElement(),
+			options: { preventDefault: true, enabled: !!ctx.clipboardElement },
+		},
+		{
+			hotkey: "Mod+D",
+			callback: () => {
+				if (ctx.selectedElement)
+					ctx.duplicateElement(ctx.selectedElement.uuid);
+			},
+			options: { preventDefault: true, enabled: !!ctx.selectedElement },
+		},
+	]);
 
 	return (
 		<>
@@ -38,7 +42,7 @@ export function ElementToolbar() {
 					}
 				}}
 				disabled={!ctx.selectedElement}
-				title="Copy (Ctrl+C)"
+				title={`Copy (${formatForDisplay("Mod+C")})`}
 			>
 				<Copy className="size-4" /> Copy
 			</Button>
@@ -47,7 +51,7 @@ export function ElementToolbar() {
 				size="sm"
 				onClick={() => ctx.pasteElement()}
 				disabled={!ctx.clipboardElement}
-				title="Paste (Ctrl+V)"
+				title={`Paste (${formatForDisplay("Mod+V")})`}
 			>
 				<ClipboardPaste className="size-4" /> Paste
 			</Button>
@@ -60,7 +64,7 @@ export function ElementToolbar() {
 					}
 				}}
 				disabled={!ctx.selectedElement}
-				title="Duplicate (Ctrl+D)"
+				title={`Duplicate (${formatForDisplay("Mod+D")})`}
 			>
 				<CopyPlus className="size-4" /> Duplicate
 			</Button>

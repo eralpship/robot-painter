@@ -1,11 +1,12 @@
+import { HotkeysProvider } from "@tanstack/react-hotkeys";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 export const Route = createRootRoute({
 	component: () => (
-		<>
+		<HotkeysProvider>
 			<Outlet />
 			<TanStackRouterDevtools />
-		</>
+		</HotkeysProvider>
 	),
 });

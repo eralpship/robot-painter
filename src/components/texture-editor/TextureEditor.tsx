@@ -1,3 +1,4 @@
+import { useHotkey } from "@tanstack/react-hotkeys";
 import {
 	type MouseEventHandler,
 	useCallback,
@@ -225,14 +226,9 @@ export function TextureEditor({
 	);
 
 	// Escape to cancel polygon drawing
-	useEffect(() => {
-		if (!editorCtx.isDrawingPolygon) return;
-		const handler = (e: KeyboardEvent) => {
-			if (e.key === "Escape") editorCtx.cancelPolygonDrawing();
-		};
-		window.addEventListener("keydown", handler);
-		return () => window.removeEventListener("keydown", handler);
-	}, [editorCtx.isDrawingPolygon, editorCtx.cancelPolygonDrawing]);
+	useHotkey("Escape", () => editorCtx.cancelPolygonDrawing(), {
+		enabled: editorCtx.isDrawingPolygon,
+	});
 
 	const handleSvgMouseDown = useCallback<MouseEventHandler<SVGSVGElement>>(
 		(e) => {
@@ -341,10 +337,7 @@ export function TextureEditor({
 				onMouseDown={handleSvgMouseDown}
 				onClick={handleSvgClick}
 				onDoubleClick={handleSvgDoubleClick}
-				onKeyDown={(e) => {
-					if (e.key === "Escape" && editorCtx.isDrawingPolygon)
-						editorCtx.cancelPolygonDrawing();
-				}}
+				onKeyDown={() => {}}
 				aria-label={`Texture editor canvas for ${side} side`}
 			>
 				<title>{`Texture editor canvas for ${side} side`}</title>
