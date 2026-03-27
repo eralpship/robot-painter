@@ -167,7 +167,8 @@ function AppContent({ projectId }: { projectId?: number }) {
 					shadow-camera-right={10}
 					shadow-camera-top={10}
 					shadow-camera-bottom={-10}
-					shadow-bias={-0.0005}
+					shadow-bias={0}
+					shadow-normalBias={0.02}
 				/>
 
 				{/* Ground plane to receive shadows */}

@@ -546,6 +546,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
 					{/* Basket */}
 					<mesh
+						receiveShadow
 						name="Basket"
 						geometry={nodes.Basket.geometry}
 						material={materials["body inside light"]}
@@ -556,6 +557,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 
 					{/* Body inside */}
 					<mesh
+						receiveShadow
 						name="body_inside"
 						geometry={nodes.body_inside.geometry}
 						material={materials["body inside dark"]}
