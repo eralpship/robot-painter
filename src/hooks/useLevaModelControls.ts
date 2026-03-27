@@ -243,7 +243,7 @@ export function useLevaModelControls(
 			ambientLight: {
 				value: MODEL_DEFAULTS.ambientLight,
 				label: "Ambient Intensity",
-				max: 40,
+				max: 20,
 				min: 0,
 				step: 0.1,
 				onChange: setAmbientLight,
@@ -251,7 +251,7 @@ export function useLevaModelControls(
 			directionalLight: {
 				value: MODEL_DEFAULTS.directionalLight,
 				label: "Directional Intensity",
-				max: 100,
+				max: 60,
 				min: 0,
 				step: 0.1,
 				onChange: setDirectionalLight,
@@ -267,8 +267,8 @@ export function useLevaModelControls(
 			directionalLightHeight: {
 				value: MODEL_DEFAULTS.directionalLightHeight,
 				label: "Height",
-				min: 1,
-				max: 50,
+				min: 0,
+				max: 100,
 				step: 0.5,
 				onChange: setDirectionalLightHeight,
 			},
