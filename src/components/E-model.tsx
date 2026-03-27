@@ -383,7 +383,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 					<mesh
 						name={`${name}_hitbox`}
 						position={position}
-						scale={scale * 4}
+						scale={scale * 10}
 						onClick={interactive ? handleHitboxClick : undefined}
 					>
 						<sphereGeometry args={[1, 16, 16]} />
