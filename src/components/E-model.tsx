@@ -366,20 +366,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 							color={color}
 						/>
 					)}
-					{/* Small glow sphere for visual indicator */}
-					{isOn && (
-						<mesh name={name} position={position} scale={scale * 0.3}>
-							<sphereGeometry args={[1, 16, 16]} />
-							<meshBasicMaterial
-								color={color ?? "#ffffff"}
-								transparent
-								opacity={1}
-								depthWrite={false}
-								blending={THREE.AdditiveBlending}
-							/>
-						</mesh>
-					)}
-					{/* Transparent hitbox for click interaction — larger than glow for easier hover */}
+					{/* Transparent hitbox for click interaction */}
 					<mesh
 						name={`${name}_hitbox`}
 						position={position}
