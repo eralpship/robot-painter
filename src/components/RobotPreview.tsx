@@ -13,13 +13,13 @@ export function RobotPreview() {
 			camera={{ position: [10, 5, 10], zoom: 20 }}
 			gl={{ toneMapping: 0 }} // Disable tone mapping for flat colors
 		>
-			<ambientLight intensity={8} />
 			<Model
 				ref={modelRef}
 				position={[0, -3.5, 0]}
 				scale={1}
 				interactive={false}
 				lightsOff
+				unlit
 			/>
 			<OrbitControls
 				makeDefault

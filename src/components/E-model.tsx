@@ -71,6 +71,7 @@ type GLTFResult = GLTF & {
 type ModelProps = React.ComponentProps<"group"> & {
 	interactive?: boolean;
 	lightsOff?: boolean;
+	unlit?: boolean;
 };
 
 export interface ModelRef {
@@ -99,7 +100,7 @@ loadingManager.setURLModifier((url) => {
 });
 
 export const Model = forwardRef<ModelRef, ModelProps>(
-	({ interactive = true, lightsOff = false, ...props }, ref) => {
+	({ interactive = true, lightsOff = false, unlit = false, ...props }, ref) => {
 		const group = React.useRef<THREE.Group>(null);
 		const flagRef = useRef<THREE.Mesh>(null);
 
@@ -271,6 +272,25 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			materials.body,
 			materials.wheel,
 		]);
+
+		// Unlit mode: swap all materials to MeshBasicMaterial (no lighting)
+		useEffect(() => {
+			if (!unlit || !group.current) return;
+			group.current.traverse((child) => {
+				if (child instanceof THREE.Mesh && child.material) {
+					const mat = child.material as THREE.MeshStandardMaterial;
+					const basic = new THREE.MeshBasicMaterial({
+						color: mat.color,
+						map: mat.map,
+						transparent: mat.transparent,
+						opacity: mat.opacity,
+						alphaTest: mat.alphaTest,
+						side: mat.side,
+					});
+					child.material = basic;
+				}
+			});
+		}, [unlit]);
 
 		// Texture updates - consolidated
 		useEffect(() => {
