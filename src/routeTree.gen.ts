@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as TextureEditorImport } from './routes/texture-editor'
+import { Route as RobotEditorImport } from './routes/robot-editor'
 import { Route as ProjectsImport } from './routes/projects'
 import { Route as IndexImport } from './routes/index'
 
@@ -20,6 +21,12 @@ import { Route as IndexImport } from './routes/index'
 const TextureEditorRoute = TextureEditorImport.update({
   id: '/texture-editor',
   path: '/texture-editor',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RobotEditorRoute = RobotEditorImport.update({
+  id: '/robot-editor',
+  path: '/robot-editor',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -53,6 +60,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsImport
       parentRoute: typeof rootRoute
     }
+    '/robot-editor': {
+      id: '/robot-editor'
+      path: '/robot-editor'
+      fullPath: '/robot-editor'
+      preLoaderRoute: typeof RobotEditorImport
+      parentRoute: typeof rootRoute
+    }
     '/texture-editor': {
       id: '/texture-editor'
       path: '/texture-editor'
@@ -68,12 +82,14 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/projects': typeof ProjectsRoute
+  '/robot-editor': typeof RobotEditorRoute
   '/texture-editor': typeof TextureEditorRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/projects': typeof ProjectsRoute
+  '/robot-editor': typeof RobotEditorRoute
   '/texture-editor': typeof TextureEditorRoute
 }
 
@@ -81,27 +97,30 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/projects': typeof ProjectsRoute
+  '/robot-editor': typeof RobotEditorRoute
   '/texture-editor': typeof TextureEditorRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/projects' | '/texture-editor'
+  fullPaths: '/' | '/projects' | '/robot-editor' | '/texture-editor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/projects' | '/texture-editor'
-  id: '__root__' | '/' | '/projects' | '/texture-editor'
+  to: '/' | '/projects' | '/robot-editor' | '/texture-editor'
+  id: '__root__' | '/' | '/projects' | '/robot-editor' | '/texture-editor'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProjectsRoute: typeof ProjectsRoute
+  RobotEditorRoute: typeof RobotEditorRoute
   TextureEditorRoute: typeof TextureEditorRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProjectsRoute: ProjectsRoute,
+  RobotEditorRoute: RobotEditorRoute,
   TextureEditorRoute: TextureEditorRoute,
 }
 
@@ -117,6 +136,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/projects",
+        "/robot-editor",
         "/texture-editor"
       ]
     },
@@ -125,6 +145,9 @@ export const routeTree = rootRoute
     },
     "/projects": {
       "filePath": "projects.tsx"
+    },
+    "/robot-editor": {
+      "filePath": "robot-editor.tsx"
     },
     "/texture-editor": {
       "filePath": "texture-editor.tsx"

@@ -90,7 +90,7 @@ function Projects() {
 		const projectId = await createProject(name);
 		setIsCreateModalOpen(false);
 		setNewProjectName("");
-		navigate({ to: "/", search: { "project-id": projectId } });
+		navigate({ to: "/robot-editor", search: { "project-id": projectId } });
 	};
 
 	const handleExportClick = (
@@ -141,7 +141,7 @@ function Projects() {
 		});
 
 		closeImportModal();
-		navigate({ to: "/", search: { "project-id": projectId } });
+		navigate({ to: "/robot-editor", search: { "project-id": projectId } });
 	};
 
 	const closeImportModal = () => {
@@ -227,7 +227,7 @@ function Projects() {
 						{projects.map((project) => (
 							<Link
 								key={project.id}
-								to="/"
+								to="/robot-editor"
 								search={{ "project-id": project.id }}
 								className="flex items-center justify-between p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
 							>

@@ -38,7 +38,7 @@ export function CommonToolbar() {
 				size="sm"
 				onClick={() => {
 					navigate({
-						to: ctx.mode === "full" ? "/" : "/texture-editor",
+						to: ctx.mode === "full" ? "/robot-editor" : "/texture-editor",
 						search: (prev) => prev,
 					});
 				}}

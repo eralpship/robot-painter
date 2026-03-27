@@ -1,6 +1,6 @@
 /**
  * Shared route utilities for project-id search parameter validation.
- * Used by both / and /texture-editor routes.
+ * Used by both /robot-editor and /texture-editor routes.
  */
 
 import type { NavigateFn } from "@tanstack/react-router";
@@ -30,12 +30,13 @@ export function validateProjectSearch(
 }
 
 /**
- * Navigate to a project by ID. Always opens the robot editor (/).
+ * Navigate to a project by ID. Opens the robot editor or texture editor based on mode.
  */
 export function navigateToProject(
 	navigate: NavigateFn,
-	_mode: TexureEditorMode,
+	mode: TexureEditorMode,
 	projectId: number,
 ): void {
-	navigate({ to: "/", search: { "project-id": projectId } });
+	const to = mode === "full" ? "/texture-editor" : "/robot-editor";
+	navigate({ to, search: { "project-id": projectId } });
 }
