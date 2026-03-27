@@ -12,7 +12,7 @@ export const MODEL_DEFAULTS = {
 	fov: 20,
 	ambientLight: 5,
 	directionalLight: 7.5,
-	directionalLightAngle: 128,
+	directionalLightAngle: 64,
 	directionalLightHeight: 37,
 } as const;
 

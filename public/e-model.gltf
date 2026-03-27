@@ -6,7 +6,8 @@
 	"extensionsUsed":[
 		"KHR_lights_punctual",
 		"KHR_materials_clearcoat",
-		"KHR_materials_specular"
+		"KHR_materials_specular",
+		"KHR_materials_ior"
 	],
 	"extensionsRequired":[
 		"KHR_lights_punctual"
@@ -671,10 +672,13 @@
 			"extensions":{
 				"KHR_materials_specular":{
 					"specularColorFactor":[
-						1.4436113834381104,
-						1.4436113834381104,
-						1.4436113834381104
+						0.19274003135681284,
+						0.19274003135681284,
+						0.19274003135681284
 					]
+				},
+				"KHR_materials_ior":{
+					"ior":9.59999942779541
 				}
 			},
 			"name":"body inside light",
@@ -685,8 +689,8 @@
 					0.18799510598182678,
 					1
 				],
-				"metallicFactor":0.17954544723033905,
-				"roughnessFactor":0.7681818604469299
+				"metallicFactor":0.18409088253974915,
+				"roughnessFactor":0.8000000715255737
 			}
 		},
 		{
