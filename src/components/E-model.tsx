@@ -235,12 +235,21 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 				mat.alphaTest = 0.01;
 			}
 
+			// Strip is too reflective — increase roughness for smoother look
+			materials.strip.roughness = 0.7;
+
 			// All materials need DoubleSide shadows to prevent light leaking
-			const allMaterials = [materials.body, materials.wheel, ...sideMaterials];
+			const allMaterials = [
+				materials.body,
+				materials.wheel,
+				materials.strip,
+				...sideMaterials,
+			];
 			for (const mat of allMaterials) {
 				mat.shadowSide = THREE.DoubleSide;
 			}
 		}, [
+			materials.strip,
 			materials.Back,
 			materials.Front,
 			materials.Left,
