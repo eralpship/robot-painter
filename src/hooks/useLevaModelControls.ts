@@ -45,7 +45,7 @@ export function useLevaModelControls(
 	);
 
 	// Lighting controls
-	const [, setLighting] = useControls("Lighting", () => ({
+	const [, setLighting] = useControls("Robot Lights", () => ({
 		headlightsIntensity: {
 			value: MODEL_DEFAULTS.headlightIntensity,
 			label: "Headlights Intensity",
@@ -150,7 +150,7 @@ export function useLevaModelControls(
 	}, [setLighting]);
 
 	// Animation controls
-	const [, setAnimation] = useControls("Animation", () => ({
+	const [, setAnimation] = useControls("Robot Animations", () => ({
 		lidOpen: {
 			value: MODEL_DEFAULTS.lidOpen,
 			label: "Lid Open",
@@ -238,19 +238,19 @@ export function useLevaModelControls(
 
 	// Environment controls
 	useControls(
-		"Environment",
+		"Environment Lights",
 		() => ({
 			ambientLight: {
 				value: MODEL_DEFAULTS.ambientLight,
-				label: "Ambient Light",
-				max: 100,
+				label: "Ambient Intensity",
+				max: 40,
 				min: 0,
 				step: 0.1,
 				onChange: setAmbientLight,
 			},
 			directionalLight: {
 				value: MODEL_DEFAULTS.directionalLight,
-				label: "Directional Light",
+				label: "Directional Intensity",
 				max: 100,
 				min: 0,
 				step: 0.1,
@@ -258,7 +258,7 @@ export function useLevaModelControls(
 			},
 			directionalLightAngle: {
 				value: MODEL_DEFAULTS.directionalLightAngle,
-				label: "Light Angle",
+				label: "Angle",
 				min: 0,
 				max: 360,
 				step: 1,
@@ -266,7 +266,7 @@ export function useLevaModelControls(
 			},
 			directionalLightHeight: {
 				value: MODEL_DEFAULTS.directionalLightHeight,
-				label: "Light Height",
+				label: "Height",
 				min: 1,
 				max: 50,
 				step: 0.5,
