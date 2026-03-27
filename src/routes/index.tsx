@@ -19,6 +19,7 @@ import {
 	useAutoRotate,
 	useDirectionalLight,
 	useDirectionalLightAngle,
+	useDirectionalLightHeight,
 	useFov,
 } from "../stores/model-store";
 import { validateProjectSearch } from "../utils/projectRouteUtils";
@@ -64,18 +65,30 @@ const AmbientLightWrapper = () => {
 	return <ambientLight intensity={ambientLight} />;
 };
 
-// DirectionalLightWrapper reads intensity and angle from store
+// DirectionalLightWrapper reads intensity, angle, and height from store
 const DirectionalLightWrapper = () => {
 	const intensity = useDirectionalLight();
 	const angle = useDirectionalLightAngle();
+	const height = useDirectionalLightHeight();
+	const lightRef = useRef<THREE.DirectionalLight>(null);
 	const rad = (angle * Math.PI) / 180;
 	const radius = 20;
 	const x = Math.sin(rad) * radius;
 	const z = Math.cos(rad) * radius;
+
+	// Point the light at the robot (0, -1, 0) regardless of position
+	useEffect(() => {
+		if (lightRef.current) {
+			lightRef.current.target.position.set(0, -1, 0);
+			lightRef.current.target.updateMatrixWorld();
+		}
+	}, [x, z, height]);
+
 	return (
 		<directionalLight
+			ref={lightRef}
 			castShadow
-			position={[x, 20, z]}
+			position={[x, height, z]}
 			intensity={intensity}
 			shadow-mapSize-width={2048}
 			shadow-mapSize-height={2048}

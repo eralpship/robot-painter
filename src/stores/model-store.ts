@@ -13,6 +13,7 @@ export const MODEL_DEFAULTS = {
 	ambientLight: 10,
 	directionalLight: 20,
 	directionalLightAngle: 45,
+	directionalLightHeight: 20,
 } as const;
 
 interface ModelState {
@@ -33,6 +34,7 @@ interface ModelState {
 	ambientLight: number;
 	directionalLight: number;
 	directionalLightAngle: number;
+	directionalLightHeight: number;
 }
 
 interface ModelActions {
@@ -54,6 +56,7 @@ interface ModelActions {
 	setAmbientLight: (intensity: number) => void;
 	setDirectionalLight: (intensity: number) => void;
 	setDirectionalLightAngle: (angle: number) => void;
+	setDirectionalLightHeight: (height: number) => void;
 
 	// Bulk reset
 	resetToDefaults: () => void;
@@ -90,6 +93,8 @@ export const useModelStore = create<ModelStore>()(
 					set({ directionalLight: intensity }),
 				setDirectionalLightAngle: (angle) =>
 					set({ directionalLightAngle: angle }),
+				setDirectionalLightHeight: (height) =>
+					set({ directionalLightHeight: height }),
 
 				// Bulk reset
 				resetToDefaults: () => set(MODEL_DEFAULTS),
@@ -117,3 +122,5 @@ export const useDirectionalLight = () =>
 	useModelStore((s) => s.directionalLight);
 export const useDirectionalLightAngle = () =>
 	useModelStore((s) => s.directionalLightAngle);
+export const useDirectionalLightHeight = () =>
+	useModelStore((s) => s.directionalLightHeight);
