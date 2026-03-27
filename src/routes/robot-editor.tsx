@@ -163,11 +163,13 @@ function RobotEditorContent() {
 		<>
 			<TitleBar />
 			<div className="flex-1 min-h-0 relative">
-				<div className="absolute top-2 right-2 z-50 w-[340px]">
+				<div
+					className="absolute top-2 right-2 z-50 w-[340px]"
+					style={{ fontFamily: "system-ui, sans-serif", fontSize: "11px" }}
+				>
 					<Leva
 						theme={customLevaTheme}
 						fill
-						flat
 						collapsed
 						titleBar={{ title: "Display Options", filter: false }}
 					/>
