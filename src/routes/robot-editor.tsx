@@ -161,13 +161,13 @@ function RobotEditorContent() {
 
 	return (
 		<>
-			<Leva
-				theme={customLevaTheme}
-				collapsed
-				titleBar={{ title: "Options", filter: false }}
-			/>
 			<TitleBar />
 			<div className="flex-1 min-h-0 relative">
+				<Leva
+					theme={customLevaTheme}
+					collapsed
+					titleBar={{ title: "Options", filter: false }}
+				/>
 				<Canvas
 					className="h-full w-full"
 					shadows
