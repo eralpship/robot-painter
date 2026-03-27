@@ -1,4 +1,9 @@
-import { Environment, Html, OrbitControls } from "@react-three/drei";
+import {
+	Environment,
+	Html,
+	OrbitControls,
+	SoftShadows,
+} from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { createFileRoute } from "@tanstack/react-router";
 import { Leva } from "leva";
@@ -144,6 +149,8 @@ function AppContent({ projectId }: { projectId?: number }) {
 			<Canvas
 				className="h-screen w-screen"
 				shadows
+				dpr={[1, 2]}
+				gl={{ antialias: true }}
 				camera={{
 					position: [40, 30, 40],
 					fov: MODEL_DEFAULTS.fov,
@@ -151,6 +158,7 @@ function AppContent({ projectId }: { projectId?: number }) {
 			>
 				<CameraController />
 				<SceneBackground />
+				<SoftShadows size={15} samples={16} focus={0.5} />
 				<EnvironmentWrapper />
 				<AmbientLightWrapper />
 
