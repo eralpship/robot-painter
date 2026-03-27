@@ -262,6 +262,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			}
 		}, [
 			materials.strip,
+			materials["body inside light"],
 			materials.Back,
 			materials.Front,
 			materials.Left,
