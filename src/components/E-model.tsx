@@ -219,18 +219,9 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			}
 		});
 
-		// Material setup
+		// Material setup — only override what's needed, rely on GLTF values otherwise
 		useEffect(() => {
-			// Wheel material — matched to Blender's Principled BSDF values
-			materials.wheel.metalness = 0.93;
-			materials.wheel.roughness = 0.76;
-			materials.wheel.specularIntensity = 0.15;
-			materials.wheel.clearcoat = 0;
-			materials.wheel.sheen = 0;
-			materials.wheel.ior = 1.5;
-			materials.wheel.envMapIntensity = 0.4;
-
-			// Side materials with transparency
+			// Side/lid materials need transparency for texture painting overlay
 			const sideMaterials = [
 				materials.Back,
 				materials.Front,
@@ -241,21 +232,12 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			for (const mat of sideMaterials) {
 				mat.transparent = true;
 				mat.opacity = 1;
-				mat.metalness = 0.3;
-				mat.roughness = 0.35;
 				mat.alphaTest = 0.01;
 			}
 
-			materials.body.metalness = 0.3;
-			materials.body.roughness = 0.35;
-
-			// Make all materials block light from both sides in shadow map
-			const allShadowMaterials = [
-				materials.body,
-				materials.wheel,
-				...sideMaterials,
-			];
-			for (const mat of allShadowMaterials) {
+			// All materials need DoubleSide shadows to prevent light leaking
+			const allMaterials = [materials.body, materials.wheel, ...sideMaterials];
+			for (const mat of allMaterials) {
 				mat.shadowSide = THREE.DoubleSide;
 			}
 		}, [
