@@ -11,7 +11,7 @@ export function PolygonToolbar() {
 
 	return (
 		<ColorPickerButton
-			label="Polygon Color"
+			label="Polygon"
 			color={selectedPolygon?.color ?? "#3b82f6"}
 			onChange={(color) => {
 				if (selectedPolygon) {

@@ -11,7 +11,7 @@ export function RectangleToolbar() {
 
 	return (
 		<ColorPickerButton
-			label="Rectangle Color"
+			label="Rectangle"
 			color={selectedRectangle?.color ?? "#3b82f6"}
 			onChange={(color) => {
 				if (selectedRectangle) {

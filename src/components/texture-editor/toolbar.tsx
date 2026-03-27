@@ -58,18 +58,19 @@ export function Toolbar() {
 						{ctx.mode === "full" && (
 							<ToolbarGroup title="Add">
 								<AddElementToolbar />
-								<Button
-									variant="outline"
-									size="sm"
-									className="w-full justify-start"
-									onClick={() => ctx.pasteElement()}
-									disabled={!ctx.clipboardElement}
-									title={`Paste (${formatForDisplay("Mod+V")})`}
-								>
-									<ClipboardPaste className="size-4" /> Paste
-								</Button>
 							</ToolbarGroup>
 						)}
+
+						<Button
+							variant="outline"
+							size="sm"
+							className="w-full justify-start"
+							onClick={() => ctx.pasteElement()}
+							disabled={!ctx.clipboardElement}
+							title={`Paste (${formatForDisplay("Mod+V")})`}
+						>
+							<ClipboardPaste className="size-4" /> Paste
+						</Button>
 
 						{ctx.selectedElement && (
 							<ToolbarGroup title="Element">
