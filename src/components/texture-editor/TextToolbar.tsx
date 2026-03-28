@@ -116,7 +116,7 @@ export function TextToolbar() {
 				}}
 			/>
 			<ColorPickerButton
-				label="Text"
+				label="Color"
 				color={selectedTextElement?.color ?? "#000000"}
 				onChange={(color) => {
 					if (selectedTextElement) {

@@ -226,7 +226,7 @@ export function TextureEditor({
 			// Close polygon if clicking near the first vertex
 			if (editorCtx.polygonDrawingVertices.length >= 3) {
 				const first = editorCtx.polygonDrawingVertices[0];
-				if (Math.hypot(point.x - first.x, point.y - first.y) < 15) {
+				if (Math.hypot(point.x - first.x, point.y - first.y) < 25) {
 					editorCtx.finishPolygonDrawing();
 					return;
 				}
@@ -431,7 +431,8 @@ export function TextureEditor({
 										fontWeight: "bold",
 										fontSize: `${element.fontSize}px`,
 										fill: element.color,
-										cursor: "pointer",
+										cursor: editorCtx.isDrawingPolygon ? "crosshair" : "pointer",
+										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
 										textAlign: "center",
 										textAnchor: "middle",
 										dominantBaseline: "middle",
@@ -466,7 +467,8 @@ export function TextureEditor({
 									height={element.height}
 									transform={toSVGTransform(element.transform)}
 									style={{
-										cursor: "pointer",
+										cursor: editorCtx.isDrawingPolygon ? "crosshair" : "pointer",
+										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
 									}}
 									onError={(e) => {
 										console.error("SVG image failed to render:", uuid, e);
@@ -492,7 +494,10 @@ export function TextureEditor({
 									height={element.height}
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
-									style={{ cursor: "pointer" }}
+									style={{
+										cursor: editorCtx.isDrawingPolygon ? "crosshair" : "pointer",
+										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
+									}}
 								/>
 							);
 						case "polygon":
@@ -511,7 +516,10 @@ export function TextureEditor({
 									points={element.points.map((p) => `${p.x},${p.y}`).join(" ")}
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
-									style={{ cursor: "pointer" }}
+									style={{
+										cursor: editorCtx.isDrawingPolygon ? "crosshair" : "pointer",
+										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
+									}}
 								/>
 							);
 						default:
@@ -532,13 +540,24 @@ export function TextureEditor({
 								strokeDasharray="6,3"
 							/>
 							{editorCtx.polygonDrawingVertices.map((v, i) => (
-								<circle
-									key={`polygon-vertex-${i}-${v.x}-${v.y}`}
-									cx={v.x}
-									cy={v.y}
-									r={4}
-									fill={i === 0 ? "#ef4444" : "#3b82f6"}
-								/>
+								<g key={`polygon-vertex-${i}-${v.x}-${v.y}`}>
+									{/* Larger invisible hit area for first vertex (close polygon) */}
+									{i === 0 && (
+										<circle
+											cx={v.x}
+											cy={v.y}
+											r={25}
+											fill="transparent"
+											style={{ pointerEvents: "auto", cursor: "pointer" }}
+										/>
+									)}
+									<circle
+										cx={v.x}
+										cy={v.y}
+										r={8}
+										fill={i === 0 ? "#ef4444" : "#3b82f6"}
+									/>
+								</g>
 							))}
 						</g>
 					)}

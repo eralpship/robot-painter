@@ -47,27 +47,29 @@ export function ColorPickerButton({
 	);
 
 	return (
-		<Button
-			variant="outline"
-			size="sm"
-			onClick={() => colorInputRef.current?.click()}
-			className="gap-2"
-			disabled={disabled}
-		>
-			{Icon && <Icon className="size-4" />}
-			{label}
-			<span
-				className="w-4 h-4 rounded-sm border border-white/20"
-				style={{ backgroundColor: localColor }}
-			/>
+		<div className="relative inline-block">
+			<Button
+				variant="outline"
+				size="sm"
+				onClick={() => colorInputRef.current?.click()}
+				className="gap-2"
+				disabled={disabled}
+			>
+				{Icon && <Icon className="size-4" />}
+				{label}
+				<span
+					className="w-4 h-4 rounded-sm border border-white/20"
+					style={{ backgroundColor: localColor }}
+				/>
+			</Button>
 			<input
 				ref={colorInputRef}
 				type="color"
 				value={localColor}
 				onChange={handleChange}
-				className="sr-only"
+				className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
 				disabled={disabled}
 			/>
-		</Button>
+		</div>
 	);
 }
