@@ -137,7 +137,11 @@ export function TextToolbar() {
 				disabled={!selectedTextElement}
 			/>
 			<Select
-				value={selectedTextElement ? (selectedTextElement.fontFamily || "system-default") : ""}
+				value={
+					selectedTextElement
+						? selectedTextElement.fontFamily || "system-default"
+						: ""
+				}
 				onValueChange={(value) => {
 					if (selectedTextElement) {
 						ctx.updateElement(selectedTextElement.uuid, {
