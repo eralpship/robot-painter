@@ -142,8 +142,8 @@ export function AddElementDropdown() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="outline" size="sm">
-					<Plus className="size-4" /> Add Element
+				<Button variant="outline" size="sm" className="w-full justify-start">
+					<Plus className="size-4" /> Add
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start">

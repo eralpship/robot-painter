@@ -170,7 +170,6 @@ function RobotEditorContent() {
 					<Leva
 						theme={customLevaTheme}
 						fill
-						collapsed
 						titleBar={{ title: "Display Options", filter: false }}
 					/>
 				</div>
@@ -222,7 +221,6 @@ function RobotEditorContent() {
 					y={10}
 					width={440}
 					height={350}
-					defaultCollapsed
 				>
 					<TextureEditorWrapper />
 				</FloatingCollapsibleWindow>

@@ -431,7 +431,9 @@ export function TextureEditor({
 										fontWeight: "bold",
 										fontSize: `${element.fontSize}px`,
 										fill: element.color,
-										cursor: editorCtx.isDrawingPolygon ? "crosshair" : "pointer",
+										cursor: editorCtx.isDrawingPolygon
+											? "crosshair"
+											: "pointer",
 										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
 										textAlign: "center",
 										textAnchor: "middle",
@@ -467,7 +469,9 @@ export function TextureEditor({
 									height={element.height}
 									transform={toSVGTransform(element.transform)}
 									style={{
-										cursor: editorCtx.isDrawingPolygon ? "crosshair" : "pointer",
+										cursor: editorCtx.isDrawingPolygon
+											? "crosshair"
+											: "pointer",
 										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
 									}}
 									onError={(e) => {
@@ -495,7 +499,9 @@ export function TextureEditor({
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
 									style={{
-										cursor: editorCtx.isDrawingPolygon ? "crosshair" : "pointer",
+										cursor: editorCtx.isDrawingPolygon
+											? "crosshair"
+											: "pointer",
 										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
 									}}
 								/>
@@ -517,7 +523,9 @@ export function TextureEditor({
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
 									style={{
-										cursor: editorCtx.isDrawingPolygon ? "crosshair" : "pointer",
+										cursor: editorCtx.isDrawingPolygon
+											? "crosshair"
+											: "pointer",
 										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
 									}}
 								/>

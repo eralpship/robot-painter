@@ -22,7 +22,7 @@ export function ElementOrderDropdown() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="outline" size="sm">
+				<Button variant="outline" size="sm" className="w-full justify-start">
 					<Layers className="size-4" /> Order
 				</Button>
 			</DropdownMenuTrigger>

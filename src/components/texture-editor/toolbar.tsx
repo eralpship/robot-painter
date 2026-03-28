@@ -4,6 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ClipboardPaste, ExternalLink, X } from "lucide-react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
+import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { AddElementToolbar } from "./AddElementToolbar";
 import { ElementOrderDropdown } from "./ElementOrderDropdown";
@@ -46,6 +47,13 @@ export function Toolbar() {
 		<div className="w-[140px] shrink-0 bg-surface border-r border-border overflow-y-auto overflow-x-hidden">
 			<div className="flex flex-col gap-2 p-2 text-xs">
 				<SideSelector />
+
+				<ColorPickerButton
+					label="Bckgrnd"
+					color={ctx.backgroundColor}
+					onChange={ctx.setBackgroundColor}
+					debounceMs={100}
+				/>
 
 				{ctx.isDrawingPolygon ? (
 					<Button

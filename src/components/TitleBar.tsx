@@ -3,14 +3,12 @@ import {
 	Download,
 	FolderPlus,
 	Home,
-	PaintBucket,
 	Paintbrush,
 	Undo2,
 	Wrench,
 } from "lucide-react";
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { db } from "@/db/db";
 import { exportProject } from "@/utils/projectExport";
@@ -37,13 +35,6 @@ export function TitleBar() {
 			<Button variant="outline" size="sm" onClick={() => navigate({ to: "/" })}>
 				<Home className="size-4" />
 			</Button>
-			<ColorPickerButton
-				label="Background"
-				color={ctx.backgroundColor}
-				onChange={ctx.setBackgroundColor}
-				debounceMs={100}
-				icon={PaintBucket}
-			/>
 			<Button
 				variant="outline"
 				size="sm"

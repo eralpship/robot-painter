@@ -196,7 +196,7 @@ function Projects() {
 	return (
 		<PageContainer className="text-white p-8 overflow-auto">
 			<div className="max-w-4xl mx-auto">
-				<div className="flex items-center justify-between mb-8">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
 					<div>
 						<Link to="/" className="text-sm text-gray-400 hover:text-gray-300">
 							&larr; Home
@@ -206,14 +206,15 @@ function Projects() {
 					<div className="flex items-center gap-2">
 						<Button
 							variant="outline"
+							size="sm"
 							onClick={() => setIsImportModalOpen(true)}
 						>
-							<Upload className="size-4 mr-2" />
-							Import Project
+							<Upload className="size-4 sm:mr-2" />
+							<span className="hidden sm:inline">Import</span>
 						</Button>
-						<Button onClick={() => setIsCreateModalOpen(true)}>
-							<Plus className="size-4 mr-2" />
-							Create Project
+						<Button size="sm" onClick={() => setIsCreateModalOpen(true)}>
+							<Plus className="size-4 sm:mr-2" />
+							<span className="hidden sm:inline">Create</span>
 						</Button>
 					</div>
 				</div>

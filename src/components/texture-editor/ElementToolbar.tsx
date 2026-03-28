@@ -30,6 +30,7 @@ export function ElementToolbar() {
 			<Button
 				variant="outline"
 				size="sm"
+				className="w-full justify-start"
 				onClick={() => {
 					if (ctx.selectedElement) {
 						ctx.copyElement(ctx.selectedElement.uuid);
@@ -43,6 +44,7 @@ export function ElementToolbar() {
 			<Button
 				variant="outline"
 				size="sm"
+				className="w-full justify-start"
 				onClick={() => {
 					if (ctx.selectedElement) {
 						ctx.duplicateElement(ctx.selectedElement.uuid);
@@ -56,6 +58,7 @@ export function ElementToolbar() {
 			<Button
 				variant="outline"
 				size="sm"
+				className="w-full justify-start"
 				onClick={() => {
 					if (ctx.selectedElement) {
 						ctx.removeElement(ctx.selectedElement.uuid);

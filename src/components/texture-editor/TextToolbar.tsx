@@ -1,4 +1,4 @@
-import { ALargeSmall, Palette, TextCursorInput } from "lucide-react";
+import { ALargeSmall, TextCursorInput } from "lucide-react";
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
@@ -49,6 +49,7 @@ export function TextToolbar() {
 			<Button
 				variant="outline"
 				size="sm"
+				className="w-full justify-start"
 				onClick={() => {
 					const element = ctx.selectedElement;
 					if (!element) {
@@ -67,7 +68,7 @@ export function TextToolbar() {
 					setChangeTextOpen(true);
 				}}
 			>
-				<TextCursorInput className="size-4" /> Change Text
+				<TextCursorInput className="size-4" /> Text
 			</Button>
 			<ChangeTextModal
 				open={changeTextOpen}
@@ -82,6 +83,7 @@ export function TextToolbar() {
 			<Button
 				variant="outline"
 				size="sm"
+				className="w-full justify-start"
 				onClick={() => {
 					const element = ctx.selectedElement;
 					if (!element) {
@@ -124,10 +126,9 @@ export function TextToolbar() {
 					}
 				}}
 				disabled={!selectedTextElement}
-				icon={Palette}
 			/>
 			<Select
-				value={selectedTextElement?.fontFamily || "system-default"}
+				value={selectedTextElement ? (selectedTextElement.fontFamily || "system-default") : ""}
 				onValueChange={(value) => {
 					if (selectedTextElement) {
 						ctx.updateElement(selectedTextElement.uuid, {
@@ -137,8 +138,8 @@ export function TextToolbar() {
 				}}
 				disabled={!selectedTextElement}
 			>
-				<SelectTrigger size="sm" className="w-auto">
-					<SelectValue placeholder="Font" />
+				<SelectTrigger size="sm" className="w-full">
+					<SelectValue>Font</SelectValue>
 				</SelectTrigger>
 				<SelectContent>
 					{AVAILABLE_FONTS.map((font) => (

@@ -1,5 +1,4 @@
 import { debounce } from "lodash";
-import type { LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 
@@ -9,7 +8,6 @@ interface ColorPickerButtonProps {
 	onChange: (color: string) => void;
 	debounceMs?: number;
 	disabled?: boolean;
-	icon?: LucideIcon;
 }
 
 export function ColorPickerButton({
@@ -18,7 +16,6 @@ export function ColorPickerButton({
 	onChange,
 	debounceMs = 0,
 	disabled = false,
-	icon: Icon,
 }: ColorPickerButtonProps) {
 	const [localColor, setLocalColor] = useState(color);
 	const colorInputRef = useRef<HTMLInputElement>(null);
@@ -47,20 +44,19 @@ export function ColorPickerButton({
 	);
 
 	return (
-		<div className="relative inline-block">
+		<div className="relative w-full">
 			<Button
 				variant="outline"
 				size="sm"
 				onClick={() => colorInputRef.current?.click()}
-				className="gap-2"
+				className="gap-2 w-full justify-start"
 				disabled={disabled}
 			>
-				{Icon && <Icon className="size-4" />}
-				{label}
 				<span
-					className="w-4 h-4 rounded-sm border border-white/20"
+					className="size-4 rounded-sm border border-white/20 shrink-0"
 					style={{ backgroundColor: localColor }}
 				/>
+				{label}
 			</Button>
 			<input
 				ref={colorInputRef}

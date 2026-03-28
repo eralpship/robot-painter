@@ -1,4 +1,3 @@
-import { Palette } from "lucide-react";
 import { useContext } from "react";
 import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
@@ -19,7 +18,6 @@ export function RectangleToolbar() {
 				}
 			}}
 			disabled={!selectedRectangle}
-			icon={Palette}
 		/>
 	);
 }
