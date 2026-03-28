@@ -3,6 +3,8 @@ import { useContext } from "react";
 import { createPortal } from "react-dom";
 import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
+import { useTextureEditorPersistence } from "@/hooks/useTextureEditorPersistence";
+import type { ProjectData } from "@/schemas/project-export";
 import { navigateToProject } from "@/utils/projectRouteUtils";
 import { ProjectCreatedModal } from "./modals/ProjectCreatedModal";
 import { ProjectSelectionModal } from "./modals/ProjectSelectionModal";
@@ -67,6 +69,7 @@ function TextureEditorContent() {
 	const { projectModal, createNewProject, mode } =
 		useContext(TextureEditorContext);
 	const navigate = useNavigate();
+	const { createProjectFromImport } = useTextureEditorPersistence();
 
 	// When project selection modal is showing, don't render the editor
 	// Use a portal to render full-screen overlay at document body level (z-40, below dialog's z-50)
@@ -97,6 +100,18 @@ function TextureEditorContent() {
 								"[TextureEditorWrapper] Failed to create project:",
 								error,
 							);
+						}
+					}}
+					onImportProject={async (name, data: Omit<ProjectData, "name">) => {
+						try {
+							const newId = await createProjectFromImport(name, data);
+							navigateToProject(navigate, mode, newId);
+						} catch (error) {
+							console.error(
+								"[TextureEditorWrapper] Failed to import project:",
+								error,
+							);
+							throw error;
 						}
 					}}
 				/>
