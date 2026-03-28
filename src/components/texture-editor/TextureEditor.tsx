@@ -238,11 +238,29 @@ export function TextureEditor({
 	);
 
 	// Polygon drawing: double-click to close
+	// Text elements: double-click to edit text
 	const handleSvgDoubleClick = useCallback(
-		(_e: React.MouseEvent<SVGSVGElement>) => {
-			if (!editorCtx.isDrawingPolygon) return;
-			if (editorCtx.polygonDrawingVertices.length >= 3) {
-				editorCtx.finishPolygonDrawing();
+		(e: React.MouseEvent<SVGSVGElement>) => {
+			if (editorCtx.isDrawingPolygon) {
+				if (editorCtx.polygonDrawingVertices.length >= 3) {
+					editorCtx.finishPolygonDrawing();
+				}
+				return;
+			}
+
+			// Check if double-clicked on a text element
+			const target = e.target as SVGElement;
+			const isSelectable = target.classList?.contains(
+				"texture-element-selectable",
+			);
+			if (isSelectable) {
+				const uuid = target.getAttribute("id");
+				if (uuid) {
+					const element = editorCtx.elements.get(uuid);
+					if (element?.type === "text") {
+						editorCtx.requestTextEdit(uuid);
+					}
+				}
 			}
 		},
 		[editorCtx],

@@ -118,6 +118,9 @@ type TextureEditorContextType = {
 	addPolygonVertex: (point: { x: number; y: number }) => void;
 	finishPolygonDrawing: () => void;
 	cancelPolygonDrawing: () => void;
+	textEditRequest: { uuid: string; text: string } | null;
+	requestTextEdit: (uuid: string) => void;
+	clearTextEditRequest: () => void;
 };
 
 export const TextureEditorContext = createContext<TextureEditorContextType>(
@@ -624,6 +627,26 @@ export function TextureEditorContextProvider({
 		setPolygonDrawingVertices([]);
 	}, []);
 
+	// Text editing request (triggered by double-click on text element)
+	const [textEditRequest, setTextEditRequest] = useState<{
+		uuid: string;
+		text: string;
+	} | null>(null);
+
+	const requestTextEdit = useCallback(
+		(uuid: string) => {
+			const el = elements.get(uuid);
+			if (el?.type === "text") {
+				setTextEditRequest({ uuid, text: el.text });
+			}
+		},
+		[elements],
+	);
+
+	const clearTextEditRequest = useCallback(() => {
+		setTextEditRequest(null);
+	}, []);
+
 	// Cancel polygon drawing when side changes
 	// biome-ignore lint/correctness/useExhaustiveDependencies: cancel drawing on side change
 	useEffect(() => {
@@ -694,6 +717,9 @@ export function TextureEditorContextProvider({
 				addPolygonVertex,
 				finishPolygonDrawing,
 				cancelPolygonDrawing,
+				textEditRequest,
+				requestTextEdit,
+				clearTextEditRequest,
 			}}
 		>
 			{children}

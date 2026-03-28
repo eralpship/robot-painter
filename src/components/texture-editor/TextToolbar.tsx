@@ -1,5 +1,5 @@
 import { ALargeSmall, TextCursorInput } from "lucide-react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import {
@@ -43,6 +43,15 @@ export function TextToolbar() {
 
 	const selectedTextElement =
 		ctx.selectedElement?.type === "text" ? ctx.selectedElement : null;
+
+	// Respond to text edit requests from double-click on text elements
+	useEffect(() => {
+		if (ctx.textEditRequest) {
+			setChangeTextElement(ctx.textEditRequest);
+			setChangeTextOpen(true);
+			ctx.clearTextEditRequest();
+		}
+	}, [ctx.textEditRequest, ctx.clearTextEditRequest]);
 
 	return (
 		<>
