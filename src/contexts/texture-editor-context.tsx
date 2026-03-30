@@ -54,6 +54,12 @@ type _TextureEditorRectangleElement = {
 	width: number;
 	height: number;
 	color: string;
+	borderRadius?: number;
+};
+type _TextureEditorCircleElement = {
+	type: "circle";
+	radius: number;
+	color: string;
 };
 type _TextureEditorPolygonElement = {
 	type: "polygon";
@@ -68,6 +74,7 @@ export type TextureEditorElementPatch = Partial<
 		| Omit<_TextureEditorImageElement, "type">
 		| Omit<_TextureEditorTextElement, "type">
 		| Omit<_TextureEditorRectangleElement, "type">
+		| Omit<_TextureEditorCircleElement, "type">
 		| Omit<_TextureEditorPolygonElement, "type">
 	)
 >;
@@ -77,6 +84,7 @@ type TextureEditorElement = _BaseTextureEditorElement &
 		| _TextureEditorImageElement
 		| _TextureEditorTextElement
 		| _TextureEditorRectangleElement
+		| _TextureEditorCircleElement
 		| _TextureEditorPolygonElement
 	);
 export type TextureEditorElementWithUuid = TextureEditorElement & {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ColorPickerButton } from "@/components/ui/ColorPickerButton";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { AddElementToolbar } from "./AddElementToolbar";
+import { CircleToolbar } from "./CircleToolbar";
 import { ElementOrderDropdown } from "./ElementOrderDropdown";
 import { ElementToolbar } from "./ElementToolbar";
 import { PolygonToolbar } from "./PolygonToolbar";
@@ -40,7 +41,7 @@ export function Toolbar() {
 	// Paste hotkey always active when clipboard has content (regardless of selection)
 	useHotkey("Mod+V", () => ctx.pasteElement(), {
 		preventDefault: true,
-		enabled: ctx.mode === "full" && !!ctx.clipboardElement,
+		enabled: !!ctx.clipboardElement,
 	});
 
 	return (
@@ -96,6 +97,12 @@ export function Toolbar() {
 						{ctx.selectedElement?.type === "rectangle" && (
 							<ToolbarGroup title="Shape">
 								<RectangleToolbar />
+							</ToolbarGroup>
+						)}
+
+						{ctx.selectedElement?.type === "circle" && (
+							<ToolbarGroup title="Shape">
+								<CircleToolbar />
 							</ToolbarGroup>
 						)}
 

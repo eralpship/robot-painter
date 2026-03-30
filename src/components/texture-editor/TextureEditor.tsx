@@ -183,7 +183,11 @@ export function TextureEditor({
 	const elementRefs = useRef<
 		Map<
 			string,
-			SVGTextElement | SVGImageElement | SVGRectElement | SVGPolygonElement
+			| SVGTextElement
+			| SVGImageElement
+			| SVGRectElement
+			| SVGCircleElement
+			| SVGPolygonElement
 		>
 	>(new Map());
 
@@ -514,6 +518,34 @@ export function TextureEditor({
 									y={-element.height / 2}
 									width={element.width}
 									height={element.height}
+									rx={element.borderRadius ?? 0}
+									ry={element.borderRadius ?? 0}
+									fill={element.color}
+									transform={toSVGTransform(element.transform)}
+									style={{
+										cursor: editorCtx.isDrawingPolygon
+											? "crosshair"
+											: "pointer",
+										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
+									}}
+								/>
+							);
+						case "circle":
+							return (
+								<circle
+									ref={(el) => {
+										if (el) {
+											elementRefs.current.set(uuid, el);
+										} else {
+											elementRefs.current.delete(uuid);
+										}
+									}}
+									id={uuid}
+									key={uuid}
+									className="texture-element-selectable"
+									cx={0}
+									cy={0}
+									r={element.radius}
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
 									style={{

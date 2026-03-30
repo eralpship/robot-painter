@@ -421,7 +421,7 @@ export const Model = forwardRef<ModelRef, ModelProps>(
 			);
 		};
 
-		const headlightColor = "#ffe8a0";
+		const headlightColor = "#a0d4ff";
 
 		return (
 			<group ref={group} {...props} dispose={null}>

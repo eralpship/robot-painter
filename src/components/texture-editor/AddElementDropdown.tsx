@@ -1,4 +1,4 @@
-import { Image, Pentagon, Plus, Square, Type } from "lucide-react";
+import { Circle, Image, Pentagon, Plus, Square, Type } from "lucide-react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -47,6 +47,22 @@ export function AddElementDropdown() {
 			type: "rectangle",
 			width: 100,
 			height: 100,
+			color: "#3b82f6",
+			transform: {
+				centerX: ctx.center.x,
+				centerY: ctx.center.y,
+				rotation: 0,
+				scaleX: 1,
+				scaleY: 1,
+			},
+			side: ctx.side,
+		});
+	};
+
+	const handleAddCircle = () => {
+		ctx.addElement({
+			type: "circle",
+			radius: 50,
 			color: "#3b82f6",
 			transform: {
 				centerX: ctx.center.x,
@@ -155,6 +171,9 @@ export function AddElementDropdown() {
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleAddRectangle}>
 					<Square className="size-4" /> Rectangle
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={handleAddCircle}>
+					<Circle className="size-4" /> Circle
 				</DropdownMenuItem>
 				<DropdownMenuItem
 					onClick={() => {
