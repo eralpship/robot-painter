@@ -237,7 +237,7 @@ function RobotEditor() {
 			<OverlayTextureCanvasProvider>
 				<TooltipProvider>
 					<TextureEditorContextProvider mode="basic" projectId={undefined}>
-						<PageContainer className="flex flex-col">
+						<PageContainer className="flex flex-col" withPattern={false}>
 							<TitleBar />
 							<div className="flex-1 flex items-center justify-center">
 								<TextureEditorWrapper />
@@ -253,7 +253,7 @@ function RobotEditor() {
 		<OverlayTextureCanvasProvider>
 			<TooltipProvider>
 				<TextureEditorContextProvider mode="basic" projectId={projectId}>
-					<PageContainer className="flex flex-col">
+					<PageContainer className="flex flex-col" withPattern={false}>
 						<RobotEditorContent />
 					</PageContainer>
 				</TextureEditorContextProvider>

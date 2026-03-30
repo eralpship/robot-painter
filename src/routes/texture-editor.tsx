@@ -21,7 +21,7 @@ function TextureEditor() {
 		return (
 			<OverlayTextureCanvasProvider>
 				<TextureEditorContextProvider mode="full" projectId={undefined}>
-					<PageContainer className="flex flex-col">
+					<PageContainer className="flex flex-col" withPattern={false}>
 						<TitleBar />
 						<TextureEditorWrapper />
 					</PageContainer>
@@ -33,7 +33,7 @@ function TextureEditor() {
 	return (
 		<OverlayTextureCanvasProvider>
 			<TextureEditorContextProvider mode="full" projectId={projectId}>
-				<PageContainer className="flex flex-col">
+				<PageContainer className="flex flex-col" withPattern={false}>
 					<TitleBar />
 					<div className="flex-1 min-h-0 relative">
 						<TextureEditorWrapper />
