@@ -42,6 +42,14 @@ const rectangleElementSchema = baseElementSchema.extend({
 	width: z.number().positive(),
 	height: z.number().positive(),
 	color: z.string(),
+	borderRadius: z.number().nonnegative().optional(),
+});
+
+// Circle element schema
+const circleElementSchema = baseElementSchema.extend({
+	type: z.literal("circle"),
+	radius: z.number().positive(),
+	color: z.string(),
 });
 
 // Polygon element schema
@@ -56,6 +64,7 @@ export const textureEditorElementSchema = z.discriminatedUnion("type", [
 	textElementSchema,
 	imageElementSchema,
 	rectangleElementSchema,
+	circleElementSchema,
 	polygonElementSchema,
 ]);
 
