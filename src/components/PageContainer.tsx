@@ -5,7 +5,10 @@ interface PageContainerProps {
 	className?: string;
 }
 
-export function PageContainer({ children, className = "" }: PageContainerProps) {
+export function PageContainer({
+	children,
+	className = "",
+}: PageContainerProps) {
 	return (
 		<div className={`h-screen w-screen relative isolate ${className}`.trim()}>
 			{children}

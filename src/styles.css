@@ -33,10 +33,19 @@
 	--color-surface: #181c20; /* Toolbar, panels */
 	--color-surface-elevated: #292d39; /* Window headers, elevated surfaces */
 	--color-overlay: rgba(0, 0, 0, 0.8); /* Tooltips, modals */
+	--color-modal-backdrop: rgba(0, 0, 0, 0.5); /* Semi-transparent modal backdrop */
+
+	/* Global background gradient colors */
+	--color-gradient-start: #1a1e24;
+	--color-gradient-mid: #0d0f12;
+	--color-gradient-end: #000000;
 
 	/* Pattern colors (checkered background) */
 	--color-pattern-base: #2a2a2a;
 	--color-pattern-accent: #3a3a3a;
+
+	/* === Opacity values === */
+	--opacity-pattern: 0.08; /* Robot pattern overlay opacity */
 
 	/* === App Text Colors === */
 	--color-foreground: #ffffff; /* Primary text */
@@ -108,7 +117,6 @@
 	code {
 		@apply font-mono;
 	}
-
 
 	/* Tailwind v4 cursor fix - restore pointer cursor for buttons */
 	button:not(:disabled),

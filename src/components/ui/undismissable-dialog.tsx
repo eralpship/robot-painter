@@ -1,5 +1,4 @@
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { cn } from "@/lib/utils";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface UndismissableDialogProps {
 	open: boolean;
@@ -7,27 +6,25 @@ interface UndismissableDialogProps {
 	className?: string;
 }
 
+/**
+ * A dialog that cannot be dismissed by clicking outside or pressing Escape.
+ * Uses semi-transparent backdrop to allow GlobalBackground pattern to show through.
+ */
 export function UndismissableDialog({
 	open,
 	children,
 	className,
 }: UndismissableDialogProps) {
 	return (
-		<DialogPrimitive.Root open={open} onOpenChange={() => {}}>
-			<DialogPrimitive.Portal>
-				{/* Semi-transparent overlay - lets GlobalBackground pattern show through */}
-				<DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-				<DialogPrimitive.Content
-					onInteractOutside={(e) => e.preventDefault()}
-					onEscapeKeyDown={(e) => e.preventDefault()}
-					className={cn(
-						"bg-surface data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 outline-none sm:max-w-lg",
-						className,
-					)}
-				>
-					{children}
-				</DialogPrimitive.Content>
-			</DialogPrimitive.Portal>
-		</DialogPrimitive.Root>
+		<Dialog open={open} onOpenChange={() => {}}>
+			<DialogContent
+				showCloseButton={false}
+				onInteractOutside={(e) => e.preventDefault()}
+				onEscapeKeyDown={(e) => e.preventDefault()}
+				className={className}
+			>
+				{children}
+			</DialogContent>
+		</Dialog>
 	);
 }

@@ -5,21 +5,22 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 function GlobalBackground() {
 	return (
 		<div className="fixed inset-0 -z-10 pointer-events-none">
-			{/* Gradient */}
+			{/* Gradient - uses CSS variables for colors */}
 			<div
 				className="absolute inset-0"
 				style={{
 					background:
-						"radial-gradient(ellipse at bottom center, #1a1e24 0%, #0d0f12 50%, #000000 100%)",
+						"radial-gradient(ellipse at bottom center, var(--color-gradient-start) 0%, var(--color-gradient-mid) 50%, var(--color-gradient-end) 100%)",
 				}}
 			/>
-			{/* Pattern */}
+			{/* Pattern - uses CSS variable for opacity */}
 			<div
-				className="absolute inset-0 opacity-[0.08]"
+				className="absolute inset-0"
 				style={{
 					backgroundImage: "url(/robot-pattern.png)",
 					backgroundRepeat: "repeat",
 					backgroundSize: "27px 27px",
+					opacity: "var(--opacity-pattern)",
 				}}
 			/>
 		</div>

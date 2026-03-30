@@ -75,40 +75,40 @@ function TextureEditorContent() {
 	if (projectModal.type === "selection") {
 		return (
 			<ProjectSelectionModal
-					open={true}
-					reason={projectModal.reason}
-					invalidProjectId={projectModal.invalidProjectId}
-					recentProject={projectModal.recentProject}
-					onLoadRecent={() => {
-						if (projectModal.recentProject) {
-							navigateToProject(navigate, mode, projectModal.recentProject.id);
-						}
-					}}
-					onBrowseProjects={() => navigate({ to: "/projects" })}
-					onCreateProject={async (name) => {
-						try {
-							const newId = await createNewProject(name);
-							navigateToProject(navigate, mode, newId);
-						} catch (error) {
-							console.error(
-								"[TextureEditorWrapper] Failed to create project:",
-								error,
-							);
-						}
-					}}
-					onImportProject={async (name, data: Omit<ProjectData, "name">) => {
-						try {
-							const newId = await createProjectFromImport(name, data);
-							navigateToProject(navigate, mode, newId);
-						} catch (error) {
-							console.error(
-								"[TextureEditorWrapper] Failed to import project:",
-								error,
-							);
-							throw error;
-						}
-					}}
-				/>
+				open={true}
+				reason={projectModal.reason}
+				invalidProjectId={projectModal.invalidProjectId}
+				recentProject={projectModal.recentProject}
+				onLoadRecent={() => {
+					if (projectModal.recentProject) {
+						navigateToProject(navigate, mode, projectModal.recentProject.id);
+					}
+				}}
+				onBrowseProjects={() => navigate({ to: "/projects" })}
+				onCreateProject={async (name) => {
+					try {
+						const newId = await createNewProject(name);
+						navigateToProject(navigate, mode, newId);
+					} catch (error) {
+						console.error(
+							"[TextureEditorWrapper] Failed to create project:",
+							error,
+						);
+					}
+				}}
+				onImportProject={async (name, data: Omit<ProjectData, "name">) => {
+					try {
+						const newId = await createProjectFromImport(name, data);
+						navigateToProject(navigate, mode, newId);
+					} catch (error) {
+						console.error(
+							"[TextureEditorWrapper] Failed to import project:",
+							error,
+						);
+						throw error;
+					}
+				}}
+			/>
 		);
 	}
 
