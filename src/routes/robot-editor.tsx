@@ -162,7 +162,7 @@ function RobotEditorContent() {
 	return (
 		<>
 			<TitleBar />
-			<div className="flex-1 min-h-0 relative">
+			<div className="flex-1 min-h-0 relative bg-page-background">
 				<div
 					className="absolute top-2 right-2 z-50 w-[340px]"
 					style={{ fontFamily: "system-ui, sans-serif", fontSize: "11px" }}
@@ -177,7 +177,7 @@ function RobotEditorContent() {
 					className="h-full w-full"
 					shadows
 					dpr={[1, 2]}
-					gl={{ antialias: true }}
+					gl={{ antialias: true, alpha: false }}
 					camera={{
 						position: [40, 30, 40],
 						fov: MODEL_DEFAULTS.fov,
@@ -237,11 +237,8 @@ function RobotEditor() {
 			<OverlayTextureCanvasProvider>
 				<TooltipProvider>
 					<TextureEditorContextProvider mode="basic" projectId={undefined}>
-						<PageContainer className="flex flex-col" withPattern={false}>
-							<TitleBar />
-							<div className="flex-1 flex items-center justify-center">
-								<TextureEditorWrapper />
-							</div>
+						<PageContainer>
+							<TextureEditorWrapper />
 						</PageContainer>
 					</TextureEditorContextProvider>
 				</TooltipProvider>
@@ -253,7 +250,7 @@ function RobotEditor() {
 		<OverlayTextureCanvasProvider>
 			<TooltipProvider>
 				<TextureEditorContextProvider mode="basic" projectId={projectId}>
-					<PageContainer className="flex flex-col" withPattern={false}>
+					<PageContainer className="flex flex-col">
 						<RobotEditorContent />
 					</PageContainer>
 				</TextureEditorContextProvider>

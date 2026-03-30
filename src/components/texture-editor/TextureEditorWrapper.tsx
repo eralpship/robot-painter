@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useContext } from "react";
-import { createPortal } from "react-dom";
 import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { useTextureEditorPersistence } from "@/hooks/useTextureEditorPersistence";
@@ -72,15 +71,10 @@ function TextureEditorContent() {
 	const { createProjectFromImport } = useTextureEditorPersistence();
 
 	// When project selection modal is showing, don't render the editor
-	// Use a portal to render full-screen overlay at document body level (z-40, below dialog's z-50)
+	// Modal overlay handles backdrop - no extra solid background needed
 	if (projectModal.type === "selection") {
 		return (
-			<>
-				{createPortal(
-					<div className="fixed inset-0 z-[9998] bg-black" />,
-					document.body,
-				)}
-				<ProjectSelectionModal
+			<ProjectSelectionModal
 					open={true}
 					reason={projectModal.reason}
 					invalidProjectId={projectModal.invalidProjectId}
@@ -115,26 +109,20 @@ function TextureEditorContent() {
 						}
 					}}
 				/>
-			</>
 		);
 	}
 
 	// When project created modal is showing
+	// Modal overlay handles backdrop - no extra solid background needed
 	if (projectModal.type === "created") {
 		return (
-			<>
-				{createPortal(
-					<div className="fixed inset-0 z-[9998] bg-black" />,
-					document.body,
-				)}
-				<ProjectCreatedModal
-					open={true}
-					projectName={projectModal.projectName}
-					onConfirm={() => {
-						navigateToProject(navigate, mode, projectModal.projectId);
-					}}
-				/>
-			</>
+			<ProjectCreatedModal
+				open={true}
+				projectName={projectModal.projectName}
+				onConfirm={() => {
+					navigateToProject(navigate, mode, projectModal.projectId);
+				}}
+			/>
 		);
 	}
 

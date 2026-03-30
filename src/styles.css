@@ -92,7 +92,7 @@
 	}
 
 	body {
-		@apply fixed w-full h-full overflow-hidden bg-background text-foreground font-sans antialiased;
+		@apply fixed w-full h-full overflow-hidden text-foreground font-sans antialiased;
 		margin: 0;
 		/* Safe area support for devices with notches */
 		padding-left: env(safe-area-inset-left);
@@ -109,10 +109,6 @@
 		@apply font-mono;
 	}
 
-	html,
-	body {
-		background-color: var(--color-page-background);
-	}
 
 	/* Tailwind v4 cursor fix - restore pointer cursor for buttons */
 	button:not(:disabled),
