@@ -23,7 +23,10 @@ export function RectangleToolbar() {
 				disabled={!selectedRectangle}
 			/>
 			<div className="flex flex-col gap-1">
-				<Label htmlFor="border-radius" className="text-[10px] text-muted-foreground">
+				<Label
+					htmlFor="border-radius"
+					className="text-[10px] text-muted-foreground"
+				>
 					Corner Radius
 				</Label>
 				<Input
@@ -33,8 +36,13 @@ export function RectangleToolbar() {
 					value={selectedRectangle?.borderRadius ?? 0}
 					onChange={(e) => {
 						if (selectedRectangle) {
-							const value = Math.max(0, Number.parseInt(e.target.value) || 0);
-							ctx.updateElement(selectedRectangle.uuid, { borderRadius: value });
+							const value = Math.max(
+								0,
+								Number.parseInt(e.target.value, 10) || 0,
+							);
+							ctx.updateElement(selectedRectangle.uuid, {
+								borderRadius: value,
+							});
 						}
 					}}
 					disabled={!selectedRectangle}
