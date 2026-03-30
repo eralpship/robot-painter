@@ -44,8 +44,9 @@
 	--color-pattern-base: #2a2a2a;
 	--color-pattern-accent: #3a3a3a;
 
-	/* === Opacity values === */
+	/* === Pattern values === */
 	--opacity-pattern: 0.08; /* Robot pattern overlay opacity */
+	--size-pattern: 27px; /* Robot pattern tile size */
 
 	/* === App Text Colors === */
 	--color-foreground: #ffffff; /* Primary text */
@@ -145,4 +146,14 @@
 		10px 10px,
 		10px 10px,
 		0 0;
+}
+
+/* Custom utility for global background gradient */
+@utility global-gradient {
+	background: radial-gradient(
+		ellipse at bottom center,
+		var(--color-gradient-start) 0%,
+		var(--color-gradient-mid) 50%,
+		var(--color-gradient-end) 100%
+	);
 }
