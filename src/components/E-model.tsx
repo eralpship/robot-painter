@@ -78,16 +78,14 @@ export interface ModelRef {
 	touchFlag: () => void;
 }
 
-const TEXTURE_PLACEHOLDERS = [
-	"/front.png",
-	"/back.png",
-	"/left.png",
-	"/right.png",
-	"/lid.png",
-];
+// Side/lid textures are replaced with blank canvases so users can paint on them.
+// Match by base name to support any extension (.png, .jpg, .webp, etc.)
+const TEXTURE_PLACEHOLDER_NAMES = ["front", "back", "left", "right", "lid"];
 const loadingManager = new THREE.LoadingManager();
 loadingManager.setURLModifier((url) => {
-	if (TEXTURE_PLACEHOLDERS.includes(url)) {
+	// Check if URL matches any placeholder name (regardless of extension: .png, .jpg, .webp)
+	const baseName = url.replace(/^\//, "").replace(/\.[^.]+$/, "");
+	if (TEXTURE_PLACEHOLDER_NAMES.includes(baseName)) {
 		const img = createBlankTexture("transparent");
 		return img.src;
 	}

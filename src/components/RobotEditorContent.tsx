@@ -15,6 +15,7 @@ import {
 	useDirectionalLightHeight,
 	useFov,
 } from "../stores/model-store";
+import { useScreenshotStore } from "../stores/screenshot-store";
 import { Model, type ModelRef } from "./E-model";
 import { FloatingCollapsibleWindow } from "./FloatingCollapsibleWindow";
 import { TitleBar } from "./TitleBar";
@@ -50,6 +51,20 @@ const SceneBackground = () => {
 			.trim();
 		scene.background = new THREE.Color(color || "#1a1a2e");
 	}, [scene]);
+	return null;
+};
+
+// ScreenshotManager registers gl/scene/camera for external screenshot capture
+const ScreenshotManager = () => {
+	const { gl, scene, camera } = useThree();
+	const register = useScreenshotStore((s) => s.register);
+	const unregister = useScreenshotStore((s) => s.unregister);
+
+	useEffect(() => {
+		register(gl, scene, camera);
+		return () => unregister();
+	}, [gl, scene, camera, register, unregister]);
+
 	return null;
 };
 
@@ -162,6 +177,7 @@ export function RobotEditorContent() {
 				>
 					<CameraController />
 					<SceneBackground />
+					<ScreenshotManager />
 					<AmbientLightWrapper />
 
 					<DirectionalLightWrapper />

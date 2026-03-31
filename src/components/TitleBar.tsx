@@ -1,5 +1,7 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useLiveQuery } from "dexie-react-hooks";
 import {
+	Camera,
 	Download,
 	FolderPlus,
 	Home,
@@ -11,6 +13,10 @@ import { useContext, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { db } from "@/db/db";
+import {
+	useScreenshotReady,
+	useTakeScreenshot,
+} from "@/stores/screenshot-store";
 import { exportProject } from "@/utils/projectExport";
 import { NewProjectModal } from "./texture-editor/modals/NewProjectModal";
 
@@ -21,10 +27,16 @@ export function TitleBar() {
 	const projectId = search["project-id"];
 	const [isCreatingProject, setIsCreatingProject] = useState(false);
 	const [newProjectOpen, setNewProjectOpen] = useState(false);
+	const takeScreenshot = useTakeScreenshot();
+	const screenshotReady = useScreenshotReady();
 
-	const handleExport = async () => {
-		if (!projectId) return;
-		const project = await db.textureProjects.get(projectId);
+	// Fetch project for display and export (avoids duplicate DB queries)
+	const project = useLiveQuery(
+		() => (projectId ? db.textureProjects.get(projectId) : undefined),
+		[projectId],
+	);
+
+	const handleExport = () => {
 		if (project) {
 			exportProject(project);
 		}
@@ -55,6 +67,17 @@ export function TitleBar() {
 					</>
 				)}
 			</Button>
+			{ctx.mode === "basic" && (
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={takeScreenshot}
+					disabled={!screenshotReady}
+					title="Save screenshot"
+				>
+					<Camera className="size-4" />
+				</Button>
+			)}
 			<Button
 				variant="outline"
 				size="sm"
@@ -81,7 +104,7 @@ export function TitleBar() {
 				variant="outline"
 				size="sm"
 				onClick={handleExport}
-				disabled={!projectId}
+				disabled={!project}
 			>
 				<Download className="size-4" /> Export
 			</Button>
@@ -114,6 +137,14 @@ export function TitleBar() {
 					}
 				}}
 			/>
+			{project?.name && (
+				<span
+					className="text-base text-foreground-subtle whitespace-nowrap ml-2"
+					title={project.name}
+				>
+					{project.name}
+				</span>
+			)}
 		</div>
 	);
 }

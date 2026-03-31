@@ -37,6 +37,6 @@ export function navigateToProject(
 	mode: TexureEditorMode,
 	projectId: number,
 ): void {
-	const to = mode === "full" ? "/texture-editor" : "/robot-editor";
+	const to = mode === "full" ? "/robot-editor" : "/texture-editor";
 	navigate({ to, search: { "project-id": projectId } });
 }
