@@ -14,7 +14,7 @@ function LandingPage() {
 						Robot Painter
 					</h1>
 					<p className="text-lg text-gray-300">
-						Design and customize your own Starship delivery robot. Add text,
+						Design and customize your own delivery robot. Add text,
 						images, shapes, and colors to create unique robot skins.
 					</p>
 				</div>

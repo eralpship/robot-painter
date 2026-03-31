@@ -1,7 +1,7 @@
 {
   "short_name": "Robot Painter",
   "name": "Robot Painter - Design Custom Starship Robot Skins",
-  "description": "Design and customize your own Starship delivery robot. Add text, images, shapes, and colors to create unique robot skins.",
+  "description": "Design and customize your own delivery robot. Add text, images, shapes, and colors to create unique robot skins.",
   "icons": [
     {
       "src": "favicon.ico",
