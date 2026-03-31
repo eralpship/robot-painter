@@ -86,7 +86,9 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''animations'''',[]\\), indent=2\\)\\)\")",
       "Bash(python3 -c \":*)",
       "WebFetch(domain:blender-mcp.com)",
-      "mcp__blender__execute_blender_code"
+      "mcp__blender__execute_blender_code",
+      "Bash(tailscale status:*)",
+      "Bash(ping:*)"
     ],
     "deny": [],
     "ask": []

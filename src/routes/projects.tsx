@@ -10,6 +10,7 @@ import {
 import { useRef, useState } from "react";
 import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
 	Dialog,
 	DialogContent,
@@ -18,6 +19,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { InputDialog } from "@/components/ui/InputDialog";
 import { Input } from "@/components/ui/input";
 import { db } from "@/db/db";
 import { useProjects } from "@/hooks/useProjects";
@@ -197,15 +199,20 @@ function Projects() {
 		<PageContainer className="text-white p-8 overflow-auto">
 			<div className="max-w-4xl mx-auto">
 				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-					<div>
-						<Link to="/" className="text-sm text-gray-400 hover:text-gray-300">
+					<div className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+						<Link
+							to="/"
+							className="text-sm text-gray-300 hover:text-white font-medium"
+						>
 							&larr; Home
 						</Link>
-						<h1 className="text-3xl font-bold">Projects</h1>
+						<h1 className="text-3xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent drop-shadow-none">
+							Projects
+						</h1>
 					</div>
 					<div className="flex items-center gap-2">
 						<Button
-							variant="outline"
+							variant="secondary"
 							size="sm"
 							onClick={() => setIsImportModalOpen(true)}
 						>
@@ -219,7 +226,9 @@ function Projects() {
 					</div>
 				</div>
 
-				<h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
+				<h2 className="text-xl font-bold mb-4 text-gray-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+					Recent Projects
+				</h2>
 
 				{isLoading ? (
 					<p className="text-gray-400">Loading projects...</p>
@@ -290,62 +299,32 @@ function Projects() {
 				)}
 			</div>
 
-			<Dialog
+			<ConfirmDialog
 				open={projectToDelete !== null}
 				onOpenChange={(open) => !open && setProjectToDelete(null)}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Delete Project</DialogTitle>
-						<DialogDescription>
-							Are you sure you want to delete "{projectToDelete?.name}"? This
-							action cannot be undone.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setProjectToDelete(null)}>
-							Cancel
-						</Button>
-						<Button variant="destructive" onClick={confirmDelete}>
-							Delete
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+				title="Delete Project"
+				description={`Are you sure you want to delete "${projectToDelete?.name}"? This action cannot be undone.`}
+				confirmLabel="Delete"
+				variant="destructive"
+				onConfirm={confirmDelete}
+				onCancel={() => setProjectToDelete(null)}
+			/>
 
-			<Dialog
+			<InputDialog
 				open={isCreateModalOpen}
 				onOpenChange={(open) => {
 					setIsCreateModalOpen(open);
 					if (!open) setNewProjectName("");
 				}}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Create New Project</DialogTitle>
-						<DialogDescription>
-							Enter a name for your new project.
-						</DialogDescription>
-					</DialogHeader>
-					<Input
-						value={newProjectName}
-						onChange={(e) => setNewProjectName(e.target.value)}
-						placeholder="Project name"
-						onKeyDown={(e) => {
-							if (e.key === "Enter") handleCreateProject();
-						}}
-					/>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setIsCreateModalOpen(false)}
-						>
-							Cancel
-						</Button>
-						<Button onClick={handleCreateProject}>Create</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+				title="Create New Project"
+				description="Enter a name for your new project."
+				value={newProjectName}
+				onChange={setNewProjectName}
+				placeholder="Project name"
+				confirmLabel="Create"
+				onConfirm={handleCreateProject}
+				onCancel={() => setIsCreateModalOpen(false)}
+			/>
 
 			<Dialog
 				open={isImportModalOpen}
@@ -400,40 +379,25 @@ function Projects() {
 				</DialogContent>
 			</Dialog>
 
-			<Dialog
+			<InputDialog
 				open={projectToRename !== null}
 				onOpenChange={(open) => {
 					if (!open) closeRenameModal();
 				}}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Rename Project</DialogTitle>
-						<DialogDescription>
-							Enter a new name for "{projectToRename?.name}"
-						</DialogDescription>
-					</DialogHeader>
-					<Input
-						value={renameValue}
-						onChange={(e) => {
-							setRenameValue(e.target.value);
-							setRenameError(null);
-						}}
-						placeholder="Project name"
-						maxLength={100}
-						onKeyDown={(e) => {
-							if (e.key === "Enter") confirmRename();
-						}}
-					/>
-					{renameError && <p className="text-red-500 text-sm">{renameError}</p>}
-					<DialogFooter>
-						<Button variant="outline" onClick={closeRenameModal}>
-							Cancel
-						</Button>
-						<Button onClick={confirmRename}>Save</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+				title="Rename Project"
+				description={`Enter a new name for "${projectToRename?.name}"`}
+				value={renameValue}
+				onChange={(value) => {
+					setRenameValue(value);
+					setRenameError(null);
+				}}
+				placeholder="Project name"
+				maxLength={100}
+				error={renameError}
+				confirmLabel="Save"
+				onConfirm={confirmRename}
+				onCancel={closeRenameModal}
+			/>
 		</PageContainer>
 	);
 }

@@ -173,13 +173,6 @@ export function TextureEditor({
 		updateTexture,
 	]);
 
-	// Notify context when editor is ready (SVG is mounted)
-	useEffect(() => {
-		if (svgRef.current && !hidden) {
-			editorCtx.notifyEditorReady();
-		}
-	}, [hidden, editorCtx]);
-
 	const elementRefs = useRef<
 		Map<
 			string,
@@ -190,6 +183,38 @@ export function TextureEditor({
 			| SVGPolygonElement
 		>
 	>(new Map());
+
+	// Helper to create ref callbacks for element refs map
+	const createElementRef = useCallback(
+		(uuid: string) =>
+			(
+				el:
+					| SVGTextElement
+					| SVGImageElement
+					| SVGRectElement
+					| SVGCircleElement
+					| SVGPolygonElement
+					| null,
+			) => {
+				if (el) {
+					elementRefs.current.set(uuid, el);
+				} else {
+					elementRefs.current.delete(uuid);
+				}
+			},
+		[],
+	);
+
+	// Common style for interactive elements
+	const elementStyle = useMemo(
+		() => ({
+			cursor: editorCtx.isDrawingPolygon ? "crosshair" : ("pointer" as const),
+			pointerEvents: editorCtx.isDrawingPolygon
+				? ("none" as const)
+				: ("auto" as const),
+		}),
+		[editorCtx.isDrawingPolygon],
+	);
 
 	const [moveableKey, setMoveableKey] = useState("not-selected");
 	const isManipulatingRef = useRef(false);
@@ -435,13 +460,7 @@ export function TextureEditor({
 							const textTransform = toSVGTransform(element.transform);
 							return (
 								<text
-									ref={(el) => {
-										if (el) {
-											elementRefs.current.set(uuid, el);
-										} else {
-											elementRefs.current.delete(uuid);
-										}
-									}}
+									ref={createElementRef(uuid)}
 									id={uuid}
 									key={uuid}
 									className="texture-element-selectable"
@@ -453,10 +472,7 @@ export function TextureEditor({
 										fontWeight: "bold",
 										fontSize: `${element.fontSize}px`,
 										fill: element.color,
-										cursor: editorCtx.isDrawingPolygon
-											? "crosshair"
-											: "pointer",
-										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
+										...elementStyle,
 										textAlign: "center",
 										textAnchor: "middle",
 										dominantBaseline: "middle",
@@ -472,13 +488,7 @@ export function TextureEditor({
 						case "image":
 							return (
 								<image
-									ref={(el) => {
-										if (el) {
-											elementRefs.current.set(uuid, el);
-										} else {
-											elementRefs.current.delete(uuid);
-										}
-									}}
+									ref={createElementRef(uuid)}
 									id={uuid}
 									key={uuid}
 									className="texture-element-selectable"
@@ -490,12 +500,7 @@ export function TextureEditor({
 									width={element.width}
 									height={element.height}
 									transform={toSVGTransform(element.transform)}
-									style={{
-										cursor: editorCtx.isDrawingPolygon
-											? "crosshair"
-											: "pointer",
-										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
-									}}
+									style={elementStyle}
 									onError={(e) => {
 										console.error("SVG image failed to render:", uuid, e);
 									}}
@@ -504,13 +509,7 @@ export function TextureEditor({
 						case "rectangle":
 							return (
 								<rect
-									ref={(el) => {
-										if (el) {
-											elementRefs.current.set(uuid, el);
-										} else {
-											elementRefs.current.delete(uuid);
-										}
-									}}
+									ref={createElementRef(uuid)}
 									id={uuid}
 									key={uuid}
 									className="texture-element-selectable"
@@ -522,24 +521,13 @@ export function TextureEditor({
 									ry={element.borderRadius ?? 0}
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
-									style={{
-										cursor: editorCtx.isDrawingPolygon
-											? "crosshair"
-											: "pointer",
-										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
-									}}
+									style={elementStyle}
 								/>
 							);
 						case "circle":
 							return (
 								<circle
-									ref={(el) => {
-										if (el) {
-											elementRefs.current.set(uuid, el);
-										} else {
-											elementRefs.current.delete(uuid);
-										}
-									}}
+									ref={createElementRef(uuid)}
 									id={uuid}
 									key={uuid}
 									className="texture-element-selectable"
@@ -548,36 +536,20 @@ export function TextureEditor({
 									r={element.radius}
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
-									style={{
-										cursor: editorCtx.isDrawingPolygon
-											? "crosshair"
-											: "pointer",
-										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
-									}}
+									style={elementStyle}
 								/>
 							);
 						case "polygon":
 							return (
 								<polygon
-									ref={(el) => {
-										if (el) {
-											elementRefs.current.set(uuid, el);
-										} else {
-											elementRefs.current.delete(uuid);
-										}
-									}}
+									ref={createElementRef(uuid)}
 									id={uuid}
 									key={uuid}
 									className="texture-element-selectable"
 									points={element.points.map((p) => `${p.x},${p.y}`).join(" ")}
 									fill={element.color}
 									transform={toSVGTransform(element.transform)}
-									style={{
-										cursor: editorCtx.isDrawingPolygon
-											? "crosshair"
-											: "pointer",
-										pointerEvents: editorCtx.isDrawingPolygon ? "none" : "auto",
-									}}
+									style={elementStyle}
 								/>
 							);
 						default:

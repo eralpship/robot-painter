@@ -33,19 +33,24 @@
 	--color-surface: #181c20; /* Toolbar, panels */
 	--color-surface-elevated: #292d39; /* Window headers, elevated surfaces */
 	--color-overlay: rgba(0, 0, 0, 0.8); /* Tooltips, modals */
-	--color-modal-backdrop: rgba(0, 0, 0, 0.5); /* Semi-transparent modal backdrop */
+	--color-modal-backdrop: rgba(
+		0,
+		0,
+		0,
+		0.5
+	); /* Semi-transparent modal backdrop */
 
 	/* Global background gradient colors */
-	--color-gradient-start: #1a1e24;
-	--color-gradient-mid: #0d0f12;
-	--color-gradient-end: #000000;
+	--color-gradient-start: #2a3040;
+	--color-gradient-mid: #151820;
+	--color-gradient-end: #050608;
 
 	/* Pattern colors (checkered background) */
 	--color-pattern-base: #2a2a2a;
 	--color-pattern-accent: #3a3a3a;
 
 	/* === Pattern values === */
-	--opacity-pattern: 0.08; /* Robot pattern overlay opacity */
+	--opacity-pattern: 0.12; /* Robot pattern overlay opacity */
 	--size-pattern: 27px; /* Robot pattern tile size */
 
 	/* === App Text Colors === */
@@ -156,4 +161,25 @@
 		var(--color-gradient-mid) 50%,
 		var(--color-gradient-end) 100%
 	);
+}
+
+/* Sliding background animation - uses transform for GPU acceleration */
+@keyframes slide-pattern {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(var(--size-pattern));
+	}
+}
+
+@utility animate-slide-pattern {
+	/*
+	 * Seamless loop: extend width by one tile and offset left.
+	 * Animation translates by exactly one tile, then loops invisibly.
+	 */
+	width: calc(100% + var(--size-pattern));
+	margin-left: calc(-1 * var(--size-pattern));
+	animation: slide-pattern 3s linear infinite;
+	will-change: transform;
 }

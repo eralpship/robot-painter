@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import type { OverlayTextureSides } from "@/contexts/overlay-texture-canvas-context";
 import { TextureEditorContext } from "@/contexts/texture-editor-context";
 import { useTextureEditorPersistence } from "@/hooks/useTextureEditorPersistence";
@@ -65,10 +65,20 @@ function BackdropWithDeselect() {
 }
 
 function TextureEditorContent() {
-	const { projectModal, createNewProject, mode } =
+	const { projectModal, createNewProject, mode, isLoaded, notifyEditorReady } =
 		useContext(TextureEditorContext);
 	const navigate = useNavigate();
 	const { createProjectFromImport } = useTextureEditorPersistence();
+
+	// Trigger project loading on mount
+	useEffect(() => {
+		notifyEditorReady();
+	}, [notifyEditorReady]);
+
+	// Don't render anything until project state is determined
+	if (!isLoaded) {
+		return null;
+	}
 
 	// When project selection modal is showing, don't render the editor
 	// Modal overlay handles backdrop - no extra solid background needed

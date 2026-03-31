@@ -1,12 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FloatingCollapsibleWindow } from "../components/FloatingCollapsibleWindow";
+import { lazy, Suspense } from "react";
+import { EditorLoading } from "../components/EditorLoading";
 import { PageContainer } from "../components/PageContainer";
-import { RobotPreview } from "../components/RobotPreview";
-import { TitleBar } from "../components/TitleBar";
-import { TextureEditorWrapper } from "../components/texture-editor/TextureEditorWrapper";
 import { OverlayTextureCanvasProvider } from "../contexts/overlay-texture-canvas-context";
 import { TextureEditorContextProvider } from "../contexts/texture-editor-context";
 import { validateProjectSearch } from "../utils/projectRouteUtils";
+
+// Lazy load the heavy editor content
+const TextureEditorContent = lazy(() =>
+	import("../components/TextureEditorContent").then((m) => ({
+		default: m.TextureEditorContent,
+	})),
+);
+
+const TextureEditorContentBasic = lazy(() =>
+	import("../components/TextureEditorContent").then((m) => ({
+		default: m.TextureEditorContentBasic,
+	})),
+);
 
 export const Route = createFileRoute("/texture-editor")({
 	validateSearch: validateProjectSearch,
@@ -21,10 +32,11 @@ function TextureEditor() {
 		return (
 			<OverlayTextureCanvasProvider>
 				<TextureEditorContextProvider mode="full" projectId={undefined}>
-					<PageContainer className="flex flex-col">
-						<TitleBar />
-						<TextureEditorWrapper />
-					</PageContainer>
+					<Suspense fallback={<EditorLoading />}>
+						<PageContainer className="flex flex-col">
+							<TextureEditorContentBasic />
+						</PageContainer>
+					</Suspense>
 				</TextureEditorContextProvider>
 			</OverlayTextureCanvasProvider>
 		);
@@ -33,21 +45,11 @@ function TextureEditor() {
 	return (
 		<OverlayTextureCanvasProvider>
 			<TextureEditorContextProvider mode="full" projectId={projectId}>
-				<PageContainer className="flex flex-col">
-					<TitleBar />
-					<div className="flex-1 min-h-0 relative">
-						<TextureEditorWrapper />
-						<FloatingCollapsibleWindow
-							title="preview"
-							x={152}
-							y={12}
-							width={300}
-							height={260}
-						>
-							<RobotPreview />
-						</FloatingCollapsibleWindow>
-					</div>
-				</PageContainer>
+				<Suspense fallback={<EditorLoading />}>
+					<PageContainer className="flex flex-col">
+						<TextureEditorContent />
+					</PageContainer>
+				</Suspense>
 			</TextureEditorContextProvider>
 		</OverlayTextureCanvasProvider>
 	);

@@ -9,7 +9,7 @@ function GlobalBackground() {
 			<div className="absolute inset-0 global-gradient" />
 			{/* Pattern - uses CSS variables for opacity and size */}
 			<div
-				className="absolute inset-0"
+				className="absolute inset-0 animate-slide-pattern"
 				style={{
 					backgroundImage: "url(/robot-pattern.png)",
 					backgroundRepeat: "repeat",
