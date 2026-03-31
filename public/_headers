@@ -1,0 +1,36 @@
+# Cloudflare Pages Headers Configuration
+# https://developers.cloudflare.com/pages/configuration/headers
+
+# Hashed assets (JS, CSS, fonts) - cache forever with immutable
+# These have content hashes in filenames, so cache busting is automatic
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Non-hashed static files - short cache with revalidation
+# Browser caches briefly, then revalidates; serves stale while fetching fresh
+/*.png
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/*.ico
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/*.gltf
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/*.bin
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+# Manifest and robots - short cache with revalidation
+/manifest.json
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/robots.txt
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+# HTML - must revalidate on every request
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Security headers for all responses
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
