@@ -10,7 +10,7 @@ export function PageContainer({
 	className = "",
 }: PageContainerProps) {
 	return (
-		<div className={`h-screen w-screen relative isolate ${className}`.trim()}>
+		<div className={`h-dvh w-screen relative isolate ${className}`.trim()}>
 			{children}
 		</div>
 	);
