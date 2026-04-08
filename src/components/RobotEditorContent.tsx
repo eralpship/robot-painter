@@ -1,7 +1,7 @@
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Leva } from "leva";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { PerspectiveCamera } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -122,6 +122,16 @@ export function RobotEditorContent() {
 	// Use the new Leva-Zustand sync hook
 	useLevaModelControls(modelRef, cameraControlsRef);
 
+	// Responsive default size for the texture editor floating window
+	const textureEditorSize = useMemo(() => {
+		const vw = window.innerWidth;
+		const vh = window.innerHeight;
+		return {
+			width: Math.max(440, Math.round(vw * 0.55)),
+			height: Math.max(350, Math.round(vh * 0.65)),
+		};
+	}, []);
+
 	// Read autoRotate from store
 	const autoRotate = useAutoRotate();
 
@@ -212,8 +222,8 @@ export function RobotEditorContent() {
 					title="Texture Editor"
 					x={10}
 					y={10}
-					width={440}
-					height={350}
+					width={textureEditorSize.width}
+					height={textureEditorSize.height}
 				>
 					<TextureEditorWrapper />
 				</FloatingCollapsibleWindow>

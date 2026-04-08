@@ -79,17 +79,15 @@ export interface ModelRef {
 }
 
 // Side/lid textures are replaced with blank canvases so users can paint on them.
-// Match by base name to support any extension (.png, .jpg, .webp, etc.)
 const TEXTURE_PLACEHOLDER_NAMES = ["front", "back", "left", "right", "lid"];
 const loadingManager = new THREE.LoadingManager();
 loadingManager.setURLModifier((url) => {
-	// Check if URL matches any placeholder name (regardless of extension: .png, .jpg, .webp)
 	const baseName = url.replace(/^\//, "").replace(/\.[^.]+$/, "");
 	if (TEXTURE_PLACEHOLDER_NAMES.includes(baseName)) {
 		const img = createBlankTexture("transparent");
 		return img.src;
 	}
-	// Cache-bust model assets (bin, png, etc.) with app version
+	// Cache-bust model assets with app version
 	if (url.startsWith("/") || url.startsWith("e-model")) {
 		const separator = url.includes("?") ? "&" : "?";
 		return `${url}${separator}v=${__APP_VERSION__}`;

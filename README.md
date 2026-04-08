@@ -9,13 +9,13 @@ npm install
 npm run start
 ```
 
-Opens at http://localhost:3000
+Opens at http://localhost:4242
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run start` | Dev server on port 3000 |
+| `npm run start` | Dev server on port 4242 |
 | `npm run build` | Production build (vite + tsc) |
 | `npm run lint` | Lint with Biome |
 | `npm run check` | Biome check (lint + format) |

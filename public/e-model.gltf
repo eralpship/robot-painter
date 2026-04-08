@@ -11,7 +11,8 @@
 		"EXT_texture_webp"
 	],
 	"extensionsRequired":[
-		"KHR_lights_punctual"
+		"KHR_lights_punctual",
+		"EXT_texture_webp"
 	],
 	"extensions":{
 		"KHR_lights_punctual":{
@@ -1179,8 +1180,23 @@
 					"source":0
 				}
 			},
-			"sampler":0,
-			"source":1
+			"sampler":0
+		},
+		{
+			"extensions":{
+				"EXT_texture_webp":{
+					"source":1
+				}
+			},
+			"sampler":0
+		},
+		{
+			"extensions":{
+				"EXT_texture_webp":{
+					"source":0
+				}
+			},
+			"sampler":0
 		},
 		{
 			"extensions":{
@@ -1188,8 +1204,7 @@
 					"source":2
 				}
 			},
-			"sampler":0,
-			"source":3
+			"sampler":0
 		},
 		{
 			"extensions":{
@@ -1197,8 +1212,23 @@
 					"source":0
 				}
 			},
-			"sampler":0,
-			"source":1
+			"sampler":0
+		},
+		{
+			"extensions":{
+				"EXT_texture_webp":{
+					"source":3
+				}
+			},
+			"sampler":0
+		},
+		{
+			"extensions":{
+				"EXT_texture_webp":{
+					"source":0
+				}
+			},
+			"sampler":0
 		},
 		{
 			"extensions":{
@@ -1206,8 +1236,7 @@
 					"source":4
 				}
 			},
-			"sampler":0,
-			"source":5
+			"sampler":0
 		},
 		{
 			"extensions":{
@@ -1215,8 +1244,23 @@
 					"source":0
 				}
 			},
-			"sampler":0,
-			"source":1
+			"sampler":0
+		},
+		{
+			"extensions":{
+				"EXT_texture_webp":{
+					"source":5
+				}
+			},
+			"sampler":0
+		},
+		{
+			"extensions":{
+				"EXT_texture_webp":{
+					"source":0
+				}
+			},
+			"sampler":0
 		},
 		{
 			"extensions":{
@@ -1224,8 +1268,7 @@
 					"source":6
 				}
 			},
-			"sampler":0,
-			"source":7
+			"sampler":0
 		},
 		{
 			"extensions":{
@@ -1233,71 +1276,15 @@
 					"source":0
 				}
 			},
-			"sampler":0,
-			"source":1
+			"sampler":0
 		},
 		{
 			"extensions":{
 				"EXT_texture_webp":{
-					"source":8
+					"source":6
 				}
 			},
-			"sampler":0,
-			"source":9
-		},
-		{
-			"extensions":{
-				"EXT_texture_webp":{
-					"source":0
-				}
-			},
-			"sampler":0,
-			"source":1
-		},
-		{
-			"extensions":{
-				"EXT_texture_webp":{
-					"source":10
-				}
-			},
-			"sampler":0,
-			"source":11
-		},
-		{
-			"extensions":{
-				"EXT_texture_webp":{
-					"source":0
-				}
-			},
-			"sampler":0,
-			"source":1
-		},
-		{
-			"extensions":{
-				"EXT_texture_webp":{
-					"source":12
-				}
-			},
-			"sampler":0,
-			"source":13
-		},
-		{
-			"extensions":{
-				"EXT_texture_webp":{
-					"source":0
-				}
-			},
-			"sampler":0,
-			"source":1
-		},
-		{
-			"extensions":{
-				"EXT_texture_webp":{
-					"source":12
-				}
-			},
-			"sampler":0,
-			"source":13
+			"sampler":0
 		}
 	],
 	"images":[
@@ -1307,19 +1294,9 @@
 			"uri":"e-model_n.webp"
 		},
 		{
-			"mimeType":"image/jpeg",
-			"name":"e-model_n",
-			"uri":"e-model_n.jpg"
-		},
-		{
 			"mimeType":"image/webp",
 			"name":"back",
 			"uri":"back.webp"
-		},
-		{
-			"mimeType":"image/jpeg",
-			"name":"back",
-			"uri":"back.jpg"
 		},
 		{
 			"mimeType":"image/webp",
@@ -1327,19 +1304,9 @@
 			"uri":"front.webp"
 		},
 		{
-			"mimeType":"image/jpeg",
-			"name":"front",
-			"uri":"front.jpg"
-		},
-		{
 			"mimeType":"image/webp",
 			"name":"left",
 			"uri":"left.webp"
-		},
-		{
-			"mimeType":"image/jpeg",
-			"name":"left",
-			"uri":"left.jpg"
 		},
 		{
 			"mimeType":"image/webp",
@@ -1347,29 +1314,14 @@
 			"uri":"right.webp"
 		},
 		{
-			"mimeType":"image/jpeg",
-			"name":"right",
-			"uri":"right.jpg"
-		},
-		{
 			"mimeType":"image/webp",
 			"name":"lid",
 			"uri":"lid.webp"
 		},
 		{
-			"mimeType":"image/jpeg",
-			"name":"lid",
-			"uri":"lid.jpg"
-		},
-		{
 			"mimeType":"image/webp",
 			"name":"e-model_d",
 			"uri":"e-model_d.webp"
-		},
-		{
-			"mimeType":"image/jpeg",
-			"name":"e-model_d",
-			"uri":"e-model_d.jpg"
 		}
 	],
 	"accessors":[
