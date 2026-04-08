@@ -7,15 +7,18 @@
   Cache-Control: public, max-age=31536000, immutable
 
 # Non-hashed static files - short cache with revalidation
-# Browser caches briefly, then revalidates; serves stale while fetching fresh
 /*.png
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 /*.ico
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/*.webp
+  Cache-Control: public, max-age=86400, stale-while-revalidate=86400
+
+# 3D model files - only change on deploy
 /*.gltf
-  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=86400, stale-while-revalidate=86400
 /*.bin
-  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=86400, stale-while-revalidate=86400
 
 # Manifest and robots - short cache with revalidation
 /manifest.json
