@@ -1,8 +1,11 @@
-const ALLOWED_ORIGIN = "robot.eralp.dev";
+interface Env {
+  ALLOWED_ORIGIN: string;
+}
 
 const PROTECTED_EXTENSIONS = new Set([".gltf", ".bin"]);
 
-export const onRequest: PagesFunction = async (context) => {
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const allowedOrigin = context.env.ALLOWED_ORIGIN;
   const url = new URL(context.request.url);
   const extension = url.pathname.slice(url.pathname.lastIndexOf("."));
 
@@ -13,20 +16,13 @@ export const onRequest: PagesFunction = async (context) => {
   const referer = context.request.headers.get("Referer");
   const origin = context.request.headers.get("Origin");
 
-  // Allow direct browser navigation (no referer) for HTML pages
-  // but block embedded/hotlinked assets from other origins
-  if (referer) {
-    const refererHost = new URL(referer).hostname;
-    if (refererHost !== ALLOWED_ORIGIN) {
-      return new Response("Forbidden", { status: 403 });
-    }
-  }
+  const refererMatch =
+    referer && new URL(referer).hostname === allowedOrigin;
+  const originMatch =
+    origin && new URL(origin).hostname === allowedOrigin;
 
-  if (origin) {
-    const originHost = new URL(origin).hostname;
-    if (originHost !== ALLOWED_ORIGIN) {
-      return new Response("Forbidden", { status: 403 });
-    }
+  if (!refererMatch && !originMatch) {
+    return new Response("Forbidden", { status: 403 });
   }
 
   return context.next();
